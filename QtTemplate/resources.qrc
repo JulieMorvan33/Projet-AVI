@@ -1,0 +1,5 @@
+<RCC>
+  <qresource prefix="fondnoir">
+    <file>fondnoir.png</file>
+  </qresource>
+</RCC>
