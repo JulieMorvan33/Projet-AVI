@@ -97,7 +97,7 @@ class RadarView(QtWidgets.QWidget):
             self.fit_scene_in_view()
 
         # add the moving items
-        self.moving_items = radarmotion.ItemsMotionManager(self)
+        #self.moving_items = radarmotion.ItemsMotionManager(self)
 
         # add components to the root_layout
         root_layout.addWidget(self.view)
@@ -123,18 +123,20 @@ class RadarView(QtWidgets.QWidget):
             seg_next = g.Segment(b, c)  # segment de sortie de la transition
 
             if (i == 1): # si première transition
-                track_change, turn_radius, start_arc, end_arc, centre, lead_distance, bank_angle = compute_transition(seg_actif, seg_next)
+                #if fly_by / fly_over
+                track_change, turn_radius, start_arc, end_arc, centre, lead_distance, bank_angle = compute_transition_fly_over(seg_actif, seg_next)
                 start_segment = a
                 end_segment = start_arc
             else:
                 temp = end_arc
-                track_change, turn_radius, start_arc, end_arc, centre, lead_distance, bank_angle = compute_transition(seg_actif, seg_next)
+                # if fly_by / fly_over
+                track_change, turn_radius, start_arc, end_arc, centre, lead_distance, bank_angle = compute_transition_fly_over(seg_actif, seg_next)
                 start_segment = temp
                 end_segment = start_arc
 
             # ajout des objets transitions et orthos dans la trajectoire pour envoi sur le bus IVY
             self.simulation.trajFMS.transitions_list.append(g.Transition(centre, turn_radius, lead_distance))
-            self.simulation.trajFMS.bankAnglesList.append(bank_angle)
+            self.simulation.trajFMS.bankAnglesList.append(bank_angle) # list de 2 banks pour un fly over ?
             self.simulation.trajFMS.orthos_list.append(g.Ortho(start_segment, end_segment))
 
             # track change en degré, turn_radius en Nm, start le point d'entrée de la transition
@@ -142,9 +144,9 @@ class RadarView(QtWidgets.QWidget):
             det = seg_actif.det(seg_next)
             if track_change > EPSILON:
                 # Affichage des points de start, end, centre (Bi, B0, Bc) pour chaque transition
-                #QGraphicsTransitionPoints(start_arc.x, start_arc.y, nd_items)
-                #QGraphicsTransitionPoints(end_arc.x, end_arc.y, nd_items)
-                #QGraphicsTransitionPoints(centre.x, centre.y, nd_items)
+                QGraphicsTransitionPoints(start_arc.x, start_arc.y, self.nd_items)
+                QGraphicsTransitionPoints(end_arc.x, end_arc.y, self.nd_items)
+                QGraphicsTransitionPoints(centre.x, centre.y, self.nd_items)
 
                 # Affiche l'arc associé à la transition
                 # print("Paramètres arc :", start, centre, " alpha = ", track_change, " turn radius = ", turn_radius)
