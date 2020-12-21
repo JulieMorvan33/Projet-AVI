@@ -1,36 +1,31 @@
 from PyQt5 import QtWidgets, QtCore
-from ivyFunctions import *
-import radarview
-import simulation
-import ndDisplay
+from ivy.std_api import *
+import navigationDisplay
+import communication
+import ndWindowParameters
 import time
 
-USE_IVY = True # use or not use Ivy Bus ?
+USE_IVY = False # use or not use Ivy Bus ?
 SIMU_DELAY = 0.1 # increment time for the simulation if Ivy Bus isn't used
 
-#Paramètres de vol
-CRZ_ALT = 10000 # en feet
-GS = 700
-CAS = 800 # en km/h ? en Nm/h ?
-MACH = 0.78
-WIND = '110020' # 3 premiers chiffres : direction / trois derniers : vitesse (kts)
-
+def null_cb(*a):
+    pass
 
 if __name__ == "__main__":
     # create the simulation for test purpose
-    sim = simulation.Simulation(USE_IVY, SIMU_DELAY)
+    sim = communication.Simulation(USE_IVY, SIMU_DELAY)
 
     # Initialisation of Qt
     app = QtWidgets.QApplication([])
 
     # create the radar view
-    rad = radarview.RadarView(sim)
+    rad = navigationDisplay.RadarView(sim)
 
     # create the parameters view displaying GS, TAS,...
-    param = radarview.ParamView()
+    param = navigationDisplay.ParamView()
 
     # create the QMainWindow
-    win = ndDisplay.mywindow(rad.view, param.view)
+    win = ndWindowParameters.mywindow(rad.view, param.view)
     win.setWindowTitle("Navigation Display")
     win.show()
 
