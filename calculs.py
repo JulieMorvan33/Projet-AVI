@@ -79,7 +79,7 @@ def compute_transition_fly_over(seg_actif, seg_next):
 	# calcul du track change entre les deux segments
 	track_change = np.arccos((seg_actif.scal(seg_next)) / (seg_actif.norm() * seg_next.norm())) * RAD2DEG +30 # en degrés
 
-	if ALTITUDE>195: #commentaire
+	if ALTITUDE>195: #commentaire1
 		max_angle = (16 - 25) / (300 - 195) * (ALTITUDE - 195) + 25
 		bank_angle = max(5, min(0.5 * track_change, max_angle)) #en DEG
 		turn_radius = GS ** 2 / (G * np.tan(bank_angle / RAD2DEG)) / NM2M  # NM
