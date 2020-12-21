@@ -4,7 +4,6 @@
 
 class EconMachEquationsA320():
     def __init__(self):
-        self.OPT_FL =
         self.eq0 = self.eq3degrees(-8.333e-8, 8.3452e-5, -2.7071e-2, 3.5750)
         self.eq20 = self.eq3degrees(-3.5354e-8, 3.1169e-5, -8.3997e-3, 1.4107)
         self.eq40 = self.eq3degrees(-2.5253e-8, 1.7857e-5, -3.2892e-3, 8.3507e-1)
