@@ -21,4 +21,3 @@ disponible pour Windows sur https://www.eei.cena.fr/products/ivy/download/binari
 
 Attention : quelquefois, des problèmes peuvent apparaître dans le calcul de la trajectoire. 
             La seule manière de continuer la simulation et de relancer la console...
-

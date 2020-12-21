@@ -103,7 +103,7 @@ class Segment(object):
     def det(self,other):
         return self.affix()[0]*other.affix()[1] - self.affix()[1]*other.affix()[0]
 
-class Ortho(Segment):
+class Ortho(Segment): #ça dégage
     """Définit une classe qui hérite de Segment mais qui correspond à la portion
     de segment comprise dans la trajectoire de référence"""
     def __init__(self, start, end):
@@ -113,6 +113,8 @@ class Ortho(Segment):
 
 class Transition(object):
     def __init__(self, centre, turnRadius, leadDistance):
+        #self.type
+        #self.liste objets arcs et segments -> objet arc : center, lead, turn_r, (bi, bo?); segment : les 2 points
         self.centre = centre
         self.turn_radius, self.lead_distance = turnRadius, leadDistance
 
@@ -144,6 +146,11 @@ class Trajectoire_brute(object):
         c = self.waypoint_list[ind + 1]
         return a, b, c
 
+class Path(object):
+    def __init__(self, segment, transition, speed):
+        self.segment = segment
+        self.transition = transition
+        self.speed = speed
 '''
 print("wp1 : ", WayPoint(0,1).convert())
 print("wp2 : ", WayPoint(0,90).convert())
