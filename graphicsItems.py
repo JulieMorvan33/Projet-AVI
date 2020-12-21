@@ -1,10 +1,10 @@
 from PyQt5 import QtWidgets
-from PyQt5.QtGui import QPainter, QColor, QPen, QBrush, QTransform
+from PyQt5.QtGui import QPainter, QColor, QPen, QBrush, QTransform, QFont
 from PyQt5.QtCore import Qt
 import numpy as np
 import geometry
+from constantParameters import *
 
-RAD2DEG = 180/np.pi
 
 # Waypoints width
 WP_WIDTH = 15
@@ -14,12 +14,16 @@ TP_DP = TP_WIDTH/2.
 ASW = 0.3 # ASW stands for Arc Semi Width
 
 # Aicraft width
-AC_WIDTH = 100
+AC_WIDTH = 10
+
+# Colors
+white = QColor(255, 255, 255)
 
 # Pens
 P_PEN = QPen(Qt.transparent)
 TRAJ_PEN = QPen(QColor(255, 255, 0),ASW*2)
 LEG_PEN = QPen(QColor("lightgrey"), ASW)
+COMPASS_PEN = QPen(white,ASW*2)
 
 # Brushes
 TP_BRUSH = QBrush(QColor("grey"))
@@ -29,6 +33,7 @@ AC_BRUSH = QBrush(QColor("white")) # for the aicraft
 # Coefficient multiplicateur pour les arc. Un cercle complet = 360*16
 SP_ANGLE_COEFF = 16
 
+LARGE_GRAD_LONG = 10
 
 class QGraphicsArcItem(QtWidgets.QGraphicsEllipseItem):
     """Classe graphique qui affiche un arc de cercle,
@@ -135,3 +140,45 @@ class AircraftItem(QtWidgets.QGraphicsItemGroup):
     def update_position(self, x, y):
         self.item.setPos(x, y)
         self.item.setRect(x - AC_WIDTH / 2, y - AC_WIDTH / 2, AC_WIDTH, AC_WIDTH)
+
+
+
+class QGraphicsCompassItem(QtWidgets.QGraphicsEllipseItem):
+    def __init__(self, x, y, width, parent):
+        self.x, self.y, self.w = x, y, width
+        self.centre = (self.x + self.w/2, self.y + self.w/2)
+        super().__init__(self.x, self.y, self.w, self.w, parent)
+        """
+        font = QFont()
+        font.setWeight(10)
+        name = QtWidgets.QGraphicsTextItem(parent)
+        name.setFont(font)
+        name.setPlainText("Navigation Display")
+        #name.setRotation(360)
+        name.setDefaultTextColor(white)
+        """
+
+    def paint(self, painter=QPainter(), style=None, widget=None):
+        painter.setPen(COMPASS_PEN)
+
+        # Large graduations
+        for i in range(36):
+            i = i/RAD2DEG*10
+            a_x = self.centre[0] + np.sin(i)*self.w/2
+            a_y = self.centre[1] + np.cos(i)*self.w/2
+            b_x = a_x + np.sin(i)*LARGE_GRAD_LONG
+            b_y = a_y + np.cos(i)*LARGE_GRAD_LONG
+            painter.drawLine(a_x, a_y, b_x, b_y)
+
+        # Small graduations
+        for i in range(1,72,2):
+            i = i/RAD2DEG*5
+            a_x = self.centre[0] + np.sin(i)*self.w/2
+            a_y = self.centre[1] + np.cos(i)*self.w/2
+            b_x = a_x + np.sin(i)*LARGE_GRAD_LONG/2
+            b_y = a_y + np.cos(i)*LARGE_GRAD_LONG/2
+            painter.drawLine(a_x, a_y, b_x, b_y)
+
+        painter.drawEllipse(self.x, self.y, self.w, self.w)
+
+

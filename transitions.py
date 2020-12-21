@@ -1,12 +1,6 @@
 import geometry as g
 import numpy as np
-
-KT2MS = 1852/3600
-NM2M = 1852
-RAD2DEG = 180/np.pi
-GS = 500*KT2MS #m.s^-1
-G = 9.807 #m.s^-2
-ALTITUDE = 100 #FL
+from constantParameters import *
 
 EPSILON = 5
 

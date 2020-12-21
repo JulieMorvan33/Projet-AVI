@@ -1,9 +1,8 @@
 """Geometry classes and utilities."""
 import numpy as np
-NM2M = 1852
-RAD2DEG = 180/np.pi
-ALTITUDE = 100 #FL
+from constantParameters import *
 
+# Mercator Projection
 A = 6378137.0  # Demi grand axe de l'ellipsoide de reference WGS-84 (m)
 B = 6356752.3142  # Demi petit axe de l'ellipsoide de reference WGS-84 (m)
 F = (A - B) / A  # Aplatissement
@@ -81,9 +80,8 @@ class WayPoint():
         formules) Merator/Pseudo-Mercator OK si base de donnée juste en Europe (pas trop de déformations)
         /!\ formules pas ok quand latitude = 90° (au pole)"""
         R = 6371007 # Rayon de la Terre
-        a = 6378137 # Demi grand axe de l'ellipsoide de reference WGS-84 (m)
-        x = a*self.long
-        y = a*np.log(np.tan(np.pi/4+self.lat/2))
+        x = A*self.long
+        y = A*np.log(np.tan(np.pi/4+self.lat/2))
         return x/NM2M, y/NM2M
 
 class Segment(object):
