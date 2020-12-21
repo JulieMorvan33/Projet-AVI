@@ -4,14 +4,14 @@ import numpy as np
 KT2MS = 1852/3600
 NM2M = 1852
 RAD2DEG = 180/np.pi
-GS = 1000*KT2MS #m.s^-1
+GS = 400*KT2MS #m.s^-1
 G = 9.807 #m.s^-2
 ALTITUDE = 100 #FL
 
 EPSILON = 5
 
 
-def compute_transition(seg_actif, seg_next):
+def compute_transition_fly_by(seg_actif, seg_next):
 	"""Compute track_change, turn radius, seg_actif, seg_next, b_in, b_out, b_center
 	associated to the index i transition """
 
@@ -42,10 +42,10 @@ def compute_transition(seg_actif, seg_next):
 		lead_distance = turn_radius * np.tan(0.5 * track_change / RAD2DEG)
 
 	#calcul de b_in et b_out : points de debut et fin de la transition en arc de cercle
-	if track_change < EPSILON:
+	if track_change < EPSILON: #mettre zero
 		b_in = b
 		b_out = b
-		b_center = b
+		b_center = b #rajouter lead et radius = 0
 
 	else:
 		norme_act = seg_actif.norm()
@@ -59,17 +59,97 @@ def compute_transition(seg_actif, seg_next):
 		d = (turn_radius ** 2 + lead_distance ** 2) ** 0.5
 		if seg_actif.det(seg_next) > 0:
 			a_b_bc_angle = ((180 + track_change) / 2) / RAD2DEG  # en rad
-			b_center = g.Point(b.x + d * np.sin((active_track - a_b_bc_angle)),
-						 b.y + d * np.cos((active_track - a_b_bc_angle)))
+			b_center = g.Point(b.x - d * np.sin((a_b_bc_angle-active_track)),
+						 b.y + d * np.cos((a_b_bc_angle-active_track)))
 			bank_angle = - bank_angle
 
 		else:
 			a_b_bc_angle = ((180 - track_change) / 2) / RAD2DEG
-			b_center = g.Point(b.x - d * np.sin((active_track - a_b_bc_angle)),
-						 b.y - d * np.cos((active_track - a_b_bc_angle)))
+			b_center = g.Point(b.x + d * np.sin((a_b_bc_angle-active_track)),
+						 b.y - d * np.cos((a_b_bc_angle-active_track)))
 
 	return(track_change, turn_radius, b_in, b_out, b_center, lead_distance, bank_angle)
 
+
+def compute_transition_fly_over(seg_actif, seg_next):
+	# Recuperation des points A (debut) et B (fin) du premier segment
+	a = seg_actif.start
+	b = seg_actif.end
+
+	# calcul du track change entre les deux segments
+	track_change = np.arccos((seg_actif.scal(seg_next)) / (seg_actif.norm() * seg_next.norm())) * RAD2DEG +30 # en degrés
+
+	if ALTITUDE>195:
+		max_angle = (16 - 25) / (300 - 195) * (ALTITUDE - 195) + 25
+		bank_angle = max(5, min(0.5 * track_change, max_angle)) #en DEG
+		turn_radius = GS ** 2 / (G * np.tan(bank_angle / RAD2DEG)) / NM2M  # NM
+		lead_distance = turn_radius * np.tan(0.5 * track_change / RAD2DEG)  # NM
+		if lead_distance > 20:  # NM
+			lead_distance = 20  # NM
+			turn_radius = lead_distance / np.tan(0.5 * track_change / RAD2DEG)
+			bank_angle = max(5, min(np.arctan(GS ** 2) / (G * turn_radius), max_angle))
+		#print("lead_distance", lead_distance)
+	else :
+		max_angle = 25 #DEG
+		bank_angle = max(5, min(0.5*track_change,max_angle)) #DEG
+		turn_radius = GS**2 / (G*np.tan(bank_angle / RAD2DEG)) / NM2M # NM
+		lead_distance = turn_radius * np.tan(0.5 * track_change / RAD2DEG)
+
+	# if track_change < EPSILON:
+	# 	b_in = b
+	# 	b_out = b
+	# 	b_center = b
+
+	b_in = b
+	active_track = get_track(seg_actif)
+	im_1 = g.Point(b.x + lead_distance*np.sin(active_track),
+				   b.y+lead_distance*np.cos(active_track))
+	norme_act = seg_actif.norm()
+	next_track = get_track(seg_next)
+	if seg_actif.det(seg_next)>0:
+		if abs(next_track)<np.pi-np.pi/6:
+			next_track_im = next_track - np.pi/6
+		else:
+			next_track_im = next_track - np.pi/6 - np.sign(next_track)*2*np.pi
+	else:
+		if abs(next_track)<np.pi-np.pi/6:
+			next_track_im = next_track + np.pi/6
+		else:
+			next_track_im = next_track + np.pi/6 - np.sign(next_track)*2*np.pi
+	print(next_track_im*RAD2DEG, next_track*RAD2DEG)
+	seg_next_im = g.Segment(im_1, g.Point(im_1.x + 10*lead_distance*np.sin(next_track_im),
+										  im_1.y + 10*lead_distance*np.cos(next_track_im)))
+	b_out = calcul_point_de_transition(im_1, lead_distance, 0, next_track_im)
+
+	# calcul de l'angle a_b_bcenter et du point b_center (centre de l'arc de transition)
+
+	d = (turn_radius ** 2 + lead_distance ** 2) ** 0.5
+	if seg_actif.det(seg_next_im) > 0:
+		a_b_bc_angle = ((180 + track_change) / 2) / RAD2DEG  # en rad
+		b_center = g.Point(im_1.x - d * np.sin((a_b_bc_angle - active_track)),
+						   im_1.y + d * np.cos((a_b_bc_angle - active_track)))
+		bank_angle = - bank_angle
+
+	else:
+		a_b_bc_angle = ((180 - track_change) / 2) / RAD2DEG
+		b_center = g.Point(im_1.x + d * np.sin((a_b_bc_angle - active_track)),
+						   im_1.y - d * np.cos((a_b_bc_angle - active_track)))
+
+	# active_track = get_track(seg_actif)
+	# if seg_actif.det(seg_next) > 0:
+	# 	b_center = g.Point(b.x - turn_radius*np.sin((np.pi/2-active_track)),
+	# 					   b.y + turn_radius*np.cos((np.pi/2-active_track)))
+	# 	next_track = get_track(seg_next)
+	# 	b_out = g.Point(b_center.x + turn_radius*np.sin(next_track+np.pi/3),
+	# 					b_center.y + turn_radius*np.cos(next_track+np.pi/3))
+	# else:
+	# 	b_center = g.Point(b.x + turn_radius * np.sin((np.pi / 2 - active_track)),
+	# 					   b.y - turn_radius * np.cos((np.pi / 2 - active_track)))
+	# 	next_track = get_track(seg_next)
+	# 	b_out = g.Point(b_center.x + turn_radius * np.sin(next_track - np.pi / 3),
+	# 					b_center.y + turn_radius * np.cos(next_track - np.pi / 3))
+
+	return (track_change, turn_radius, b_in, b_out, b_center, lead_distance, bank_angle)
 
 def get_track(segment_courant):
 	"""La route est calculee en RAD, entre -pi et pi"""
