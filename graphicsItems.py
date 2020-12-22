@@ -33,7 +33,9 @@ AC_BRUSH = QBrush(QColor("white")) # for the aicraft
 # Coefficient multiplicateur pour les arc. Un cercle complet = 360*16
 SP_ANGLE_COEFF = 16
 
-LARGE_GRAD_LONG = 10
+# COMPASS
+LARGE_GRAD_LONG = 20
+TEXT_SIZE = 10
 
 class QGraphicsArcItem(QtWidgets.QGraphicsEllipseItem):
     """Classe graphique qui affiche un arc de cercle,
@@ -154,21 +156,20 @@ class QGraphicsCompassItem(QtWidgets.QGraphicsEllipseItem):
         # Textes caps
         font = QFont()
         font_metric = QFontMetrics(font)
-        text_size = 10
-        font.setWeight(text_size)
+        font.setWeight(TEXT_SIZE)
         for i in range(12):
             i = i / RAD2DEG * 30
-            a_x = self.centre[0] + np.sin(i) * self.w / 2 + np.sin(i)*(LARGE_GRAD_LONG + 2.3*text_size)
-            a_y = self.centre[1] + np.cos(i) * self.w / 2 + np.cos(i)*(LARGE_GRAD_LONG + 2.3*text_size)
+            a_x = self.centre[0] + np.sin(i) * self.w / 2 + np.sin(i) * (LARGE_GRAD_LONG + 2.3 * TEXT_SIZE)
+            a_y = self.centre[1] + np.cos(i) * self.w / 2 + np.cos(i) * (LARGE_GRAD_LONG + 2.3 * TEXT_SIZE)
             hdg = QtWidgets.QGraphicsTextItem(self.parent)
             hdg.setFont(font)
             hdg.setTransform(self.view.transform())
-            heading = round(i*RAD2DEG/10)
+            heading = round(i * RAD2DEG / 10)
             hdg.setPlainText(str(heading))
-            hdg.setRotation(heading*10)
+            hdg.setRotation(heading * 10)
             hdg.setPos(a_x, a_y)
-            text_width = font_metric.width(str(round(i*RAD2DEG/10)))
-            hdg.moveBy(-np.cos(i)*text_width/1.2, np.sin(i)*text_width/1.2)
+            text_width = font_metric.width(str(round(i * RAD2DEG / 10)))
+            hdg.moveBy(-np.cos(i) * text_width / 1.2, np.sin(i) * text_width / 1.2)
             hdg.setDefaultTextColor(white)
 
     def paint(self, painter=QPainter(), style=None, widget=None):
