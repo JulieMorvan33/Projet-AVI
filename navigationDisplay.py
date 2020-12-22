@@ -134,61 +134,42 @@ class RadarView(QtWidgets.QWidget):
         self.nd_items.setZValue(TRAJ_Z_VALUE)
         self.scene.addItem(self.nd_items)
 
-        transition_type = "fly_over"
+
         for i in range(1, self.simulation.trajFMS.nbr_waypoints - 1):
             a, b, c = self.simulation.trajFMS.get_transition(i)  # récupère les trois WPT de la transition
             seg_actif = g.Segment(a, b)  # segment d'entrée de la transition
             seg_next = g.Segment(b, c)  # segment de sortie de la transition
 
-            ######### TEST ##########
-            # if i%2==0:
-            #     transition_type = "fly_over"
-            # else:
-            #     transition_type = "fly_by"
-            #########################
-
             if (i == 1): # si première transition
-                if transition_type == "fly_by":
-                    transition_list = compute_transition_fly_by(seg_actif, seg_next)
-                elif transition_type == "fly_over":
-                    transition_list = compute_transition_fly_over(seg_actif, seg_next)
+                #if fly_by / fly_over
+                track_change, turn_radius, start_arc, end_arc, centre, lead_distance, bank_angle = compute_transition_fly_over(seg_actif, seg_next)
                 start_segment = a
-                end_segment = transition_list[0].start
+                end_segment = start_arc
             else:
-                temp = transition_list[-1].end
-                if transition_type == "fly_by":
-                    transition_list = compute_transition_fly_by(seg_actif, seg_next)
-                elif transition_type == "fly_over":
-                    transition_list = compute_transition_fly_over(seg_actif, seg_next)
+                temp = end_arc
+                # if fly_by / fly_over
+                track_change, turn_radius, start_arc, end_arc, centre, lead_distance, bank_angle = compute_transition_fly_over(seg_actif, seg_next)
                 start_segment = temp
-                end_segment = transition_list[0].start
+                end_segment = start_arc
 
             # ajout des objets transitions et orthos dans la trajectoire pour envoi sur le bus IVY
-            self.simulation.trajFMS.transitions_list.append(g.Transition(transition_type, GS, transition_list))
-            #self.simulation.trajFMS.bankAnglesList.append(bank_angle) # list de 2 banks pour un fly over ?
-            self.simulation.trajFMS.orthos_list.append(g.Segment(start_segment, end_segment))
+            self.simulation.trajFMS.transitions_list.append(g.Transition(centre, turn_radius, lead_distance))
+            self.simulation.trajFMS.bankAnglesList.append(bank_angle) # list de 2 banks pour un fly over ?
+            self.simulation.trajFMS.orthos_list.append(g.Ortho(start_segment, end_segment))
 
             # track change en degré, turn_radius en Nm, start le point d'entrée de la transition
             # end le point de sortie de la transition, centre le centre de l'arc de cercle
+            det = seg_actif.det(seg_next)
+            if track_change > EPSILON:
+                # Affichage des points de start, end, centre (Bi, B0, Bc) pour chaque transition
+                QGraphicsTransitionPoints(start_arc.x, start_arc.y, self.nd_items)
+                QGraphicsTransitionPoints(end_arc.x, end_arc.y, self.nd_items)
+                QGraphicsTransitionPoints(centre.x, centre.y, self.nd_items)
 
-            if transition_list[0].track_change > EPSILON:
-                for transition in transition_list:
-                    if isinstance(transition, g.Arc):
-                        # Affichage des points de start, end, centre (Bi, B0, Bc) pour chaque transition
-                        QGraphicsTransitionPoints(transition.start.x, transition.start.y, self.nd_items)
-                        QGraphicsTransitionPoints(transition.end.x, transition.end.y, self.nd_items)
-                        QGraphicsTransitionPoints(transition.centre.x, transition.centre.y, self.nd_items)
-
-                        # Affiche l'arc associé à la transition
-                        # print("Paramètres arc :", start, centre, " alpha = ", track_change, " turn radius = ", turn_radius)
-                        item = QGraphicsArcItem(transition.start, transition.centre, transition.track_change,
-                                                transition.turn_radius, transition.sens_virage, self.nd_items)
-                        item.paint()
-                    elif isinstance(transition, g.Segment):
-                        # Affichage segment dans la transition
-                        leg_item_transition_segment = QGraphicsLegsItem(transition.start.x, transition.start.y,
-                                                                        transition.end.x, transition.end.y, self.nd_items)
-                        leg_item_transition_segment.setPen(TRAJ_PEN)
+                # Affiche l'arc associé à la transition
+                # print("Paramètres arc :", start, centre, " alpha = ", track_change, " turn radius = ", turn_radius)
+                item = QGraphicsArcItem(start_arc, centre, track_change, turn_radius, det, self.nd_items)
+                item.paint()
 
             # Affiche le leg
             leg_item = QGraphicsLegsItem(a.x, a.y, b.x, b.y, self.nd_items)
@@ -203,15 +184,15 @@ class RadarView(QtWidgets.QWidget):
         leg_item.setPen(leg_item.pen)
 
         # Affiche la dernière ortho après la dernière transition
-        leg_item_path = QGraphicsLegsItem(transition.end.x, transition.end.y, c.x, c.y, self.nd_items)
+        leg_item_path = QGraphicsLegsItem(end_arc.x, end_arc.y, c.x, c.y, self.nd_items)
         leg_item_path.setPen(TRAJ_PEN)
-        self.simulation.trajFMS.orthos_list.append(g.Segment(transition.end, c)) # ajout de la dernière ortho
+        self.simulation.trajFMS.orthos_list.append(g.Ortho(end_arc, c)) # ajout de la dernière ortho
 
         # Affiche tous les WayPoints
         for point in self.simulation.trajFMS.waypoint_list:
             QGraphicsWayPointsItem(point.x, point.y, self.nd_items)
 
-        #rosace = QGraphicsCompassItem(WIDTH/2, WIDTH/2, WIDTH/3, self.nd_items)
+        rosace = QGraphicsCompassItem(WIDTH/2, WIDTH/2, WIDTH/3, self.nd_items, self.view)
 
     def fit_scene_in_view(self):
         self.view.fitInView(self.view.sceneRect(), QtCore.Qt.KeepAspectRatio)
