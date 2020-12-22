@@ -1,5 +1,5 @@
 from PyQt5 import QtWidgets, QtCore
-from ivy.std_api import *
+#from ivy.std_api import *
 import navigationDisplay
 import communication
 import ndWindowParameters

@@ -1,7 +1,7 @@
 from geometry import *
 from PyQt5.QtCore import pyqtSignal, QObject
 import time
-from ivy.std_api import *
+#from ivy.std_api import *
 
 DP = 20 # nb de positions à faire à l'avion sur chaque leg
 
@@ -94,12 +94,23 @@ class Simulation(QObject):
         self.update_display_signal.emit()
 
     def create_waypoints_without_Ivy(self):
-        self.trajFMS.add_waypoint(Point(0, 0))
-        self.trajFMS.add_waypoint(Point(20, 100))
-        self.trajFMS.add_waypoint(Point(100, 60))
-        self.trajFMS.add_waypoint(Point(125, 90))
-        self.trajFMS.add_waypoint(Point(200, 150))
+        self.trajFMS.add_waypoint(Point(180, 220))
         self.trajFMS.add_waypoint(Point(100, 180))
+        self.trajFMS.add_waypoint(Point(200, 150))
+        self.trajFMS.add_waypoint(Point(110, -30))
+        self.trajFMS.add_waypoint(Point(100, 60))
+        self.trajFMS.add_waypoint(Point(20, 100))
+        self.trajFMS.add_waypoint(Point(0, 0))
+        self.trajFMS.add_waypoint(Point(-60, 0))
+        self.trajFMS.add_waypoint(Point(-160, -130))
+
+        # self.trajFMS.add_waypoint(Point(0, 0))
+        # self.trajFMS.add_waypoint(Point(20, 100))
+        # self.trajFMS.add_waypoint(Point(100, 60))
+        # self.trajFMS.add_waypoint(Point(110, -30))
+        # self.trajFMS.add_waypoint(Point(200, 150))
+        # self.trajFMS.add_waypoint(Point(100, 180))
+        # self.trajFMS.add_waypoint(Point(180, 220))
 
     #### Trajectoire envoyée à SEQ ##############
     def traj_To_SEQ(self):

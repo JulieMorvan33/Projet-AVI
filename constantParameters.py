@@ -9,7 +9,7 @@ RAD2DEG = 180/PI
 # Flight parameters
 CRZ_ALT = 10000 # en feet
 ALTITUDE = 100 #FL
-GS = 500*KT2MS #m.s^-1
+GS = 600*KT2MS #m.s^-1
 CAS = 800 # en km/h ? en Nm/h ?
 MACH = 0.78
 WIND = '110020' # 3 premiers chiffres : direction / trois derniers : vitesse (kts)
@@ -17,3 +17,4 @@ WIND = '110020' # 3 premiers chiffres : direction / trois derniers : vitesse (kt
 # Window constants
 WIDTH = 800  # Initial window width (pixels)
 HEIGHT = 350  # Initial window height (pixels)
+

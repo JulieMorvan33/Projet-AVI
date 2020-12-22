@@ -8,6 +8,11 @@ B = 6356752.3142  # Demi petit axe de l'ellipsoide de reference WGS-84 (m)
 F = (A - B) / A  # Aplatissement
 E = (F * (2 - F)) ** 0.5  # Excentricite de l'ellipsoide WGS-84
 
+
+def det(a, b):
+    return a[0] * b[1] - a[1] * b[0]
+
+
 class Point(object):
     """Nm coordinates, with attributes x, y: int"""
 
@@ -49,6 +54,9 @@ class Point(object):
     def multiplie(self, scalaire):
         """multiplie les coordonnees du point par un scalaire"""
         return Point(self.x * scalaire, self.y * scalaire)
+
+    def det(self, other):
+        return self.x*other.y - self.y*other.x
 
     def milieu(self, other):
         """trouve le milieu de deux points et renvoie ce nouveau point"""
@@ -101,20 +109,40 @@ class Segment(object):
     def det(self,other):
         return self.affix()[0]*other.affix()[1] - self.affix()[1]*other.affix()[0]
 
-class Ortho(Segment): #ça dégage
-    """Définit une classe qui hérite de Segment mais qui correspond à la portion
-    de segment comprise dans la trajectoire de référence"""
-    def __init__(self, start, end):
-        super().__init__(start, end)
+    def intersection(self,other):
+        xdiff = (self.start.x - self.end.x, other.start.x - other.end.x)
+        ydiff = (self.start.y - self.end.y, other.start.y - other.end.y)
+
+
+
+        div = det(xdiff,ydiff)
+        if div == 0:
+            raise Exception('lines do not intersect')
+
+        d = (self.start.det(self.end), other.start.det(other.end))
+        x = det(d, xdiff) / div
+        y = det(d, ydiff) / div
+        return Point(x, y)
+
+
+class Arc(object):
+    def __init__(self, centre, start, end, turn_radius, lead_distance, bank_angle, track_change, sens_virage):
+        self.centre = centre
         self.start = start
         self.end = end
+        self.turn_radius = turn_radius
+        self.lead_distance = lead_distance
+        self.bank_angle = bank_angle
+        self.track_change = track_change
+        self.sens_virage = sens_virage # >0 à gauche
 
 class Transition(object):
-    def __init__(self, centre, turnRadius, leadDistance):
-        #self.type
-        #self.liste objets arcs et segments -> objet arc : center, lead, turn_r, (bi, bo?); segment : les 2 points
-        self.centre = centre
-        self.turn_radius, self.lead_distance = turnRadius, leadDistance
+    def __init__(self, type, speed, list_items):
+        self.type = type
+        self.speed = speed
+        self.list_items = list_items
+        #self.centre = centre
+        #self.turn_radius, self.lead_distance = turnRadius, leadDistance
 
 class Trajectoire_brute(object):
     def __init__(self):
