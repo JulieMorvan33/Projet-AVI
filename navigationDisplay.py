@@ -184,12 +184,11 @@ class RadarView(QtWidgets.QWidget):
                         item = QGraphicsArcItem(transition.start, transition.centre, transition.track_change,
                                                 transition.turn_radius, transition.sens_virage, self.nd_items)
                         item.paint()
-
-            elif isinstance(transition, g.Segment):
-                # Affichage segment dans la transition
-                leg_item_transition_segment = QGraphicsLegsItem(transition.start.x, transition.start.y,
-                                                                transition.end.x, transition.end.y, self.nd_items)
-                leg_item_transition_segment.setPen(TRAJ_PEN)
+                    elif isinstance(transition, g.Segment):
+                        # Affichage segment dans la transition
+                        leg_item_transition_segment = QGraphicsLegsItem(transition.start.x, transition.start.y,
+                                                                        transition.end.x, transition.end.y, self.nd_items)
+                        leg_item_transition_segment.setPen(TRAJ_PEN)
 
             # Affiche le leg
             leg_item = QGraphicsLegsItem(a.x, a.y, b.x, b.y, self.nd_items)
