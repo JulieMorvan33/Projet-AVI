@@ -1,5 +1,5 @@
 from PyQt5 import QtWidgets
-from PyQt5.QtGui import QPainter, QColor, QPen, QBrush, QTransform, QFont
+from PyQt5.QtGui import QPainter, QColor, QPen, QBrush, QTransform, QFont, QFontMetrics
 from PyQt5.QtCore import Qt
 import numpy as np
 import geometry
@@ -144,19 +144,32 @@ class AircraftItem(QtWidgets.QGraphicsItemGroup):
 
 
 class QGraphicsCompassItem(QtWidgets.QGraphicsEllipseItem):
-    def __init__(self, x, y, width, parent):
+    def __init__(self, x, y, width, parent, view):
         self.x, self.y, self.w = x, y, width
         self.centre = (self.x + self.w/2, self.y + self.w/2)
         super().__init__(self.x, self.y, self.w, self.w, parent)
-        """
+        self.view = view
+        self.parent = parent
+
+        # Textes caps
         font = QFont()
-        font.setWeight(10)
-        name = QtWidgets.QGraphicsTextItem(parent)
-        name.setFont(font)
-        name.setPlainText("Navigation Display")
-        #name.setRotation(360)
-        name.setDefaultTextColor(white)
-        """
+        font_metric = QFontMetrics(font)
+        text_size = 10
+        font.setWeight(text_size)
+        for i in range(12):
+            i = i / RAD2DEG * 30
+            a_x = self.centre[0] + np.sin(i) * self.w / 2 + np.sin(i)*(LARGE_GRAD_LONG + 2.3*text_size)
+            a_y = self.centre[1] + np.cos(i) * self.w / 2 + np.cos(i)*(LARGE_GRAD_LONG + 2.3*text_size)
+            hdg = QtWidgets.QGraphicsTextItem(self.parent)
+            hdg.setFont(font)
+            hdg.setTransform(self.view.transform())
+            heading = round(i*RAD2DEG/10)
+            hdg.setPlainText(str(heading))
+            hdg.setRotation(heading*10)
+            hdg.setPos(a_x, a_y)
+            text_width = font_metric.width(str(round(i*RAD2DEG/10)))
+            hdg.moveBy(-np.cos(i)*text_width/1.2, np.sin(i)*text_width/1.2)
+            hdg.setDefaultTextColor(white)
 
     def paint(self, painter=QPainter(), style=None, widget=None):
         painter.setPen(COMPASS_PEN)
@@ -180,5 +193,7 @@ class QGraphicsCompassItem(QtWidgets.QGraphicsEllipseItem):
             painter.drawLine(a_x, a_y, b_x, b_y)
 
         painter.drawEllipse(self.x, self.y, self.w, self.w)
+
+
 
 
