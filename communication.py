@@ -14,7 +14,7 @@ class Simulation(QObject):
         self.USE_IVY = USE_IVY
         self.SIMU_DELAY = SIMU_DELAY
         self.time = init_time
-        self.trajFMS = Trajectoire_brute()
+        self.trajFMS = RefLatPath()
         self.AC_X, self.AC_Y, self.AC_GS = 0, 0, 0  # initialisation des paramètre de l'avion
         if not(self.USE_IVY): # pour une simulation sans bus Ivy
             self.create_AC_positions() # pour les positions avion
@@ -72,7 +72,7 @@ class Simulation(QObject):
         self.create_WayPoints()
 
     def create_WayPoints(self):
-        self.trajFMS = Trajectoire_brute() # on écrase les données de waypoints
+        self.trajFMS = RefLatPath() # on écrase les données de waypoints
         # on pourrait faire mieux en ne rajoutant que les waypoints en plus
         for ind, leg in enumerate(self.ListeFromLegs):
             lat, long = leg[2][1:], leg[3][1:]

@@ -183,9 +183,8 @@ class RadarView(QtWidgets.QWidget):
                 end_segment = transition_list[0].start
 
             # ajout des objets transitions et orthos dans la trajectoire pour envoi sur le bus IVY
-            self.simulation.trajFMS.transitions_list.append(g.Transition(transition_type, GS, transition_list))
+            self.simulation.trajFMS.add_path(g.Segment(start_segment, end_segment), g.Transition(transition_type, GS, transition_list))
             #self.simulation.trajFMS.bankAnglesList.append(bank_angle) # list de 2 banks pour un fly over ?
-            self.simulation.trajFMS.orthos_list.append(g.Segment(start_segment, end_segment))
 
             # track change en degré, turn_radius en Nm, start le point d'entrée de la transition
             # end le point de sortie de la transition, centre le centre de l'arc de cercle
@@ -224,7 +223,7 @@ class RadarView(QtWidgets.QWidget):
         # Affiche la dernière ortho après la dernière transition
         leg_item_path = QGraphicsLegsItem(transition.end.x, transition.end.y, c.x, c.y, self.nd_items)
         leg_item_path.setPen(TRAJ_PEN)
-        self.simulation.trajFMS.orthos_list.append(g.Segment(transition.end, c)) # ajout de la dernière ortho
+        self.simulation.trajFMS.add_path(g.Segment(transition.end, c), None) # ajout de la dernière ortho, None pour la dernière transition
 
         # Affiche tous les WayPoints
         for point in self.simulation.trajFMS.waypoint_list:
