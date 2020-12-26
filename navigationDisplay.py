@@ -233,12 +233,11 @@ class RadarView(QtWidgets.QWidget):
         self.view.fitInView(self.view.sceneRect(), QtCore.Qt.KeepAspectRatio)
 
     def update_ND_items(self):
-        print("UPDATING ITEMS...")
+        #print("UPDATING ITEMS...")
         self.scene.removeItem(self.nd_items)
         self.add_ND_items()
         self.fit_scene_in_view()
-        time.sleep(0.5)
-        self.simulation.send_trajectory() # émission du signal pour envoyer la trajectoire réactualisée au groupe SEQ
+        #self.simulation.send_trajectory() # émission du signal pour envoyer la trajectoire réactualisée au groupe SEQ
 
     @QtCore.pyqtSlot()
     def advance(self):

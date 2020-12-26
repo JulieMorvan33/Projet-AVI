@@ -94,6 +94,8 @@ class Simulation(QObject):
         self.update_display_signal.emit()
 
     def create_waypoints_without_Ivy(self):
+
+
         self.trajFMS.add_waypoint(Point(180, 220))
         self.trajFMS.add_waypoint(Point(100, 180))
         self.trajFMS.add_waypoint(Point(200, 150))
@@ -134,37 +136,41 @@ class Simulation(QObject):
             ListSegmentsMessage += "Segment(Liste_Points[" + str(ind) + "], Liste_Points[" + str(ind+1) + "]),"
         mes.append(ListSegmentsMessage[:-1] + "]")
 
-        ### Transitions
-        ListTransitionsMessage = "GT_TRAJ Liste_Transitions=["
-        for trans in self.trajFMS.transitions_list:
-            ListTransitionsMessage += "Transition(Point(" + str(trans.centre.x) + ", " + str(trans.centre.y) + "), "
-            ListTransitionsMessage += str(trans.turn_radius) + ", " + str(trans.lead_distance) + "), "
-        mes.append(ListTransitionsMessage[:-2] + "]")
 
-        ### Orthos
+        #ListTransitionsMessage = "GT_TRAJ Liste_Transitions=["
         ListOrthosMessage = "GT_TRAJ Liste_Orthos=["
-        for ortho in self.trajFMS.orthos_list:
+        for path in self.trajFMS.listePaths:
+            ortho, trans = path.segment, path.transition
+
+            ### Transitions  A REVOIR CAR trans.centre n'existe plus
+            #ListTransitionsMessage += "Transition(Point(" + str(trans.centre.x) + ", " + str(trans.centre.y) + "), "
+            #ListTransitionsMessage += str(trans.turn_radius) + ", " + str(trans.lead_distance) + "), "
+
+            ### Orthos
             s, e = ortho.start, ortho.end
             ListOrthosMessage += "Ortho(Point(" + str(s.x) + ", " + str(s.y) + "), "
             ListOrthosMessage += "Point(" + str(e.x) + ", " + str(e.y) + ")), "
+
+        #mes.append(ListTransitionsMessage[:-2] + "]")
         mes.append(ListOrthosMessage[:-2] + "]")
 
         #Paths
         ListPathMessage = "GT_TRAJ Liste_Paths=["
-        for ind in range(len(self.trajFMS.orthos_list)):
-            if ind==len(self.trajFMS.orthos_list)-1:
+        for ind in range(len(self.trajFMS.listePaths)):
+            if ind==len(self.trajFMS.listePaths)-1:
                 ListPathMessage += "Path(Liste_Orthos[" + str(ind) + "], Transition(None, None, None))]"
             else:
                 ListPathMessage += "Path(Liste_Orthos[" + str(ind) + "], Liste_Transitions[" + str(ind) + "]), "
         mes.append(ListPathMessage)
 
         ### Bank angles
+        """
         ListBankAnglesMessage = "GT_TRAJ Liste_BankAngles=["
         for bk_angle in self.trajFMS.bankAnglesList:
             ListBankAnglesMessage += str(bk_angle) + ", "
             
-
         mes.append(ListBankAnglesMessage[:-2] + "]")
+        """
 
         return mes
 
@@ -174,7 +180,7 @@ class Simulation(QObject):
         print('messageToSEQ : ', traj_message )
         IvySendMsg(traj_message[0])  # envoi de l'aéroport de départ (LAT/LONG) et de la liste des points
         IvySendMsg(traj_message[1])  # envoi de la liste des segments
-        IvySendMsg(traj_message[2])  # envoi de la liste des transitions
+        #IvySendMsg(traj_message[2])  # envoi de la liste des transitions
         IvySendMsg(traj_message[3])  # envoi de la liste des orthos
         IvySendMsg(traj_message[4])  # envoie de la liste des paths
         IvySendMsg(traj_message[5])  # envoie la liste des Bank Angles
