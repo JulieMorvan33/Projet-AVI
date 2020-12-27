@@ -197,6 +197,7 @@ class RadarView(QtWidgets.QWidget):
                         QGraphicsTransitionPoints(transition.end.x, transition.end.y, self.nd_items)
                         QGraphicsTransitionPoints(transition.centre.x, transition.centre.y, self.nd_items)
 
+
                         # Affiche l'arc associé à la transition
                         # print("Paramètres arc :", start, centre, " alpha = ", track_change, " turn radius = ", turn_radius)
                         item = QGraphicsArcItem(transition.start, transition.centre, transition.track_change,
