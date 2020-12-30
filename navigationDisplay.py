@@ -63,7 +63,6 @@ class ParamView(QtWidgets.QWidget):
         name.setDefaultTextColor(color)
 
         # Ajout de la ground speed
-
         textitem = QtWidgets.QGraphicsTextItem(self.items)
         textitem.setFont(font)
         textitem.setPlainText("GS")
