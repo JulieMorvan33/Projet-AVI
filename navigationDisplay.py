@@ -155,7 +155,7 @@ class ItemsMotionManager:
 
     def update_items(self):
         """Update moving items"""
-        if notself.sim.USE_IVY:  # if Ivy Bus isn't used
+        if not self.sim.USE_IVY:  # if Ivy Bus isn't used
             pos = self.sim.listeACpositions[int(self.sim.time/self.sim.SIMU_DELAY)]
             self.aircraft.update_position(pos.x, pos.y)
             time.sleep(self.sim.SIMU_DELAY)
