@@ -151,14 +151,16 @@ class AircraftItem(QtWidgets.QGraphicsItemGroup):
         image = QtGui.QImage('plane4.png')
         self.pixmap = QtGui.QPixmap.fromImage(image)
         self.item = QtWidgets.QGraphicsPixmapItem(QtGui.QPixmap.fromImage(image))
+        self.item.setScale(PRECISION_FACTOR)
         self.item2.setBrush(AC_BRUSH)
         self.addToGroup(self.item2)
         self.addToGroup(self.item)
 
     def update_position(self, x, y):
          #self.item2.setPos(x, y)
+         x, y = resize(x), resize(y)
          self.item.setPos(x-51/2, y-51/2)
-         self.item2.setRect(x - AC_WIDTH / 2, y - AC_WIDTH / 2, AC_WIDTH, AC_WIDTH)
+         #self.item2.setRect(x - AC_WIDTH / 2, y - AC_WIDTH / 2, resize(AC_WIDTH), resize(AC_WIDTH))
 
 
 class QGraphicsCompassItem(QtWidgets.QGraphicsEllipseItem):
