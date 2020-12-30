@@ -10,6 +10,7 @@ from transitions import *
 from constantParameters import WIDTH, HEIGHT
 import time
 from predictions import *
+from communication import *
 
 TRAJ_Z_VALUE = 0  # display trajectory items UNDER moving items
 
@@ -39,6 +40,7 @@ class PanZoomView(QtWidgets.QGraphicsView):
         self.setTransformationAnchor(self.AnchorUnderMouse)
         super().scale(factor, factor)
 
+
 class ParamView(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
@@ -53,41 +55,71 @@ class ParamView(QtWidgets.QWidget):
         self.items = QtWidgets.QGraphicsItemGroup()
         self.scene.addItem(self.items)
         font = QtGui.QFont()
-        color = QColor(255, 255, 0)  # jaune
+        font.setWeight(20)
         color2 = QColor(255, 255, 255)  # blanc
         color3 = QColor(0, 255, 0)  # vert
+        color4 = QColor(0, 200, 255)  # bleu
         font.setWeight(10)  # epaisseur du texte
-        name = QtWidgets.QGraphicsTextItem(self.items)
-        name.setFont(font)
-        name.setPlainText("Navigation Display")  # ici a afficher les parametres
-        name.setDefaultTextColor(color)
 
         # Ajout de la ground speed
         textitem = QtWidgets.QGraphicsTextItem(self.items)
         textitem.setFont(font)
         textitem.setPlainText("GS")
-        textitem.setPos(-670,-50)
+        textitem.setPos(-670, -55)
         textitem.setDefaultTextColor(color2)
 
         textitem = QtWidgets.QGraphicsTextItem(self.items)
         textitem.setFont(font)
         textitem.setPlainText(str(SpeedEquations().GS))
-        textitem.setPos(-640,-50)
+        textitem.setPos(-640, -55)
         textitem.setDefaultTextColor(color3)
 
         # Ajout de la TAS
         textitem = QtWidgets.QGraphicsTextItem(self.items)
         textitem.setFont(font)
         textitem.setPlainText("TAS")
-        textitem.setPos(-500,-50)
+        textitem.setPos(-500, -55)
         textitem.setDefaultTextColor(color2)
 
         textitem = QtWidgets.QGraphicsTextItem(self.items)
         textitem.setFont(font)
         textitem.setPlainText(str(SpeedEquations().TAS))
-        textitem.setPos(-460,-50)
+        textitem.setPos(-460, -55)
         textitem.setDefaultTextColor(color3)
 
+        # Ajout du next Waypoint
+        textitem = QtWidgets.QGraphicsTextItem(self.items)
+        textitem.setFont(font)
+        textitem.setPlainText("NEXT_WPT")
+        textitem.setPos(-100, -55)
+        textitem.setDefaultTextColor(color2)
+
+        # Ajout du next heading Waypoint
+        textitem = QtWidgets.QGraphicsTextItem(self.items)
+        textitem.setFont(font)
+        textitem.setPlainText("HDG")
+        textitem.setPos(50, -55)
+        textitem.setDefaultTextColor(color3)
+
+        # Ajout du DTWPT
+        textitem = QtWidgets.QGraphicsTextItem(self.items)
+        textitem.setFont(font)
+        textitem.setPlainText("NM")
+        textitem.setPos(70, -30)
+        textitem.setDefaultTextColor(color4)
+
+        textitem = QtWidgets.QGraphicsTextItem(self.items)
+        textitem.setFont(font)
+        textitem.setPlainText("DTWPT")
+        textitem.setPos(0, -30)
+        textitem.setDefaultTextColor(color3)
+
+        # Ajout du temps
+        textitem = QtWidgets.QGraphicsTextItem(self.items)
+        textitem.setFont(font)
+        textitem.setPlainText("TEMPS")
+        textitem.setPos(20, -5)
+        textitem.setDefaultTextColor(color4)
 
 class CompassView(QtWidgets.QWidget):
     def __init__(self):
@@ -95,6 +127,7 @@ class CompassView(QtWidgets.QWidget):
         self.scene = QtWidgets.QGraphicsScene()
         self.view = QtWidgets.QGraphicsView(self.scene)
         self.view.fitInView(self.view.sceneRect(), QtCore.Qt.KeepAspectRatio)
+
 
         # invert y axis for the view
         self.view.scale(1, -1)
