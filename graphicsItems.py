@@ -3,6 +3,7 @@ from PyQt5.QtGui import QPainter, QColor, QPen, QBrush, QTransform, QFont, QFont
 from PyQt5.QtCore import Qt
 from PyQt5 import QtGui
 
+import communication
 import numpy as np
 import geometry
 from constantParameters import *
@@ -23,9 +24,15 @@ white = QColor(255, 255, 255)
 
 # Pens
 P_PEN = QPen(Qt.transparent)
+P_PEN.setCosmetic(True)
 TRAJ_PEN = QPen(QColor(0, 255, 0),ASW*2)
+TRAJ_PEN.setCosmetic(True)
 LEG_PEN = QPen(QColor("lightgrey"), ASW)
+LEG_PEN.setCosmetic(True)
 COMPASS_PEN = QPen(white,ASW*2)
+COMPASS_PEN.setCosmetic(True)
+AC_PEN = QPen(QColor(255, 255, 0))
+AC_PEN.setCosmetic(True)
 
 # Brushes
 TP_BRUSH = QBrush(QColor("grey"))
@@ -74,7 +81,6 @@ class QGraphicsArcItem(QtWidgets.QGraphicsEllipseItem):
         self.y = centre.y - turnRadius - ASW
 
 
-
 class QGraphicsWayPointsItem(QtWidgets.QGraphicsRectItem):
     """Affichage des Way Points"""
     def __init__(self, x, y, parent):
@@ -100,6 +106,7 @@ class QGraphicsWayPointsItem(QtWidgets.QGraphicsRectItem):
 
         painter.restore()
 
+
 class QGraphicsTransitionPoints(QtWidgets.QGraphicsRectItem):
     def __init__(self, x, y, parent):
         super().__init__(x, y, TP_WIDTH, TP_WIDTH, parent)
@@ -109,7 +116,6 @@ class QGraphicsTransitionPoints(QtWidgets.QGraphicsRectItem):
     def paint(self, painter, style=None, widget=None):
         painter.setPen(P_PEN)
         painter.setBrush(TP_BRUSH)
-
         # copie la transformation due au zoom
         t = painter.transform()
         m11, m22 = t.m11(), t.m22()
@@ -137,24 +143,25 @@ class AircraftItem(QtWidgets.QGraphicsItemGroup):
     def __init__(self):
         """AircraftItem constructor, creates the ellipse and adds to the scene"""
         super().__init__(None)
-        #self.item = QtWidgets.QGraphicsEllipseItem()
+        self.item2 = QtWidgets.QGraphicsEllipseItem()
         image = QtGui.QImage('plane4.png')
         self.pixmap = QtGui.QPixmap.fromImage(image)
         self.item = QtWidgets.QGraphicsPixmapItem(QtGui.QPixmap.fromImage(image))
-        #self.item.setBrush(AC_BRUSH)
-
+        self.item2.setBrush(AC_BRUSH)
+        self.addToGroup(self.item2)
         self.addToGroup(self.item)
 
     def update_position(self, x, y):
-         self.item.setPos(x, y)
-    #    self.item.setRect(x - AC_WIDTH / 2, y - AC_WIDTH / 2, AC_WIDTH, AC_WIDTH)
-
+         #self.item2.setPos(x, y)
+         self.item.setPos(x-51/2, y-51/2)
+         self.item2.setRect(x - AC_WIDTH / 2, y - AC_WIDTH / 2, AC_WIDTH, AC_WIDTH)
 
 
 class QGraphicsCompassItem(QtWidgets.QGraphicsEllipseItem):
     def __init__(self, x, y, width, parent, view):
         self.x, self.y, self.w = x, y, width
         self.centre = (self.x + self.w/2, self.y + self.w/2)
+        # self.centre = (AircraftItem().item2.x(), AircraftItem().item2.y())
         super().__init__(self.x, self.y, self.w, self.w, parent)
         self.view = view
         self.parent = parent

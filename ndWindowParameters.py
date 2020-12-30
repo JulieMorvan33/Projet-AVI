@@ -47,7 +47,6 @@ class Ui_MainWindow(object):
         self.stackedLayout.insertWidget(0, self.graphicsView_3)
         self.graphicsView_3.setRenderHint(QtGui.QPainter.Antialiasing) # enable anti-aliasing
 
-
         # QGraphicsView pour la visualisation de la trajectoire
         self.graphicsView_2.setGeometry(QtCore.QRect(0, 0, 811, 701))
         self.graphicsView_2.setObjectName("graphicsView_2")
@@ -60,12 +59,13 @@ class Ui_MainWindow(object):
         MainWindow.setCentralWidget(self.centralwidget)
 
         self.retranslateUi(MainWindow)
-        #self.stackedLayout.setCurrentIndex(1)
+        # self.stackedLayout.setCurrentIndex(1)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
+
 
 class mywindow(QtWidgets.QMainWindow):
     def __init__(self, param_view, view, compass_view):

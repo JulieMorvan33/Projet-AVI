@@ -121,13 +121,13 @@ class ParamView(QtWidgets.QWidget):
         textitem.setPos(20, -5)
         textitem.setDefaultTextColor(color4)
 
+
 class CompassView(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
         self.scene = QtWidgets.QGraphicsScene()
         self.view = QtWidgets.QGraphicsView(self.scene)
         self.view.fitInView(self.view.sceneRect(), QtCore.Qt.KeepAspectRatio)
-
 
         # invert y axis for the view
         self.view.scale(1, -1)
@@ -139,27 +139,30 @@ class CompassView(QtWidgets.QWidget):
         self.items = QtWidgets.QGraphicsItemGroup()
         self.scene.addItem(self.items)
         self.compass = QGraphicsCompassItem(WIDTH, WIDTH, WIDTH*0.7, self.items, self.view)
+        self.aircraft = AircraftItem()
 
-class ItemsMotionManager():
+
+class ItemsMotionManager:
     """Collection of moving items and their motion management"""
     def __init__(self, radar):
         self.rad = radar
         self.sim = self.rad.simulation
         self.aircraft = AircraftItem()
-        self.aircraft.update_position(0,0)
-        self.aircraft.setZValue(1) #PLOT_Z_VALUE = 1 # display moving items OVER trajectory items
+        self.aircraft.update_position(0, 0)
+        self.aircraft.setZValue(1)  # PLOT_Z_VALUE = 1 # display moving items OVER trajectory items
         radar.scene.addItem(self.aircraft)
         self.sim.update_signal.connect(self.update_items) # listen update signal on simulation
 
     def update_items(self):
         """Update moving items"""
-        if not(self.sim.USE_IVY): # if Ivy Bus isn't used
+        if notself.sim.USE_IVY:  # if Ivy Bus isn't used
             pos = self.sim.listeACpositions[int(self.sim.time/self.sim.SIMU_DELAY)]
             self.aircraft.update_position(pos.x, pos.y)
             time.sleep(self.sim.SIMU_DELAY)
         else:
             self.aircraft.update_position(self.sim.AC_Y, self.sim.AC_X)
-        #self.rad.scene.setSceneRect(self.sim.AC_X-self.rad.width/2, self.sim.AC_Y-self.rad.height/2, self.rad.width, self.rad.height)
+        # self.rad.scene.setSceneRect(self.sim.AC_X-self.rad.width/2, self.sim.AC_Y-self.rad.height/2, self.rad.width,
+        # self.rad.height)
 
 class RadarView(QtWidgets.QWidget):
     """An interactive view of the items displayed by a ND,
@@ -201,7 +204,7 @@ class RadarView(QtWidgets.QWidget):
         # add components to the root_layout
         root_layout.addWidget(self.view)
 
-        if not (self.simulation.USE_IVY):  # pour une simulation sans bus Ivy
+        if not self.simulation.USE_IVY:  # pour une simulation sans bus Ivy
             # create and setup the timer
             self.timer = QtCore.QTimer(self)
             self.timer.timeout.connect(self.advance)
@@ -246,8 +249,9 @@ class RadarView(QtWidgets.QWidget):
                 end_segment = transition_list[0].start
 
             # ajout des objets transitions et orthos dans la trajectoire pour envoi sur le bus IVY
-            self.simulation.trajFMS.add_path(g.Segment(start_segment, end_segment), g.Transition(transition_type, GS, transition_list))
-            #self.simulation.trajFMS.bankAnglesList.append(bank_angle) # list de 2 banks pour un fly over ?
+            self.simulation.trajFMS.add_path(g.Segment(start_segment, end_segment), g.Transition(transition_type, GS,
+                                                                                                 transition_list))
+            # self.simulation.trajFMS.bankAnglesList.append(bank_angle) # list de 2 banks pour un fly over ?
 
             # track change en degré, turn_radius en Nm, start le point d'entrée de la transition
             # end le point de sortie de la transition, centre le centre de l'arc de cercle
@@ -261,14 +265,16 @@ class RadarView(QtWidgets.QWidget):
                         QGraphicsTransitionPoints(transition.centre.x, transition.centre.y, self.nd_items)
 
                         # Affiche l'arc associé à la transition
-                        # print("Paramètres arc :", start, centre, " alpha = ", track_change, " turn radius = ", turn_radius)
+                        # print("Paramètres arc :", start, centre, " alpha = ", track_change, " turn radius = ", turn_
+                        # adius)
                         item = QGraphicsArcItem(transition.start, transition.centre, transition.track_change,
                                                 transition.turn_radius, transition.sens_virage, self.nd_items)
                         item.paint()
                     elif isinstance(transition, g.Segment):
                         # Affichage segment dans la transition
                         leg_item_transition_segment = QGraphicsLegsItem(transition.start.x, transition.start.y,
-                                                                        transition.end.x, transition.end.y, self.nd_items)
+                                                                        transition.end.x, transition.end.y,
+                                                                        self.nd_items)
                         leg_item_transition_segment.setPen(TRAJ_PEN)
 
             # Affiche le leg
@@ -276,7 +282,8 @@ class RadarView(QtWidgets.QWidget):
             leg_item.setPen(leg_item.pen)
 
             # Affiche l'ortho
-            leg_item_path = QGraphicsLegsItem(start_segment.x, start_segment.y, end_segment.x, end_segment.y, self.nd_items)
+            leg_item_path = QGraphicsLegsItem(start_segment.x, start_segment.y, end_segment.x, end_segment.y,
+                                              self.nd_items)
             leg_item_path.setPen(TRAJ_PEN)
 
         # Affiche le dernier leg après la dernière transition
@@ -286,7 +293,8 @@ class RadarView(QtWidgets.QWidget):
         # Affiche la dernière ortho après la dernière transition
         leg_item_path = QGraphicsLegsItem(transition.end.x, transition.end.y, c.x, c.y, self.nd_items)
         leg_item_path.setPen(TRAJ_PEN)
-        self.simulation.trajFMS.add_path(g.Segment(transition.end, c), None) # ajout de la dernière ortho, None pour la dernière transition
+        self.simulation.trajFMS.add_path(g.Segment(transition.end, c), None)  # ajout de la dernière ortho, None pour
+        # la dernière transition
 
         # Affiche tous les WayPoints
         for point in self.simulation.trajFMS.waypoint_list:
@@ -296,11 +304,11 @@ class RadarView(QtWidgets.QWidget):
         self.view.fitInView(self.view.sceneRect(), QtCore.Qt.KeepAspectRatio)
 
     def update_ND_items(self):
-        #print("UPDATING ITEMS...")
+        # print("UPDATING ITEMS...")
         self.scene.removeItem(self.nd_items)
         self.add_ND_items()
         self.fit_scene_in_view()
-        #self.simulation.send_trajectory() # émission du signal pour envoyer la trajectoire réactualisée au groupe SEQ
+        # self.simulation.send_trajectory() # émission du signal pour envoyer la trajectoire réactualisée au groupe SEQ
 
     @QtCore.pyqtSlot()
     def advance(self):
