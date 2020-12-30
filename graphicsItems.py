@@ -1,6 +1,8 @@
 from PyQt5 import QtWidgets
 from PyQt5.QtGui import QPainter, QColor, QPen, QBrush, QTransform, QFont, QFontMetrics
 from PyQt5.QtCore import Qt
+from PyQt5 import QtGui
+
 import numpy as np
 import geometry
 from constantParameters import *
@@ -21,7 +23,7 @@ white = QColor(255, 255, 255)
 
 # Pens
 P_PEN = QPen(Qt.transparent)
-TRAJ_PEN = QPen(QColor(255, 255, 0),ASW*2)
+TRAJ_PEN = QPen(QColor(0, 255, 0),ASW*2)
 LEG_PEN = QPen(QColor("lightgrey"), ASW)
 COMPASS_PEN = QPen(white,ASW*2)
 
@@ -135,13 +137,17 @@ class AircraftItem(QtWidgets.QGraphicsItemGroup):
     def __init__(self):
         """AircraftItem constructor, creates the ellipse and adds to the scene"""
         super().__init__(None)
-        self.item = QtWidgets.QGraphicsEllipseItem()
-        self.item.setBrush(AC_BRUSH)
+        #self.item = QtWidgets.QGraphicsEllipseItem()
+        image = QtGui.QImage('plane4.png')
+        self.pixmap = QtGui.QPixmap.fromImage(image)
+        self.item = QtWidgets.QGraphicsPixmapItem(QtGui.QPixmap.fromImage(image))
+        #self.item.setBrush(AC_BRUSH)
+
         self.addToGroup(self.item)
 
     def update_position(self, x, y):
-        self.item.setPos(x, y)
-        self.item.setRect(x - AC_WIDTH / 2, y - AC_WIDTH / 2, AC_WIDTH, AC_WIDTH)
+         self.item.setPos(x, y)
+    #    self.item.setRect(x - AC_WIDTH / 2, y - AC_WIDTH / 2, AC_WIDTH, AC_WIDTH)
 
 
 

@@ -146,9 +146,9 @@ class ItemsMotionManager():
         self.rad = radar
         self.sim = self.rad.simulation
         self.aircraft = AircraftItem()
-        #self.aircraft.update_position(0,0)
+        self.aircraft.update_position(0,0)
         self.aircraft.setZValue(1) #PLOT_Z_VALUE = 1 # display moving items OVER trajectory items
-        #radar.scene.addItem(self.aircraft)
+        radar.scene.addItem(self.aircraft)
         self.sim.update_signal.connect(self.update_items) # listen update signal on simulation
 
     def update_items(self):
@@ -196,7 +196,7 @@ class RadarView(QtWidgets.QWidget):
             self.fit_scene_in_view()
 
         # add the moving items
-        #self.moving_items = radarmotion.ItemsMotionManager(self)
+        self.moving_items = ItemsMotionManager(self)
 
         # add components to the root_layout
         root_layout.addWidget(self.view)
