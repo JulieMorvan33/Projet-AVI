@@ -1,6 +1,7 @@
 from geometry import *
 from PyQt5.QtCore import pyqtSignal, QObject
 import time
+from predictions import SpeedPredictionsA320
 #from ivy.std_api import *
 
 DP = 20 # nb de positions à faire à l'avion sur chaque leg
@@ -15,10 +16,37 @@ class Simulation(QObject):
         self.SIMU_DELAY = SIMU_DELAY
         self.time = init_time
         self.trajFMS = RefLatPath()
+        self.mode = None # mode de l'autopilot ("MAN" ou "SEL")
+        self.flightParam = dict() # contient CRZ_ALT, CI et WIND
+        self.SEQParam = dict() # contient XTK, TAE, DTWPT, ALDTWPT
+        self.NextWPTParam = dict() # contient NEXTWPT, COURSE, TTWPT
+        self.speedPred = SpeedPredictionsA320()
         self.AC_X, self.AC_Y, self.AC_GS = 0, 0, 0  # initialisation des paramètre de l'avion
         if not(self.USE_IVY): # pour une simulation sans bus Ivy
             self.create_AC_positions() # pour les positions avion
             self.create_waypoints_without_Ivy() # pour les positions des WayPoints
+
+    def defineFlightParam(self, crz_alt, ci, wind):
+        # Rempli le dictionnaire flightParam
+        # crz_alt en feet, ci entier sans unité, wind chaine de caractère
+        self.flightParam["CRZ_ALT"] = crz_alt
+        self.flightParam["CI"] = ci
+        self.flightParam["WIND"] = wind
+
+    def defineSEQParam(self, xtk, tae, dtwpt, aldtwpt):
+        # Rempli le dictionnaire SEQParam
+        # tae en degrés, xtk, dtwpt et aldtwpt en Nm
+        self.SEQParam["XTK"] = xtk
+        self.SEQParam["TAE"] = tae
+        self.SEQParam["DTWPT"] = dtwpt
+        self.SEQParam["ALDTWPT"] = aldtwpt
+
+    def defineNextWPTParam(self, nextwpt, course, ttwpt):
+        # Rempli le dictionnaire NextWPTParam, correspondant aux données du prochain WPT
+        # nextwpt string, course en degrés, ttwpt en min
+        self.NextWPTParam["NEXTWPT"] = nextwpt
+        self.NextWPTParam["COURSE"] = course
+        self.NextWPTParam["TTWPT"] = ttwpt
 
     def create_AC_positions(self): # pour une simulation sans bus Ivy
         self.listeACpositions = []

@@ -11,7 +11,7 @@ P0 = 1013.25 # pressure in ISA condition in hPa
 T0 = 288 # temperature in ISA condition in K
 RHO_0 = 1.225 # density of air in ISA condition in kg/m^3
 
-class SpeedEquations():
+class SpeedPredictions():
     def __init__(self):
         self.TAS, self.CAS, self.GS = 0, 0, 0 # true/calibrated air speed, ground speed
         self.MMO, self.VMO = 0, 0 # Maximum Mach Number, Maximum Operating Speed
@@ -70,7 +70,7 @@ class SpeedEquations():
         r1, r2 = 2*P0/MU/rho, MU*rho/2/pressure
         self.CAS = int(sqrt(r1*((1 + pressure/P0*((1+r2*self.TAS**2)**(1/MU) -1))**MU -1)))
 
-class SpeedEquationsA320(SpeedEquations):
+class SpeedPredictionsA320(SpeedEquations):
     def __init__(self):
         super().__init__()
         self.MMO = 0.82 # Maximum Mach Number
@@ -88,5 +88,5 @@ class SpeedEquationsA320(SpeedEquations):
         print("CI=100, FL=370, WIND = -20kt", self.computeSpeeds(100, 370, -20))
         print("CI=200, FL=370, WIND = -20kt", self.computeSpeeds(100, 370, -20))
 
-eqs = SpeedEquationsA320()
-eqs.examples()
+pred = SpeedPredictionsA320()
+pred.examples()
