@@ -70,7 +70,7 @@ class SpeedPredictions():
         r1, r2 = 2*P0/MU/rho, MU*rho/2/pressure
         self.CAS = int(sqrt(r1*((1 + pressure/P0*((1+r2*self.TAS**2)**(1/MU) -1))**MU -1)))
 
-class SpeedPredictionsA320(SpeedEquations):
+class SpeedPredictionsA320(SpeedPredictions):
     def __init__(self):
         super().__init__()
         self.MMO = 0.82 # Maximum Mach Number

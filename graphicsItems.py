@@ -25,7 +25,7 @@ white = QColor(255, 255, 255)
 # Pens
 P_PEN = QPen(Qt.transparent)
 P_PEN.setCosmetic(True)
-TRAJ_PEN = QPen(QColor(0, 255, 0),ASW*2)
+TRAJ_PEN = QPen(QColor(0, 255, 0), ASW)
 TRAJ_PEN.setCosmetic(True)
 LEG_PEN = QPen(QColor("lightgrey"), ASW)
 LEG_PEN.setCosmetic(True)
@@ -167,7 +167,6 @@ class QGraphicsCompassItem(QtWidgets.QGraphicsEllipseItem):
     def __init__(self, x, y, width, parent, view):
         self.x, self.y, self.w = x, y, width
         self.centre = (self.x + self.w/2, self.y + self.w/2)
-        # self.centre = (AircraftItem().item2.x(), AircraftItem().item2.y())
         super().__init__(self.x, self.y, self.w, self.w, parent)
         self.view = view
         self.parent = parent
@@ -204,7 +203,7 @@ class QGraphicsCompassItem(QtWidgets.QGraphicsEllipseItem):
             painter.drawLine(a_x, a_y, b_x, b_y)
 
         # Small graduations
-        for i in range(1,72,2):
+        for i in range(1, 72, 2):
             i = i/RAD2DEG*5
             a_x = self.centre[0] + np.sin(i)*self.w/2
             a_y = self.centre[1] + np.cos(i)*self.w/2

@@ -2,6 +2,8 @@ from geometry import *
 from PyQt5.QtCore import pyqtSignal, QObject
 import time
 from predictions import SpeedPredictionsA320
+from predictions import *
+from constantParameters import *
 #from ivy.std_api import *
 
 DP = 20 # nb de positions à faire à l'avion sur chaque leg
@@ -9,6 +11,7 @@ DP = 20 # nb de positions à faire à l'avion sur chaque leg
 class Simulation(QObject):
     update_signal = pyqtSignal() # signal d'update envoyé à radarmotion
     update_display_signal = pyqtSignal()  # signal d'update envoyé à radarview pour l'affichage
+    update_param = pyqtSignal()
 
     def __init__(self, USE_IVY, SIMU_DELAY, init_time=0):
         super(Simulation, self).__init__()
@@ -96,6 +99,7 @@ class Simulation(QObject):
                 course = float(
                     data[4].strip("COURSE="))  # float course du leg angle vers le prochain leg (ex: 110°)
             self.ListeFromLegs.append([id, seq, lat, long, course])
+
         print(self.ListeFromLegs)
         self.create_WayPoints()
 
@@ -141,6 +145,24 @@ class Simulation(QObject):
         # self.trajFMS.add_waypoint(Point(200, 150))
         # self.trajFMS.add_waypoint(Point(100, 180))
         # self.trajFMS.add_waypoint(Point(180, 220))
+
+    def next_wpt_param_without_IVY(self):
+        nextwpt = "ABABI"
+        course = "150"
+        ttwpt = "10:00"
+        self.defineNextWPTParam(nextwpt, course, ttwpt)
+        # self.ListeFromLegs.append(["ABABI", "0", "N40451900", "E018383000", "150"])
+        # return ["ABABI", "0", "N40451900", "E018383000", "150"]
+
+    def seq_param_without_IVY(self):
+        xtk= "15"
+        tae = "0"
+        dtwpt = "150"
+        aldtwpt = "155"
+        self.defineSEQParam(xtk, tae, dtwpt, aldtwpt)
+
+    def wind_without_IVY(self):
+        self.defineFlightParam("400", "1", "162° / 10")
 
     #### Trajectoire envoyée à SEQ ##############
     def traj_To_SEQ(self):
@@ -222,7 +244,11 @@ class Simulation(QObject):
         xtk = int(mes[1].strip("XTK="))
         tae = int(mes[1].strip("TAE="))
         dtwpt = int(mes[1].strip("DTWPT="))
+        aldtwpt = 0
         print("SEQ envoie les paramètres : XTK = ", xtk, " TAE = ", tae, " DTWPT = ", dtwpt)
+        self.defineSEQParam(xtk, tae, dtwpt, aldtwpt)
+        self.update_param.emit()
+
 
     # Réception du leg actif
     #"GS_AL Time=time NumSeqActiveLeg=numseq"
@@ -231,6 +257,26 @@ class Simulation(QObject):
         time = float(mes[0].strip("Time="))
         activeLeg = int(mes[1].strip("NumSeqActiveLeg="))
         print("SEQ envoie le séquencement : time=", time, " active leg = ", activeLeg)
+        #for ind, leg in enumerate(self.ListeFromLegs):
+        #    seq = leg[1][1:]
+        #    if seq == activeLeg:
+        #        nextwpt1 = leg[0][ind]
+        #        course1 = leg[4][ind]
+        #        ttpt1 = self.SEQParam["DTWPT"]*NM2M / (SpeedPredictions().TAS*KT2MS)  # Pour l'instant TAS = 0 donc
+                # division par 0
+        #    break
+
+        ind = 0
+        while activeLeg != self.ListeFromLegs[1][1:]:
+            ind += 1
+        nextwpt = self.ListeFromLegs[0][ind]
+        course = self.ListeFromLegs[4][ind]
+        ttpt = self.SEQParam["DTWPT"] * NM2M / (SpeedPredictions().TAS * KT2MS)  # Pour l'instant TAS = 0 donc
+        # division par 0
+        self.defineNextWPTParam(nextwpt, course, ttpt)
+        self.update_param.emit()
+
+
 
 
 

@@ -25,7 +25,7 @@ if __name__ == "__main__":
     compass = navigationDisplay.CompassView()
 
     # create the parameters view displaying GS, TAS,...
-    param = navigationDisplay.ParamView()
+    param = navigationDisplay.ParamView(sim)
 
     # create the QMainWindow
     win = ndWindowParameters.mywindow(param.view, rad.view, compass.view)
