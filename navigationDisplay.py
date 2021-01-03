@@ -143,15 +143,10 @@ class ParamView(QtWidgets.QWidget):
     def update_SEQ_param_display(self):
         print("nextwpt in nddisplay ", str(self.simulation.NextWPTParam["NEXTWPT"]))
         self.NEXTWPTtextitem.setPlainText(str(self.simulation.NextWPTParam["NEXTWPT"]))
-        print("1")
         self.HDGtextitem.setPlainText(str(self.simulation.NextWPTParam["COURSE"]))
-        print("2")
         self.DTWPTtextitem.setPlainText(str(self.simulation.SEQParam["DTWPT"]))
-        print("3")
         self.TTWPTtextitem.setPlainText(str(self.simulation.NextWPTParam["TTWPT"]))
-        print("4")
         self.WINDtextitem.setPlainText(str(self.simulation.flightParam["WIND"]))
-        print("5")
 
 class CompassView(QtWidgets.QWidget):
     def __init__(self):

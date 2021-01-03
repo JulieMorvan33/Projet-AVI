@@ -4,7 +4,7 @@ import time
 from predictions import SpeedPredictionsA320
 from predictions import *
 from constantParameters import *
-from ivy.std_api import *
+#from ivy.std_api import *
 
 DP = 20 # nb de positions à faire à l'avion sur chaque leg
 
