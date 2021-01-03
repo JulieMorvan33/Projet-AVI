@@ -14,7 +14,7 @@ if __name__ == '__main__':
     IvyStart()
 
     t = time.time()
-    for i in range(100):
+    for i in range(1000):
         dt = time.time() - t
 
         # Toutes les 100 ms
@@ -40,5 +40,7 @@ if __name__ == '__main__':
             actLegMess += str(round(dt, 1)) + " NumSeqActiveLeg=" + str(i//5)
             print(actLegMess)
             IvySendMsg(actLegMess)
+
+        time.sleep(1)
 
     IvyMainLoop()

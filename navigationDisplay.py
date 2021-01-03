@@ -96,84 +96,62 @@ class ParamView(QtWidgets.QWidget):
         textitem.setPos(70, -30)
         textitem.setDefaultTextColor(color4)
 
-        if not self.simulation.USE_IVY:
-            self.simulation.seq_param_without_IVY()
-            self.simulation.next_wpt_param_without_IVY()
-            self.simulation.wind_without_IVY()
+        self.simulation.seq_param_without_IVY()
+        self.simulation.next_wpt_param_without_IVY()
+        self.simulation.wind_without_IVY()
 
         # Ajout du next Waypoint
-            textitem = QtWidgets.QGraphicsTextItem(self.items)
-            textitem.setFont(font)
-            textitem.setPlainText(str(self.simulation.NextWPTParam["NEXTWPT"]))
-            textitem.setPos(-100, -55)
-            textitem.setDefaultTextColor(color2)
+        self.NEXTWPTtextitem = QtWidgets.QGraphicsTextItem(self.items)
+        self.NEXTWPTtextitem.setFont(font)
+        self.NEXTWPTtextitem.setPlainText(str(self.simulation.NextWPTParam["NEXTWPT"]))
+        self.NEXTWPTtextitem.setPos(-100, -55)
+        self.NEXTWPTtextitem.setDefaultTextColor(color2)
 
         # Ajout du next heading Waypoint
-            textitem = QtWidgets.QGraphicsTextItem(self.items)
-            textitem.setFont(font)
-            textitem.setPlainText(str(self.simulation.NextWPTParam["COURSE"]))
+        self.HDGtextitem = QtWidgets.QGraphicsTextItem(self.items)
+        self.HDGtextitem.setFont(font)
+        self.HDGtextitem.setPlainText(str(self.simulation.NextWPTParam["COURSE"]))
 
-            #textitem.setPlainText(str(self.simulation.create_leg_without_Ivy()[4]))
-            textitem.setPos(50, -55)
-            textitem.setDefaultTextColor(color3)
+        # textitem.setPlainText(str(self.simulation.create_leg_without_Ivy()[4]))
+        textitem.setPos(50, -55)
+        textitem.setDefaultTextColor(color3)
 
         # Ajout du DTWPT
-            textitem = QtWidgets.QGraphicsTextItem(self.items)
-            textitem.setFont(font)
-            textitem.setPlainText(str(self.simulation.SEQParam["DTWPT"]))
-            textitem.setPos(0, -30)
-            textitem.setDefaultTextColor(color3)
+        self.DTWPTtextitem = QtWidgets.QGraphicsTextItem(self.items)
+        self.DTWPTtextitem.setFont(font)
+        self.DTWPTtextitem.setPlainText(str(self.simulation.SEQParam["DTWPT"]))
+        self.DTWPTtextitem.setPos(0, -30)
+        self.DTWPTtextitem.setDefaultTextColor(color3)
 
         # Ajout du temps
-            textitem = QtWidgets.QGraphicsTextItem(self.items)
-            textitem.setFont(font)
-            textitem.setPlainText(str(self.simulation.NextWPTParam["TTWPT"]))
-            textitem.setPos(20, -5)
-            textitem.setDefaultTextColor(color4)
+        self.TTWPTtextitem = QtWidgets.QGraphicsTextItem(self.items)
+        self.TTWPTtextitem.setFont(font)
+        self.TTWPTtextitem.setPlainText(str(self.simulation.NextWPTParam["TTWPT"]))
+        self.TTWPTtextitem.setPos(20, -5)
+        self.TTWPTtextitem.setDefaultTextColor(color4)
 
         # Ajout du vent
-            textitem = QtWidgets.QGraphicsTextItem(self.items)
-            textitem.setFont(font)
-            textitem.setPlainText(str(self.simulation.flightParam["WIND"]))
-            textitem.setPos(-670, -30)
-            textitem.setDefaultTextColor(color3)
+        self.WINDtextitem = QtWidgets.QGraphicsTextItem(self.items)
+        self.WINDtextitem.setFont(font)
+        self.WINDtextitem.setPlainText(str(self.simulation.flightParam["WIND"]))
+        self.WINDtextitem.setPos(-670, -30)
+        self.WINDtextitem.setDefaultTextColor(color3)
 
-        else:
-            # Ajout du next Waypoint
-            textitem = QtWidgets.QGraphicsTextItem(self.items)
-            textitem.setFont(font)
-            self.simulation.update_param.connect(textitem.setPlainText(str(self.simulation.NextWPTParam["NEXTWPT"])))
-            textitem.setPos(-100, -55)
-            textitem.setDefaultTextColor(color2)
+        if self.simulation.USE_IVY:
+            self.simulation.update_param.connect(self.update_SEQ_param_display)
 
-            # Ajout du next heading Waypoint
-            textitem = QtWidgets.QGraphicsTextItem(self.items)
-            textitem.setFont(font)
-            self.simulation.update_param.connect(textitem.setPlainText(str(self.simulation.NextWPTParam["COURSE"])))
-            textitem.setPos(50, -55)
-            textitem.setDefaultTextColor(color3)
-
-            # Ajout du DTWPT
-            textitem = QtWidgets.QGraphicsTextItem(self.items)
-            textitem.setFont(font)
-            self.simulation.update_param.connect(textitem.setPlainText(str(self.simulation.NextWPTParam["DTWPT"])))
-            textitem.setPos(0, -30)
-            textitem.setDefaultTextColor(color3)
-
-            # Ajout du temps
-            textitem = QtWidgets.QGraphicsTextItem(self.items)
-            textitem.setFont(font)
-            self.simulation.update_param.connect(textitem.setPlainText(str(self.simulation.NextWPTParam["TTWPT"])))
-            textitem.setPos(20, -5)
-            textitem.setDefaultTextColor(color4)
-
-            # Ajout du vent
-            textitem = QtWidgets.QGraphicsTextItem(self.items)
-            textitem.setFont(font)
-            # A AFFICHER PLUS TARD : le wind qu'on rentre sur l'écran
-            self.simulation.update_param.connect(textitem.setPlainText(str(self.simulation.flightParam["WIND"])))
-            textitem.setPos(670, -30)
-            textitem.setDefaultTextColor(color3)
+    def update_SEQ_param_display(self):
+        print("nextwpt in nddisplay ", str(self.simulation.NextWPTParam["NEXTWPT"]))
+        self.NEXTWPTtextitem.setPlainText(str(self.simulation.NextWPTParam["NEXTWPT"]))
+        print("1")
+        self.HDGtextitem.setPlainText(str(self.simulation.NextWPTParam["COURSE"]))
+        print("2")
+        self.DTWPTtextitem.setPlainText(str(self.simulation.SEQParam["DTWPT"]))
+        print("3")
+        self.TTWPTtextitem.setPlainText(str(self.simulation.NextWPTParam["TTWPT"]))
+        print("4")
+        self.WINDtextitem.setPlainText(str(self.simulation.flightParam["WIND"]))
+        print("5")
 
 class CompassView(QtWidgets.QWidget):
     def __init__(self):

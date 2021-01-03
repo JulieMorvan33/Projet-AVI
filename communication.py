@@ -4,7 +4,7 @@ import time
 from predictions import SpeedPredictionsA320
 from predictions import *
 from constantParameters import *
-#from ivy.std_api import *
+from ivy.std_api import *
 
 DP = 20 # nb de positions à faire à l'avion sur chaque leg
 
@@ -23,11 +23,17 @@ class Simulation(QObject):
         self.flightParam = dict() # contient CRZ_ALT, CI et WIND
         self.SEQParam = dict() # contient XTK, TAE, DTWPT, ALDTWPT
         self.NextWPTParam = dict() # contient NEXTWPT, COURSE, TTWPT
+        self.defineDict()
         self.speedPred = SpeedPredictionsA320()
         self.AC_X, self.AC_Y, self.AC_GS = 0, 0, 0  # initialisation des paramètre de l'avion
         if not(self.USE_IVY): # pour une simulation sans bus Ivy
             self.create_AC_positions() # pour les positions avion
             self.create_waypoints_without_Ivy() # pour les positions des WayPoints
+
+    def defineDict(self):
+        self.defineFlightParam(0, 0, 0)
+        self.defineSEQParam(0, 0, 0, 0)
+        self.defineNextWPTParam(0, 0, 0)
 
     def defineFlightParam(self, crz_alt, ci, wind):
         # Rempli le dictionnaire flightParam
@@ -241,11 +247,11 @@ class Simulation(QObject):
     def receive_SEQ_parameters(self, agent, *data):
         mes = data[0].split(" ")
         time = float(mes[0].strip("Time="))
-        xtk = int(mes[1].strip("XTK="))
-        tae = int(mes[1].strip("TAE="))
-        dtwpt = int(mes[1].strip("DTWPT="))
-        aldtwpt = 0
-        print("SEQ envoie les paramètres : XTK = ", xtk, " TAE = ", tae, " DTWPT = ", dtwpt)
+        xtk = float(mes[1].strip("XTK="))
+        tae = float(mes[2].strip("TAE="))
+        dtwpt = float(mes[3].strip("DTWPT="))
+        aldtwpt = float(mes[4].strip("ALDTWPT="))
+        print("SEQ envoie les paramètres : XTK = ", xtk, " TAE = ", tae, " DTWPT = ", dtwpt, " ALDTWPT = ", aldtwpt)
         self.defineSEQParam(xtk, tae, dtwpt, aldtwpt)
         self.update_param.emit()
 
@@ -257,24 +263,15 @@ class Simulation(QObject):
         time = float(mes[0].strip("Time="))
         activeLeg = int(mes[1].strip("NumSeqActiveLeg="))
         print("SEQ envoie le séquencement : time=", time, " active leg = ", activeLeg)
-        #for ind, leg in enumerate(self.ListeFromLegs):
-        #    seq = leg[1][1:]
-        #    if seq == activeLeg:
-        #        nextwpt1 = leg[0][ind]
-        #        course1 = leg[4][ind]
-        #        ttpt1 = self.SEQParam["DTWPT"]*NM2M / (SpeedPredictions().TAS*KT2MS)  # Pour l'instant TAS = 0 donc
-                # division par 0
-        #    break
 
-        ind = 0
-        while activeLeg != self.ListeFromLegs[1][1:]:
-            ind += 1
-        nextwpt = self.ListeFromLegs[0][ind]
-        course = self.ListeFromLegs[4][ind]
-        ttpt = self.SEQParam["DTWPT"] * NM2M / (SpeedPredictions().TAS * KT2MS)  # Pour l'instant TAS = 0 donc
-        # division par 0
-        self.defineNextWPTParam(nextwpt, course, ttpt)
-        self.update_param.emit()
+        for leg in self.ListeFromLegs:
+            if activeLeg==leg[1]:
+                nextwpt = leg[0]
+                course = leg[4]
+                # ttpt = self.SEQParam["DTWPT"] * NM2M / (SpeedPredictions().TAS * KT2MS)  # Pour l'instant TAS = 0 donc
+
+                self.defineNextWPTParam(nextwpt, course, 0) #, ttpt)
+                self.update_param.emit()
 
 
 

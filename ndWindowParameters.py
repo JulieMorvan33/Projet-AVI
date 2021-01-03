@@ -30,10 +30,10 @@ class Ui_MainWindow(object):
         self.verticalLayout.setObjectName("verticalLayout")
 
         # QGraphicView pour les paramètres de vol (DTWPT...)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Minimum)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         self.graphicsView.setSizePolicy(sizePolicy)
         self.graphicsView.setObjectName("graphicsView")
-        self.graphicsView.setMinimumSize(QtCore.QSize(811, 50))
+        self.graphicsView.setFixedSize(QtCore.QSize(811, 100))
         self.verticalLayout.addWidget(self.graphicsView)
 
         self.stackedLayout = QtWidgets.QStackedLayout(self.verticalLayoutWidget)
