@@ -18,4 +18,3 @@ WIND = '110020' # 3 premiers chiffres : direction / trois derniers : vitesse (kt
 # Window constants
 WIDTH = 800  # Initial window width (pixels)
 HEIGHT = 350  # Initial window height (pixels)
-

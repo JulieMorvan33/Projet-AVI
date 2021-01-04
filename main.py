@@ -21,6 +21,9 @@ if __name__ == "__main__":
     # create the radar view
     rad = navigationDisplay.RadarView(sim)
 
+    ac = navigationDisplay.AircraftView()
+
+
     # create the compass view
     compass = navigationDisplay.CompassView()
 
@@ -28,7 +31,7 @@ if __name__ == "__main__":
     param = navigationDisplay.ParamView(sim)
 
     # create the QMainWindow
-    win = ndWindowParameters.mywindow(param.view, rad.view, compass.view)
+    win = ndWindowParameters.mywindow(param.view, rad.view, compass.view, ac.view)
     win.setWindowTitle("Navigation Display")
     win.show()
 

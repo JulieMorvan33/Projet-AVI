@@ -11,11 +11,13 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 
 
 class Ui_MainWindow(object):
-    def __init__(self, param_view, view, compass_view):
+    def __init__(self, param_view, view, compass_view, aircraft_view):
         super().__init__()
         self.graphicsView = param_view # QGraphicView pour les paramètres de vol (DTWPT...)
         self.graphicsView_2 = view
         self.graphicsView_3 = compass_view
+        self.graphicsView_4 = aircraft_view
+
 
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
@@ -44,16 +46,24 @@ class Ui_MainWindow(object):
         self.graphicsView_3.setGeometry(QtCore.QRect(0, 0, 811, 701))
         self.graphicsView_3.setObjectName("graphicsView_3")
         self.graphicsView_3.setStyleSheet("background:transparent;")
-        self.stackedLayout.insertWidget(0, self.graphicsView_3)
+        self.stackedLayout.insertWidget(1, self.graphicsView_3)
         self.graphicsView_3.setRenderHint(QtGui.QPainter.Antialiasing) # enable anti-aliasing
+
+        # QGraphicsView pour la visualisation de l'avion
+        self.graphicsView_4.setGeometry(QtCore.QRect(0, 0, 811, 701))
+        self.graphicsView_4.setObjectName("graphicsView_4")
+        self.graphicsView_4.setStyleSheet("background:transparent;")
+        self.stackedLayout.insertWidget(2, self.graphicsView_4)
 
         # QGraphicsView pour la visualisation de la trajectoire
         self.graphicsView_2.setGeometry(QtCore.QRect(0, 0, 811, 701))
         self.graphicsView_2.setObjectName("graphicsView_2")
         self.graphicsView_2.setStyleSheet("background:transparent;")
-        self.stackedLayout.insertWidget(1, self.graphicsView_2)
+        self.stackedLayout.insertWidget(3, self.graphicsView_2)
 
-        self.stackedLayout.setCurrentWidget(self.graphicsView_2)
+
+        #self.stackedLayout.setCurrentWidget(self.graphicsView_4)
+
         self.verticalLayout.addLayout(self.stackedLayout)
 
         MainWindow.setCentralWidget(self.centralwidget)
@@ -68,7 +78,7 @@ class Ui_MainWindow(object):
 
 
 class mywindow(QtWidgets.QMainWindow):
-    def __init__(self, param_view, view, compass_view):
+    def __init__(self, param_view, view, compass_view, aircraft_view):
         super(mywindow, self).__init__()
-        self.ui = Ui_MainWindow(param_view, view, compass_view)
+        self.ui = Ui_MainWindow(param_view, view, compass_view, aircraft_view)
         self.ui.setupUi(self)

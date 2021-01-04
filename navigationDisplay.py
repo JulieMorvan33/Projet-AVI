@@ -165,30 +165,9 @@ class CompassView(QtWidgets.QWidget):
         self.items = QtWidgets.QGraphicsItemGroup()
         self.scene.addItem(self.items)
         self.compass = QGraphicsCompassItem(WIDTH, WIDTH, WIDTH*0.7, self.items, self.view)
-        self.aircraft = AircraftItem()
 
 
-class ItemsMotionManager:
-    """Collection of moving items and their motion management"""
-    def __init__(self, radar):
-        self.rad = radar
-        self.sim = self.rad.simulation
-        self.aircraft = AircraftItem()
-        self.aircraft.update_position(0, 0)
-        self.aircraft.setZValue(1)  # PLOT_Z_VALUE = 1 # display moving items OVER trajectory items
-        radar.scene.addItem(self.aircraft)
-        self.sim.update_signal.connect(self.update_items) # listen update signal on simulation
 
-    def update_items(self):
-        """Update moving items"""
-        if not self.sim.USE_IVY:  # if Ivy Bus isn't used
-            pos = self.sim.listeACpositions[int(self.sim.time/self.sim.SIMU_DELAY)]
-            self.aircraft.update_position(pos.x, pos.y)
-            time.sleep(self.sim.SIMU_DELAY)
-        else:
-            self.aircraft.update_position(self.sim.AC_Y, self.sim.AC_X)
-        # self.rad.scene.setSceneRect(self.sim.AC_X-self.rad.width/2, self.sim.AC_Y-self.rad.height/2, self.rad.width,
-        # self.rad.height)
 
 class RadarView(QtWidgets.QWidget):
     """An interactive view of the items displayed by a ND,
@@ -223,9 +202,6 @@ class RadarView(QtWidgets.QWidget):
         if self.simulation.trajFMS.waypoint_list != []:
             self.add_ND_items()
             self.fit_scene_in_view()
-
-        # add the moving items
-        self.moving_items = ItemsMotionManager(self)
 
         # add components to the root_layout
         root_layout.addWidget(self.view)
@@ -342,3 +318,51 @@ class RadarView(QtWidgets.QWidget):
         To be used only if the Ivy bus isn't used"""
         self.simulation.horloge(None, self.simulation.time + self.simulation.SIMU_DELAY)
         self.simulation.update_signal.emit()
+
+class AircraftView(QtWidgets.QWidget):
+    def __init__(self):
+        super().__init__()
+        self.scene = QtWidgets.QGraphicsScene()
+        self.view = QtWidgets.QGraphicsView(self.scene)
+
+        self.view.fitInView(self.view.sceneRect(), QtCore.Qt.KeepAspectRatio)
+
+        # invert y axis for the view
+        self.view.scale(1, -1)
+
+        # modify the scene background
+        #self.scene.setBackgroundBrush(QColor('transparent'))
+
+        self.aircraft = AircraftItem()
+        self.aircraft.update_position(0,0)
+        self.aircraft.setScale(0.01)
+        #image = QtGui.QImage('plane4.png')
+        #self.pixmap = QtGui.QPixmap.fromImage(image)
+        #self.item = QtWidgets.QGraphicsPixmapItem(QtGui.QPixmap.fromImage(image))
+        #self.item.setScale(PRECISION_FACTOR)
+        self.scene.addItem(self.aircraft)
+
+    def update_position(self, x, y):
+         #self.item2.setPos(x, y)
+         x, y = 0, 0
+         #x, y = resize(x), resize(y)
+         #self.item.setPos(x-51/2, y-51/2)
+         #self.item2.setRect(x - AC_WIDTH / 2, y - AC_WIDTH / 2, resize(AC_WIDTH), resize(AC_WIDTH))
+
+    class CompassView(QtWidgets.QWidget):
+        def __init__(self):
+            super().__init__()
+            self.scene = QtWidgets.QGraphicsScene()
+            self.view = QtWidgets.QGraphicsView(self.scene)
+            self.view.fitInView(self.view.sceneRect(), QtCore.Qt.KeepAspectRatio)
+
+            # invert y axis for the view
+            self.view.scale(1, -1)
+
+            # modify the scene background
+            self.scene.setBackgroundBrush(QColor('black'))
+
+            # ajout du compas
+            self.items = QtWidgets.QGraphicsItemGroup()
+            self.scene.addItem(self.items)
+            self.compass = QGraphicsCompassItem(WIDTH, WIDTH, WIDTH * 0.7, self.items, self.view)
