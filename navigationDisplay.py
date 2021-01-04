@@ -188,7 +188,7 @@ class AircraftView(QtWidgets.QWidget):
         self.aircraft.update_position(0,0)
         self.aircraft.setScale(0.01)
         self.scene.addItem(self.aircraft)
-        #self.sim.update_signal.connect(self.update_position) # pour visulaiser le mouvement de l'avion
+        self.sim.update_signal.connect(self.update_position) # pour visulaiser le mouvement de l'avion
 
     def update_position(self):
         if not self.sim.USE_IVY:  # if Ivy Bus isn't used
@@ -265,17 +265,17 @@ class RadarView(QtWidgets.QWidget):
 
             if (i == 1): # si première transition
                 if transition_type == "fly_by":
-                    transition_list = compute_transition_fly_by(seg_actif, seg_next, self.simulation.AC_GS)
+                    transition_list = compute_transition_fly_by(seg_actif, seg_next, self.simulation.speedPred.GS)
                 elif transition_type == "fly_over":
-                    transition_list = compute_transition_fly_over(seg_actif, seg_next, self.simulation.AC_GS)
+                    transition_list = compute_transition_fly_over(seg_actif, seg_next, self.simulation.speedPred.GS)
                 start_segment = a
                 end_segment = transition_list[0].start
             else:
                 temp = transition_list[-1].end
                 if transition_type == "fly_by":
-                    transition_list = compute_transition_fly_by(seg_actif, seg_next, self.simulation.AC_GS)
+                    transition_list = compute_transition_fly_by(seg_actif, seg_next, self.simulation.speedPred.GS)
                 elif transition_type == "fly_over":
-                    transition_list = compute_transition_fly_over(seg_actif, seg_next, self.simulation.AC_GS)
+                    transition_list = compute_transition_fly_over(seg_actif, seg_next, self.simulation.speedPred.GS)
                 start_segment = temp
                 end_segment = transition_list[0].start
 

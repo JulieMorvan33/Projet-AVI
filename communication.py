@@ -30,8 +30,9 @@ class Simulation(QObject):
         self.defineSpeedsPrediction(CI, FL, WIND)
         self.AC_X, self.AC_Y, self.AC_HDG, self.AC_TAS, self.AC_GS = 0, 0, 0, 0, 0  # initialisation des paramètre de l'avion
         if not(self.USE_IVY): # pour une simulation sans bus Ivy
-            self.create_AC_state_without_Ivy() # pour les positions avion
+            self.create_AC_positions() # pour les positions avion
             self.create_waypoints_without_Ivy() # pour les positions des WayPoints
+            self.create_AC_state_without_Ivy()
 
     def defineDict(self):
         self.defineFlightParam(0, 0, 0)
@@ -75,17 +76,21 @@ class Simulation(QObject):
         print("SIMU, X=", self.AC_X, " Y=", self.AC_Y, " HDG=", self.AC_HDG, " TAS=", self.AC_TAS, " GS=", self.AC_GS)
         self.update_signal.emit()
 
-    def create_AC_state_without_Ivy(self):
+    def create_AC_positions(self): # pour une simulation sans bus Ivy
         self.listeACpositions = []
         for i in range(50):
             self.AC_X, self.AC_Y = float(i * 2), i * 1.5  # Nm
             self.listeACpositions.append(Point(self.AC_X, self.AC_Y))
+        for i in range(50):
+            self.AC_X, self.AC_Y = float(100 - i * 2), 75 + i * 1.5  # Nm
+            self.listeACpositions.append(Point(self.AC_X, self.AC_Y))
+
+    def create_AC_state_without_Ivy(self):
+        for i in range(50):
             self.AC_HDG = np.arcsin(0.5)*RAD2DEG
             self.AC_TAS, self.AC_GS = self.speedPred.TAS, self.speedPred.GS
             self.heading_update_signal.emit()
         for i in range(50):
-            self.AC_X, self.AC_Y = float(100 - i * 2), 75 + i * 1.5  # Nm
-            self.listeACpositions.append(Point(self.AC_X, self.AC_Y))
             self.HDG = np.arcsin(-0.5)*RAD2DEG
             self.AC_TAS, self.AC_GS = self.speedPred.TAS, self.speedPred.GS
             self.heading_update_signal.emit()
