@@ -148,6 +148,7 @@ class ParamView(QtWidgets.QWidget):
         self.TTWPTtextitem.setPlainText(str(self.simulation.NextWPTParam["TTWPT"]))
         self.WINDtextitem.setPlainText(str(self.simulation.flightParam["WIND"]))
 
+
 class CompassView(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
@@ -164,7 +165,13 @@ class CompassView(QtWidgets.QWidget):
         # ajout du compas
         self.items = QtWidgets.QGraphicsItemGroup()
         self.scene.addItem(self.items)
-        self.compass = QGraphicsCompassItem(WIDTH, WIDTH, WIDTH*0.7, self.items, self.view)
+        self.compass = QGraphicsCompassItem2(WIDTH, WIDTH, WIDTH*0.7, self.items, self.view)
+        self.items.addToGroup(self.compass)
+        self.rotation = self.compass.rotation()
+        centre_rot = QtCore.QPointF(self.compass.x + self.compass.w / 2, self.compass.y + self.compass.w / 2)
+        self.compass.setTransformOriginPoint(centre_rot)  # Permet de changer le point où la rotation aura lieu
+        self.compass.setRotation(self.rotation - 10.8)  # Décallage de 10° vers la droite, ce qui est bizarre, c'est que
+        # ça marche pas pour toutes les valeurs d'angle (essayer avec 50)
 
 
 
@@ -365,4 +372,8 @@ class AircraftView(QtWidgets.QWidget):
             # ajout du compas
             self.items = QtWidgets.QGraphicsItemGroup()
             self.scene.addItem(self.items)
-            self.compass = QGraphicsCompassItem(WIDTH, WIDTH, WIDTH * 0.7, self.items, self.view)
+            self.compass = QGraphicsCompassItem2(WIDTH, WIDTH, WIDTH * 0.7, self.items, self.view)
+            self.items.addToGroup(self.compass)
+
+
+

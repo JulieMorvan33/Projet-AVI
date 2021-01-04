@@ -163,6 +163,60 @@ class AircraftItem(QtWidgets.QGraphicsItemGroup):
          #self.item2.setRect(x - AC_WIDTH / 2, y - AC_WIDTH / 2, resize(AC_WIDTH), resize(AC_WIDTH))
 
 
+class QGraphicsCompassItem2(QtWidgets.QGraphicsItemGroup):  # cette classe groupe tous les items composant le compas
+    def __init__(self, x, y, width, parent, view):
+        self.x, self.y, self.w = x, y, width
+        self.centre = (self.x + self.w / 2, self.y + self.w / 2)
+        super().__init__(None)
+        self.view = view
+        self.parent = parent
+
+        font = QFont()
+        font_metric = QFontMetrics(font)
+        font.setWeight(TEXT_SIZE)
+        for i in range(12):
+            i = i / RAD2DEG * 30
+            a_x = self.centre[0] + np.sin(i) * self.w / 2 + np.sin(i) * (LARGE_GRAD_LONG + 2.3 * TEXT_SIZE)
+            a_y = self.centre[1] + np.cos(i) * self.w / 2 + np.cos(i) * (LARGE_GRAD_LONG + 2.3 * TEXT_SIZE)
+            hdg = QtWidgets.QGraphicsTextItem(self.parent)
+            hdg.setFont(font)
+            hdg.setTransform(self.view.transform())
+            heading = round(i * RAD2DEG / 10)
+            hdg.setPlainText(str(heading))
+            hdg.setRotation(heading * 10)
+            hdg.setPos(a_x, a_y)
+            text_width = font_metric.width(str(round(i * RAD2DEG / 10)))
+            hdg.moveBy(-np.cos(i) * text_width / 1.2, np.sin(i) * text_width / 1.2)
+            hdg.setDefaultTextColor(white)
+            self.addToGroup(hdg)
+
+    def paint(self, painter=QPainter(), style=None, widget=None):
+        painter.setPen(COMPASS_PEN)
+
+        # Large graduations
+        for i in range(36):
+            i = i / RAD2DEG * 10
+            a_x = self.centre[0] + np.sin(i) * self.w / 2
+            a_y = self.centre[1] + np.cos(i) * self.w / 2
+            b_x = a_x + np.sin(i) * LARGE_GRAD_LONG
+            b_y = a_y + np.cos(i) * LARGE_GRAD_LONG
+            l = painter.drawLine(a_x, a_y, b_x, b_y)
+            self.addToGroup(l)
+
+        # Small graduations
+        for i in range(1, 72, 2):
+            i = i / RAD2DEG * 5
+            a_x = self.centre[0] + np.sin(i) * self.w / 2
+            a_y = self.centre[1] + np.cos(i) * self.w / 2
+            b_x = a_x + np.sin(i) * LARGE_GRAD_LONG / 2
+            b_y = a_y + np.cos(i) * LARGE_GRAD_LONG / 2
+            s = painter.drawLine(a_x, a_y, b_x, b_y)
+            self.addToGroup(s)
+
+        e = painter.drawEllipse(self.x, self.y, self.w, self.w)
+        self.addToGroup(e)
+
+
 class QGraphicsCompassItem(QtWidgets.QGraphicsEllipseItem):
     def __init__(self, x, y, width, parent, view):
         self.x, self.y, self.w = x, y, width
