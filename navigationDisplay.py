@@ -188,7 +188,7 @@ class AircraftView(QtWidgets.QWidget):
         self.aircraft.update_position(0,0)
         self.aircraft.setScale(0.01)
         self.scene.addItem(self.aircraft)
-        self.sim.update_signal.connect(self.update_position) # pour visulaiser le mouvement de l'avion
+        #self.sim.update_signal.connect(self.update_position) # pour visulaiser le mouvement de l'avion
 
     def update_position(self):
         if not self.sim.USE_IVY:  # if Ivy Bus isn't used
@@ -332,6 +332,10 @@ class RadarView(QtWidgets.QWidget):
             QGraphicsWayPointsItem(point.x, point.y, self.nd_items)
 
     def fit_scene_in_view(self):
+        pos = self.simulation.listeACpositions[int(self.simulation.time / self.simulation.SIMU_DELAY)]
+        print("pos ", pos.x, pos.y)
+        w, h = WIDTH/4*PRECISION_FACTOR, HEIGHT/4*PRECISION_FACTOR
+        self.scene.setSceneRect(pos.x*PRECISION_FACTOR-w/2, pos.y*PRECISION_FACTOR-h/2, w, h)
         self.view.fitInView(self.view.sceneRect(), QtCore.Qt.KeepAspectRatio)
 
     def update_ND_items(self):

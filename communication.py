@@ -30,8 +30,8 @@ class Simulation(QObject):
         self.defineSpeedsPrediction(CI, FL, WIND)
         self.AC_X, self.AC_Y, self.AC_HDG, self.AC_TAS, self.AC_GS = 0, 0, 0, 0, 0  # initialisation des paramètre de l'avion
         if not(self.USE_IVY): # pour une simulation sans bus Ivy
+            self.create_waypoints_without_Ivy()  # pour les positions des WayPoints
             self.create_AC_positions() # pour les positions avion
-            self.create_waypoints_without_Ivy() # pour les positions des WayPoints
             self.create_AC_state_without_Ivy()
 
     def defineDict(self):
@@ -78,11 +78,18 @@ class Simulation(QObject):
 
     def create_AC_positions(self): # pour une simulation sans bus Ivy
         self.listeACpositions = []
+        wp0 = self.trajFMS.waypoint_list[0]
+        self.AC_X, self.AC_Y = wp0.x, wp0.y
+        print("pos de l'avion initiale : ", self.AC_X, self.AC_Y)
+        self.listeACpositions.append(Point(self.AC_X, self.AC_Y))
         for i in range(50):
-            self.AC_X, self.AC_Y = float(i * 2), i * 1.5  # Nm
+            self.AC_X += float(i * 2) # Nm
+            self.AC_Y += i * 1.5  # Nm
             self.listeACpositions.append(Point(self.AC_X, self.AC_Y))
+            self.update_signal.emit()
         for i in range(50):
-            self.AC_X, self.AC_Y = float(100 - i * 2), 75 + i * 1.5  # Nm
+            self.AC_X += float(100 - i * 2)# Nm
+            self.AC_Y += 75 + i * 1.5  # Nm
             self.listeACpositions.append(Point(self.AC_X, self.AC_Y))
 
     def create_AC_state_without_Ivy(self):
