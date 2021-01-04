@@ -13,6 +13,7 @@ class Simulation(QObject):
     update_signal = pyqtSignal() # signal d'update envoyé à radarmotion
     update_display_signal = pyqtSignal()  # signal d'update envoyé à radarview pour l'affichage
     update_param = pyqtSignal()
+    heading_update_signal = pyqtSignal()
 
     def __init__(self, USE_IVY, SIMU_DELAY, init_time=0):
         super(Simulation, self).__init__()
@@ -81,13 +82,13 @@ class Simulation(QObject):
             self.listeACpositions.append(Point(self.AC_X, self.AC_Y))
             self.AC_HDG = np.arcsin(0.5)*RAD2DEG
             self.AC_TAS, self.AC_GS = self.speedPred.TAS, self.speedPred.GS
-            #self.update_signal.emit()
+            self.heading_update_signal.emit()
         for i in range(50):
             self.AC_X, self.AC_Y = float(100 - i * 2), 75 + i * 1.5  # Nm
             self.listeACpositions.append(Point(self.AC_X, self.AC_Y))
             self.HDG = np.arcsin(-0.5)*RAD2DEG
             self.AC_TAS, self.AC_GS = self.speedPred.TAS, self.speedPred.GS
-            #self.update_signal.emit()
+            self.heading_update_signal.emit()
 
     #### Liste de LEG de la part du groue LEGS ##############
     def from_LEGS(self, *data):
