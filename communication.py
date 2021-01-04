@@ -29,7 +29,7 @@ class Simulation(QObject):
         self.defineSpeedsPrediction(CI, FL, WIND)
         self.AC_X, self.AC_Y, self.AC_HDG, self.AC_TAS, self.AC_GS = 0, 0, 0, 0, 0  # initialisation des paramètre de l'avion
         if not(self.USE_IVY): # pour une simulation sans bus Ivy
-            self.get_AC_state_without_Ivy() # pour les positions avion
+            self.create_AC_state_without_Ivy() # pour les positions avion
             self.create_waypoints_without_Ivy() # pour les positions des WayPoints
 
     def defineDict(self):
@@ -74,22 +74,20 @@ class Simulation(QObject):
         print("SIMU, X=", self.AC_X, " Y=", self.AC_Y, " HDG=", self.AC_HDG, " TAS=", self.AC_TAS, " GS=", self.AC_GS)
         self.update_signal.emit()
 
-    def get_AC_state_without_Ivy(self):
+    def create_AC_state_without_Ivy(self):
         self.listeACpositions = []
         for i in range(50):
             self.AC_X, self.AC_Y = float(i * 2), i * 1.5  # Nm
             self.listeACpositions.append(Point(self.AC_X, self.AC_Y))
-            self.AC_HDG = np.arcsin(0.5)
+            self.AC_HDG = np.arcsin(0.5)*RAD2DEG
             self.AC_TAS, self.AC_GS = self.speedPred.TAS, self.speedPred.GS
-            self.update_signal.emit()
-            time.sleep(self.SIMU_DELAY)
+            #self.update_signal.emit()
         for i in range(50):
             self.AC_X, self.AC_Y = float(100 - i * 2), 75 + i * 1.5  # Nm
             self.listeACpositions.append(Point(self.AC_X, self.AC_Y))
-            self.HDG = np.arcsin(0.5)
+            self.HDG = np.arcsin(-0.5)*RAD2DEG
             self.AC_TAS, self.AC_GS = self.speedPred.TAS, self.speedPred.GS
-            self.update_signal.emit()
-            time.sleep(self.SIMU_DELAY)
+            #self.update_signal.emit()
 
     #### Liste de LEG de la part du groue LEGS ##############
     def from_LEGS(self, *data):
@@ -137,8 +135,6 @@ class Simulation(QObject):
         self.update_display_signal.emit()
 
     def create_waypoints_without_Ivy(self):
-
-
         self.trajFMS.add_waypoint(Point(180, 220))
         self.trajFMS.add_waypoint(Point(100, 180))
         self.trajFMS.add_waypoint(Point(200, 150))
@@ -148,14 +144,7 @@ class Simulation(QObject):
         self.trajFMS.add_waypoint(Point(0, 0))
         self.trajFMS.add_waypoint(Point(-60, 0))
         self.trajFMS.add_waypoint(Point(-160, -130))
-
-        # self.trajFMS.add_waypoint(Point(0, 0))
-        # self.trajFMS.add_waypoint(Point(20, 100))
-        # self.trajFMS.add_waypoint(Point(100, 60))
-        # self.trajFMS.add_waypoint(Point(110, -30))
-        # self.trajFMS.add_waypoint(Point(200, 150))
-        # self.trajFMS.add_waypoint(Point(100, 180))
-        # self.trajFMS.add_waypoint(Point(180, 220))
+        self.update_signal.emit()
 
     def next_wpt_param_without_IVY(self):
         nextwpt = "ABABI"

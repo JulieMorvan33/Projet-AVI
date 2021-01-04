@@ -21,7 +21,7 @@ if __name__ == "__main__":
     # create the radar view
     rad = navigationDisplay.RadarView(sim)
 
-    ac = navigationDisplay.AircraftView()
+    ac = navigationDisplay.AircraftView(sim)
 
 
     # create the compass view

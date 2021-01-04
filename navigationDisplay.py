@@ -73,7 +73,7 @@ class ParamView(QtWidgets.QWidget):
 
         textitem = QtWidgets.QGraphicsTextItem(self.items)
         textitem.setFont(font)
-        textitem.setPlainText(str(SpeedPredictions().GS))
+        textitem.setPlainText(str(self.simulation.AC_GS))
         textitem.setPos(-640, -55)
         textitem.setDefaultTextColor(color3)
 
@@ -173,8 +173,30 @@ class CompassView(QtWidgets.QWidget):
         self.compass.setRotation(self.rotation + 80)  # Décallage de 10° vers la droite, ce qui est bizarre, c'est que
         # ça marche pas pour toutes les valeurs d'angle (essayer avec 50)
 
+class AircraftView(QtWidgets.QWidget):
+    def __init__(self, sim):
+        super().__init__()
+        self.scene = QtWidgets.QGraphicsScene()
+        self.view = QtWidgets.QGraphicsView(self.scene)
+        self.sim = sim
+        self.view.fitInView(self.view.sceneRect(), QtCore.Qt.KeepAspectRatio)
 
+        # invert y axis for the view
+        self.view.scale(1, -1)
 
+        self.aircraft = AircraftItem()
+        self.aircraft.update_position(0,0)
+        self.aircraft.setScale(0.01)
+        self.scene.addItem(self.aircraft)
+        #self.sim.update_signal.connect(self.update_position) # pour visulaiser le mouvement de l'avion
+
+    def update_position(self):
+        if not self.sim.USE_IVY:  # if Ivy Bus isn't used
+            pos = self.sim.listeACpositions[int(self.sim.time / self.sim.SIMU_DELAY)]
+            self.aircraft.update_position(pos.x, pos.y)
+            time.sleep(self.sim.SIMU_DELAY)
+        else:
+            self.aircraft.update_position(self.sim.AC_Y, self.sim.AC_X)
 
 class RadarView(QtWidgets.QWidget):
     """An interactive view of the items displayed by a ND,
@@ -243,22 +265,22 @@ class RadarView(QtWidgets.QWidget):
 
             if (i == 1): # si première transition
                 if transition_type == "fly_by":
-                    transition_list = compute_transition_fly_by(seg_actif, seg_next)
+                    transition_list = compute_transition_fly_by(seg_actif, seg_next, self.simulation.AC_GS)
                 elif transition_type == "fly_over":
-                    transition_list = compute_transition_fly_over(seg_actif, seg_next)
+                    transition_list = compute_transition_fly_over(seg_actif, seg_next, self.simulation.AC_GS)
                 start_segment = a
                 end_segment = transition_list[0].start
             else:
                 temp = transition_list[-1].end
                 if transition_type == "fly_by":
-                    transition_list = compute_transition_fly_by(seg_actif, seg_next)
+                    transition_list = compute_transition_fly_by(seg_actif, seg_next, self.simulation.AC_GS)
                 elif transition_type == "fly_over":
-                    transition_list = compute_transition_fly_over(seg_actif, seg_next)
+                    transition_list = compute_transition_fly_over(seg_actif, seg_next, self.simulation.AC_GS)
                 start_segment = temp
                 end_segment = transition_list[0].start
 
             # ajout des objets transitions et orthos dans la trajectoire pour envoi sur le bus IVY
-            self.simulation.trajFMS.add_path(g.Segment(start_segment, end_segment), g.Transition(transition_type, GS,
+            self.simulation.trajFMS.add_path(g.Segment(start_segment, end_segment), g.Transition(transition_type, self.simulation.speedPred.GS,
                                                                                                  transition_list))
             # self.simulation.trajFMS.bankAnglesList.append(bank_angle) # list de 2 banks pour un fly over ?
 
@@ -325,55 +347,5 @@ class RadarView(QtWidgets.QWidget):
         To be used only if the Ivy bus isn't used"""
         self.simulation.horloge(None, self.simulation.time + self.simulation.SIMU_DELAY)
         self.simulation.update_signal.emit()
-
-class AircraftView(QtWidgets.QWidget):
-    def __init__(self):
-        super().__init__()
-        self.scene = QtWidgets.QGraphicsScene()
-        self.view = QtWidgets.QGraphicsView(self.scene)
-
-        self.view.fitInView(self.view.sceneRect(), QtCore.Qt.KeepAspectRatio)
-
-        # invert y axis for the view
-        self.view.scale(1, -1)
-
-        # modify the scene background
-        #self.scene.setBackgroundBrush(QColor('transparent'))
-
-        self.aircraft = AircraftItem()
-        self.aircraft.update_position(0,0)
-        self.aircraft.setScale(0.01)
-        #image = QtGui.QImage('plane4.png')
-        #self.pixmap = QtGui.QPixmap.fromImage(image)
-        #self.item = QtWidgets.QGraphicsPixmapItem(QtGui.QPixmap.fromImage(image))
-        #self.item.setScale(PRECISION_FACTOR)
-        self.scene.addItem(self.aircraft)
-
-    def update_position(self, x, y):
-         #self.item2.setPos(x, y)
-         x, y = 0, 0
-         #x, y = resize(x), resize(y)
-         #self.item.setPos(x-51/2, y-51/2)
-         #self.item2.setRect(x - AC_WIDTH / 2, y - AC_WIDTH / 2, resize(AC_WIDTH), resize(AC_WIDTH))
-
-    class CompassView(QtWidgets.QWidget):
-        def __init__(self):
-            super().__init__()
-            self.scene = QtWidgets.QGraphicsScene()
-            self.view = QtWidgets.QGraphicsView(self.scene)
-            self.view.fitInView(self.view.sceneRect(), QtCore.Qt.KeepAspectRatio)
-
-            # invert y axis for the view
-            self.view.scale(1, -1)
-
-            # modify the scene background
-            self.scene.setBackgroundBrush(QColor('black'))
-
-            # ajout du compas
-            self.items = QtWidgets.QGraphicsItemGroup()
-            self.scene.addItem(self.items)
-            self.compass = QGraphicsCompassItem2(WIDTH, WIDTH, WIDTH * 0.7, self.items, self.view)
-            self.items.addToGroup(self.compass)
-
 
 
