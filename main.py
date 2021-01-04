@@ -46,7 +46,7 @@ if __name__ == "__main__":
         IvyBindMsg(sim.horloge, "^Time t=(.*)")
 
         # Abonnement au vecteur d'état pour la récupération de x et y
-        IvyBindMsg(sim.get_AC_state, "StateVector (.*)")
+        IvyBindMsg(sim.get_AC_state, "AircraftSetPosition (.*)")
 
         # Abonnement au message du groupe LEGS (liste des segments)
         IvyBindMsg(sim.from_LEGS, "FL_LegList_TEST (.*)")

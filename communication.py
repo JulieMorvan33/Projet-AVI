@@ -4,6 +4,7 @@ import time
 from predictions import SpeedPredictionsA320
 from predictions import *
 from constantParameters import *
+import numpy as np
 #from ivy.std_api import *
 
 DP = 20 # nb de positions à faire à l'avion sur chaque leg
@@ -25,9 +26,10 @@ class Simulation(QObject):
         self.NextWPTParam = dict() # contient NEXTWPT, COURSE, TTWPT
         self.defineDict()
         self.speedPred = SpeedPredictionsA320()
-        self.AC_X, self.AC_Y, self.AC_GS = 0, 0, 0  # initialisation des paramètre de l'avion
+        self.defineSpeedsPrediction(CI, FL, WIND)
+        self.AC_X, self.AC_Y, self.AC_HDG, self.AC_TAS, self.AC_GS = 0, 0, 0, 0, 0  # initialisation des paramètre de l'avion
         if not(self.USE_IVY): # pour une simulation sans bus Ivy
-            self.create_AC_positions() # pour les positions avion
+            self.get_AC_state_without_Ivy() # pour les positions avion
             self.create_waypoints_without_Ivy() # pour les positions des WayPoints
 
     def defineDict(self):
@@ -57,14 +59,8 @@ class Simulation(QObject):
         self.NextWPTParam["COURSE"] = course
         self.NextWPTParam["TTWPT"] = ttwpt
 
-    def create_AC_positions(self): # pour une simulation sans bus Ivy
-        self.listeACpositions = []
-        for i in range(50):
-            self.AC_X, self.AC_Y = float(i * 2), i * 1.5  # Nm
-            self.listeACpositions.append(Point(self.AC_X, self.AC_Y))
-        for i in range(50):
-            self.AC_X, self.AC_Y = float(100 - i * 2), 75 + i * 1.5  # Nm
-            self.listeACpositions.append(Point(self.AC_X, self.AC_Y))
+    def defineSpeedsPrediction(self, ci, fl, wind):
+        self.speedPred.computeSpeeds(ci, fl, wind)
 
     def horloge(self, *arg):
         self.time = float(arg[1])
@@ -73,16 +69,25 @@ class Simulation(QObject):
     def get_AC_state(self, agent, *data):
         state = data[0].split(" ")
         self.AC_X, self.AC_Y = float(state[0].strip("x=")), float(state[1].strip("y="))
-        print("SIMU, AC X et Y : ", self.AC_X, self.AC_Y)
+        self.AC_HDG = float(state[6].strip("Heading=")) # en degrés
+        self.AC_TAS, self.AC_GS = float(state[7].strip("Airspeed=")), float(state[8].strip("Groundspeed=")) # en kts
+        print("SIMU, X=", self.AC_X, " Y=", self.AC_Y, " HDG=", self.AC_HDG, " TAS=", self.AC_TAS, " GS=", self.AC_GS)
         self.update_signal.emit()
 
     def get_AC_state_without_Ivy(self):
+        self.listeACpositions = []
         for i in range(50):
             self.AC_X, self.AC_Y = float(i * 2), i * 1.5  # Nm
+            self.listeACpositions.append(Point(self.AC_X, self.AC_Y))
+            self.AC_HDG = np.arcsin(0.5)
+            self.AC_TAS, self.AC_GS = self.speedPred.TAS, self.speedPred.GS
             self.update_signal.emit()
             time.sleep(self.SIMU_DELAY)
         for i in range(50):
             self.AC_X, self.AC_Y = float(100 - i * 2), 75 + i * 1.5  # Nm
+            self.listeACpositions.append(Point(self.AC_X, self.AC_Y))
+            self.HDG = np.arcsin(0.5)
+            self.AC_TAS, self.AC_GS = self.speedPred.TAS, self.speedPred.GS
             self.update_signal.emit()
             time.sleep(self.SIMU_DELAY)
 
