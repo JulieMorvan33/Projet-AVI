@@ -170,7 +170,7 @@ class CompassView(QtWidgets.QWidget):
         self.rotation = self.compass.rotation()
         centre_rot = QtCore.QPointF(self.compass.x + self.compass.w / 2, self.compass.y + self.compass.w / 2)
         self.compass.setTransformOriginPoint(centre_rot)  # Permet de changer le point où la rotation aura lieu
-        self.compass.setRotation(self.rotation - 10.8)  # Décallage de 10° vers la droite, ce qui est bizarre, c'est que
+        self.compass.setRotation(self.rotation + 80)  # Décallage de 10° vers la droite, ce qui est bizarre, c'est que
         # ça marche pas pour toutes les valeurs d'angle (essayer avec 50)
 
 
