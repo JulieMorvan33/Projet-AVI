@@ -25,7 +25,7 @@ if __name__ == "__main__":
     compass = navigationDisplay.CompassView()
 
     # create the parameters view displaying GS, TAS,...
-    param = navigationDisplay.ParamView()
+    param = navigationDisplay.ParamView(sim)
 
     # create the QMainWindow
     win = ndWindowParameters.mywindow(param.view, rad.view, compass.view)
@@ -52,10 +52,10 @@ if __name__ == "__main__":
         #IvySendMsg("GT_PARAM_GS=" + str(GS))
 
         # Abonnement au numéro de séquence du leg actif venant de SEQ
-        #IvyBindMsg(sim.receive_active_leg, "GS_AL (.*)")
+        IvyBindMsg(sim.receive_active_leg, "GS_AL (.*)")
 
         # Abonnement au paramètres envoyés par SEQ (XTK, TAE, DTWPT)
-        #IvyBindMsg(sim.receive_SEQ_parameters, "GS_Data (.*)")
+        IvyBindMsg(sim.receive_SEQ_parameters, "GS_Data (.*)")
 
         # Envoi des paramètres de vol aux groupe ROUTE
         #IvySendMsg("GT_PARAM_CRZ_ALT="+str(CRZ_ALT)) # envoi de l'altitude de croisière
