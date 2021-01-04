@@ -76,10 +76,15 @@ class Point(object):
         else:
             return abs(ab.det(ap)) / abs(ab)
 
-class WayPoint():
+class WayPoint(Point):
     def __init__(self, lat, long):
         self.lat = lat/RAD2DEG
         self.long = long/RAD2DEG
+        self.x, self.y = self.convert()
+        super().__init__(self.x, self.y)
+
+    def __repr__(self):
+        return "({0.x}, {0.y}, {0.lat}, {0.long})".format(self)
 
     def convert(self):
         """La latitude et la longitude sont à rentrer en RADIANS (mettre un moins quand coordonnées en S ou W)
@@ -113,8 +118,6 @@ class Segment(object):
         xdiff = (self.start.x - self.end.x, other.start.x - other.end.x)
         ydiff = (self.start.y - self.end.y, other.start.y - other.end.y)
 
-
-
         div = det(xdiff,ydiff)
         if div == 0:
             raise Exception('lines do not intersect')
@@ -141,30 +144,28 @@ class Transition(object):
         self.type = type
         self.speed = speed
         self.list_items = list_items
-        #self.centre = centre
-        #self.turn_radius, self.lead_distance = turnRadius, leadDistance
 
-class Trajectoire_brute(object):
+class Path(object):
+    def __init__(self, segment, transition):
+        self.segment = segment
+        self.transition = transition
+
+    def get_speed(self):
+        pass
+
+class RefLatPath(object):
     def __init__(self):
+        self.listePaths = []
         self.waypoint_list = []  # liste des waypoints
         self.nbr_waypoints = 0  # le nombre de waypoints dans le chemin
-        self.transitions_list = [] # liste des objets Transitions
-        self.orthos_list = []
-        self.bankAnglesList = []
 
     def __repr__(self):
-        return str(self.waypoint_list)
+        return "RefLatPath = " + str(self.waypoint_list)
 
     def add_waypoint(self, waypoint):
         """ajoute un point a la fin du chemin"""
         self.waypoint_list.append(waypoint)
         self.nbr_waypoints += 1
-
-    def distance(self):
-        distanceLegsTab = []
-        for i in range(len(self.waypoint_list) - 1):
-            distanceLegsTab.append(self.waypoint_list[i].distance(self.waypoint_list[i + 1]))
-        return distanceLegsTab
 
     def get_transition(self, ind):
         a = self.waypoint_list[ind - 1]
@@ -172,15 +173,9 @@ class Trajectoire_brute(object):
         c = self.waypoint_list[ind + 1]
         return a, b, c
 
-class Path(object):
-    def __init__(self, segment, transition, speed):
-        self.segment = segment
-        self.transition = transition
-        self.speed = speed
-'''
-print("wp1 : ", WayPoint(0,1).convert())
-print("wp2 : ", WayPoint(0,90).convert())
-print("wp3 : ", WayPoint(0,180).convert())
-print("wp4 : ", WayPoint(90,0).convert())
-print("wp5 : ", WayPoint(180,0).convert())
-'''
+    def add_path(self, segment, transition):
+        self.listePaths.append(Path(segment, transition))
+
+    def get_bank_angles(self):
+        pass
+

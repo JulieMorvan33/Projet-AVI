@@ -1,6 +1,9 @@
 from PyQt5 import QtWidgets
 from PyQt5.QtGui import QPainter, QColor, QPen, QBrush, QTransform, QFont, QFontMetrics
 from PyQt5.QtCore import Qt
+from PyQt5 import QtGui
+
+import communication
 import numpy as np
 import geometry
 from constantParameters import *
@@ -11,7 +14,7 @@ WP_WIDTH = 15
 WP_DP = WP_WIDTH/2.
 TP_WIDTH = 10
 TP_DP = TP_WIDTH/2.
-ASW = 0.3 # ASW stands for Arc Semi Width
+ASW = 1 # ASW stands for Arc Semi Width
 
 # Aicraft width
 AC_WIDTH = 10
@@ -21,9 +24,15 @@ white = QColor(255, 255, 255)
 
 # Pens
 P_PEN = QPen(Qt.transparent)
-TRAJ_PEN = QPen(QColor(255, 255, 0),ASW*2)
+P_PEN.setCosmetic(True)
+TRAJ_PEN = QPen(QColor(0, 255, 0), ASW)
+TRAJ_PEN.setCosmetic(True)
 LEG_PEN = QPen(QColor("lightgrey"), ASW)
-COMPASS_PEN = QPen(white,ASW*2)
+LEG_PEN.setCosmetic(True)
+COMPASS_PEN = QPen(white,ASW)
+COMPASS_PEN.setCosmetic(True)
+AC_PEN = QPen(QColor(255, 255, 0))
+AC_PEN.setCosmetic(True)
 
 # Brushes
 TP_BRUSH = QBrush(QColor("grey"))
@@ -37,21 +46,25 @@ SP_ANGLE_COEFF = 16
 LARGE_GRAD_LONG = 20
 TEXT_SIZE = 10
 
+# to get rid of integers and floats distinction in QGraphicsItem
+PRECISION_FACTOR = 100
+def resize(x):
+    return x*PRECISION_FACTOR
+
 class QGraphicsArcItem(QtWidgets.QGraphicsEllipseItem):
     """Classe graphique qui affiche un arc de cercle,
     comme portion du cercle commençant à start_angle et finissant à
     start_angle + span_angle"""
     def __init__(self, start, centre, alpha, turnRadius, det, parent):
         self.det = det #déterminant entre les deux segments de la transition
-        self.set_XY(centre, turnRadius+ASW)
-        self.w, self.h = (turnRadius+ASW)*2, (turnRadius+ASW)*2
+        self.set_XY(centre, turnRadius)
+        self.w, self.h = resize(turnRadius*2), resize(turnRadius*2)
         super().__init__(self.x, self.y, self.w, self.h, parent)
         self.set_span_angle(alpha)
         self.start_angle = self.set_start_angle(start, centre)
 
     def paint(self, painter=QPainter(), style=None, widget=None):
         painter.setPen(TRAJ_PEN)
-        painter.translate(3*ASW, 3*ASW)
         if self.det < 0:
             painter.drawArc(self.x, self.y, self.w, self.h, self.start_angle, self.span_angle)
         else:
@@ -68,15 +81,14 @@ class QGraphicsArcItem(QtWidgets.QGraphicsEllipseItem):
             return -beta * SP_ANGLE_COEFF
 
     def set_XY(self, centre, turnRadius):
-        self.x = centre.x - turnRadius - ASW
-        self.y = centre.y - turnRadius - ASW
-
+        self.x = resize(centre.x - turnRadius)
+        self.y = resize(centre.y - turnRadius)
 
 
 class QGraphicsWayPointsItem(QtWidgets.QGraphicsRectItem):
     """Affichage des Way Points"""
     def __init__(self, x, y, parent):
-        self.x, self.y = x, y
+        self.x, self.y = resize(x), resize(y)
         super().__init__(x, y, WP_WIDTH, WP_WIDTH, parent)
         self.paint(QPainter())
 
@@ -98,16 +110,16 @@ class QGraphicsWayPointsItem(QtWidgets.QGraphicsRectItem):
 
         painter.restore()
 
+
 class QGraphicsTransitionPoints(QtWidgets.QGraphicsRectItem):
     def __init__(self, x, y, parent):
         super().__init__(x, y, TP_WIDTH, TP_WIDTH, parent)
-        self.x, self.y = x, y
+        self.x, self.y = resize(x), resize(y)
         self.paint(QPainter())
 
     def paint(self, painter, style=None, widget=None):
         painter.setPen(P_PEN)
         painter.setBrush(TP_BRUSH)
-
         # copie la transformation due au zoom
         t = painter.transform()
         m11, m22 = t.m11(), t.m22()
@@ -125,7 +137,7 @@ class QGraphicsTransitionPoints(QtWidgets.QGraphicsRectItem):
 class QGraphicsLegsItem(QtWidgets.QGraphicsLineItem):
     """Affichage des legs"""
     def __init__(self, x1, y1, x2, y2, parent):
-        super().__init__(x1, y1, x2, y2, parent)
+        super().__init__(resize(x1), resize(y1), resize(x2), resize(y2), parent)
         self.pen = LEG_PEN
 
 
@@ -135,14 +147,20 @@ class AircraftItem(QtWidgets.QGraphicsItemGroup):
     def __init__(self):
         """AircraftItem constructor, creates the ellipse and adds to the scene"""
         super().__init__(None)
-        self.item = QtWidgets.QGraphicsEllipseItem()
-        self.item.setBrush(AC_BRUSH)
+        self.item2 = QtWidgets.QGraphicsEllipseItem()
+        image = QtGui.QImage('plane4.png')
+        self.pixmap = QtGui.QPixmap.fromImage(image)
+        self.item = QtWidgets.QGraphicsPixmapItem(QtGui.QPixmap.fromImage(image))
+        self.item.setScale(PRECISION_FACTOR)
+        self.item2.setBrush(AC_BRUSH)
+        self.addToGroup(self.item2)
         self.addToGroup(self.item)
 
     def update_position(self, x, y):
-        self.item.setPos(x, y)
-        self.item.setRect(x - AC_WIDTH / 2, y - AC_WIDTH / 2, AC_WIDTH, AC_WIDTH)
-
+         #self.item2.setPos(x, y)
+         x, y = resize(x), resize(y)
+         self.item.setPos(x-51/2, y-51/2)
+         #self.item2.setRect(x - AC_WIDTH / 2, y - AC_WIDTH / 2, resize(AC_WIDTH), resize(AC_WIDTH))
 
 
 class QGraphicsCompassItem(QtWidgets.QGraphicsEllipseItem):
@@ -185,7 +203,7 @@ class QGraphicsCompassItem(QtWidgets.QGraphicsEllipseItem):
             painter.drawLine(a_x, a_y, b_x, b_y)
 
         # Small graduations
-        for i in range(1,72,2):
+        for i in range(1, 72, 2):
             i = i/RAD2DEG*5
             a_x = self.centre[0] + np.sin(i)*self.w/2
             a_y = self.centre[1] + np.cos(i)*self.w/2
