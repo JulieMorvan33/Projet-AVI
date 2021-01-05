@@ -5,7 +5,8 @@ import communication
 import ndWindowParameters
 import time
 
-USE_IVY = False# use or not use Ivy Bus ?
+USE_IVY = True# use or not use Ivy Bus ?
+AC_SIMULATED = True # use bus IVY with no other groups ?
 SIMU_DELAY = 0.1 # increment time for the simulation if Ivy Bus isn't used
 
 def null_cb(*a):
@@ -13,7 +14,7 @@ def null_cb(*a):
 
 if __name__ == "__main__":
     # create the simulation for test purpose
-    sim = communication.Simulation(USE_IVY, SIMU_DELAY)
+    sim = communication.Simulation(USE_IVY, SIMU_DELAY, AC_SIMULATED)
 
     # Initialisation of Qt
     app = QtWidgets.QApplication([])
@@ -23,7 +24,6 @@ if __name__ == "__main__":
 
     ac = navigationDisplay.AircraftView(sim)
 
-
     # create the compass view
     compass = navigationDisplay.CompassView(sim)
 
@@ -31,7 +31,7 @@ if __name__ == "__main__":
     param = navigationDisplay.ParamView(sim)
 
     # create the QMainWindow
-    win = ndWindowParameters.mywindow(param.view, rad.view, compass.view, ac.view)
+    win = ndWindowParameters.mywindow(param.view, rad.view, compass.view, ac.view, sim)
     win.setWindowTitle("Navigation Display")
     win.show()
 
@@ -51,21 +51,14 @@ if __name__ == "__main__":
         # Abonnement au message du groupe LEGS (liste des segments)
         IvyBindMsg(sim.from_LEGS, "FL_LegList_TEST (.*)")
 
-        # Envoi de la Grounspeed
-        #IvySendMsg("GT_PARAM_GS=" + str(GS))
-
         # Abonnement au numéro de séquence du leg actif venant de SEQ
         IvyBindMsg(sim.receive_active_leg, "GS_AL (.*)")
 
         # Abonnement au paramètres envoyés par SEQ (XTK, TAE, DTWPT)
         IvyBindMsg(sim.receive_SEQ_parameters, "GS_Data (.*)")
 
-        # Envoi des paramètres de vol aux groupe ROUTE
-        #IvySendMsg("GT_PARAM_CRZ_ALT="+str(CRZ_ALT)) # envoi de l'altitude de croisière
-        #IvySendMsg("GT_PARAM_CAS="+str(CAS)) # envoi de la CAS
-        #IvySendMsg("GT_PARAM_MACH=" + str(MACH))  # envoi du MACH
-        #IvySendMsg("GT_PARAM_WIND=" + WIND)  # envoi du WIND
-
+        # Abonnement au mode de l'autopilot
+        IvyBindMsg(sim.get_AP_mode, "GC_AP (.*)")
 
     # enter the main loop
     app.exec_()

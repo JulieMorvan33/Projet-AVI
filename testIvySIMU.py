@@ -15,14 +15,19 @@ if __name__ == '__main__':
     for i in range(50):
         IvySendMsg("Time t="+str(float(i)))
         x, y = i*2, i*1.5 # Nm
-        GS = 700 # knots
-        IvySendMsg("StateVector x="+str(x)+" y="+str(y)+" Groundspeed="+str(GS))
-        time.sleep(0.2)
+        message = "AircraftSetPosition X=" + str(x) + " Y=" + str(y)
+        message += " Altitude-ft=" + str(30000) + " Roll=" + str(0) + " Pitch=" + str(0) + " Yaw=" + str(0)
+        message += " Heading=" + str(273) + " Airspeed=" + str(250) + " Groundspeed=" + str(265)
+        IvySendMsg(message)
+        time.sleep(0.5)
     for i in range(50):
         IvySendMsg("Time t=" + str(float(i)))
         x, y = 100 - i * 2, 75 + i * 1.5  # Nm
-        GS = 700  # knots
-        IvySendMsg("StateVector x=" + str(x) + " y=" + str(y) + " Groundspeed=" + str(GS))
-        time.sleep(0.2)
+        message = "AircraftSetPosition X=" + str(x) + " Y=" + str(y)
+        message += " Altitude-ft=" + str(30000) + " Roll=" + str(0) + " Pitch=" + str(0) + " Yaw=" + str(0)
+        message += " Heading=" + str(273) + " Airspeed=" + str(250) + " Groundspeed=" + str(265)
+        IvySendMsg(message)
+        time.sleep(0.5)
 
     IvyMainLoop()
+

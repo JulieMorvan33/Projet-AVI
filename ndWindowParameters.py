@@ -7,12 +7,13 @@ WIDTH = 800
 HEIGHT = 800
 
 class Ui_MainWindow(object):
-    def __init__(self, param_view, view, compass_view, aircraft_view):
+    def __init__(self, param_view, view, compass_view, aircraft_view, sim):
         super().__init__()
         self.graphicsView = param_view # QGraphicView pour les paramètres de vol (DTWPT...)
         self.graphicsView_2 = view
         self.graphicsView_3 = compass_view
         self.graphicsView_4 = aircraft_view
+        self.sim = sim
 
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
@@ -181,6 +182,7 @@ class Ui_MainWindow(object):
         #self.verticalLayout_7.addItem(spacerItem5)
         self.pushButton = QtWidgets.QPushButton(self.verticalLayoutWidget_3)
         self.pushButton.setObjectName("pushButton")
+        self.pushButton.clicked.connect(self.define_flight_param)
         self.verticalLayout_7.addWidget(self.pushButton)
         self.tabWidget.addTab(self.Flight_Param, "")
         self.PFD_Param = QtWidgets.QWidget()
@@ -353,6 +355,8 @@ class Ui_MainWindow(object):
         self.tabWidget.setCurrentIndex(1)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
+        self.sim.update_param_1.connect(self.update_labels)
+
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
@@ -382,9 +386,25 @@ class Ui_MainWindow(object):
         self.label_20.setText(_translate("MainWindow", "ZOOM : "))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.Mode_Param), _translate("MainWindow", "Tab 2"))
 
+    def update_labels(self):
+        dict = self.sim.SEQParam
+        xtk, tae, aldtwpt = dict["XTK"], dict["TAE"], dict["ALDTWPT"]
+        self.label_8.setText(str(xtk))
+        self.label_11.setText(str(tae))
+        self.label_14.setText(str(aldtwpt))
+
+    def define_flight_param(self):
+        crz_alt = int(self.lineEdit.text())
+        wind_dir = int(self.lineEdit_2.text())
+        wind_speed = int(self.lineEdit_3.text())
+        wind = (wind_dir, wind_speed)
+        ci = int(self.lineEdit_4.text())
+        print("Paramètres de vol validés : CRZ_ALT=", crz_alt,"ft WIND=", str(wind), "kts CI=", ci)
+        self.sim.defineFlightParam(crz_alt, ci, wind)
+
 
 class mywindow(QtWidgets.QMainWindow):
-    def __init__(self, param_view, view, compass_view, aircraft_view):
+    def __init__(self, param_view, view, compass_view, aircraft_view, sim):
         super(mywindow, self).__init__()
-        self.ui = Ui_MainWindow(param_view, view, compass_view, aircraft_view)
+        self.ui = Ui_MainWindow(param_view, view, compass_view, aircraft_view, sim)
         self.ui.setupUi(self)

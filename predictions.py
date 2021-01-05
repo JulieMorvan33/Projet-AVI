@@ -20,7 +20,11 @@ class SpeedPredictions():
     def eq3degrees(self, a, b, c, d):
         return lambda x : a*x**3 + b*x**2 + c*x + d
 
-    def computeSpeeds(self, ci, fl, wind):
+    def compute_average_wind(self, wind):
+        return wind[1]
+
+    def computeSpeeds(self, ci, fl, wind): # wind en chaine de caractère
+        wind = self.compute_average_wind(wind)
         temp, p = self.computeFLParam(fl)
         self.compute_ECON_MACH(ci, fl)
         self.wind_correction(wind)
