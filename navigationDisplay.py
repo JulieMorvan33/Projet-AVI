@@ -180,7 +180,7 @@ class CompassView(QtWidgets.QWidget):
 
 
     def update_hdg(self):
-        hdg = self.sim.listeACheading[int(self.sim.time / self.sim.SIMU_DELAY)]
+        hdg = self.sim.listeHDG[int(self.sim.time / self.sim.SIMU_DELAY)]
         print(hdg)
         centre_rot = QtCore.QPointF(WIDTH + (WIDTH * 0.7) / 2, WIDTH + (WIDTH * 0.7) / 2)
         self.compass.setTransformOriginPoint(centre_rot)
