@@ -19,3 +19,5 @@ WIND = 15 # kts
 # Window constants
 WIDTH = 800  # Initial window width (pixels)
 HEIGHT = 350  # Initial window height (pixels)
+
+NB_AC_INTER_POS = 50

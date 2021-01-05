@@ -33,7 +33,6 @@ class Simulation(QObject):
         if not(self.USE_IVY): # pour une simulation sans bus Ivy
             self.create_waypoints_without_Ivy()  # pour les positions des WayPoints
             self.create_AC_positions() # pour les positions avion
-            self.create_AC_state_without_Ivy()
 
     def defineDict(self):
         self.defineFlightParam(0, 0, 0)
@@ -77,12 +76,12 @@ class Simulation(QObject):
         print("SIMU, X=", self.AC_X, " Y=", self.AC_Y, " HDG=", self.AC_HDG, " TAS=", self.AC_TAS, " GS=", self.AC_GS)
         self.update_signal.emit()
 
-    def create_AC_positions(self, n=10): # pour une simulation sans bus Ivy
+    def create_AC_positions(self, n=NB_AC_INTER_POS): # pour une simulation sans bus Ivy
         self.listeACpositions = []
         self.listeHDG = []
         wp0 = self.trajFMS.waypoint_list[0]
         self.AC_X, self.AC_Y = wp0.x, wp0.y
-        print("pos de l'avion initiale : ", self.AC_X, self.AC_Y)
+        #print("pos de l'avion initiale : ", self.AC_X, self.AC_Y)
         self.listeACpositions.append(Point(self.AC_X, self.AC_Y))
 
         for ind in range(self.trajFMS.nbr_waypoints-1):
@@ -91,7 +90,6 @@ class Simulation(QObject):
             seg = Segment(a,b)
             hdg = get_track(seg)
             hdg = hdg * RAD2DEG
-            print(hdg)
             if hdg < 0:
                 hdg = 360 + hdg
             x1, y1, x2, y2 = a.x, a.y, b.x, b.y
@@ -100,19 +98,6 @@ class Simulation(QObject):
                 self.AC_Y += (y2-y1)/n
                 self.listeACpositions.append(Point(self.AC_X, self.AC_Y))
                 self.listeHDG.append(hdg)
-
-
-        '''
-        for i in range(50):
-            self.AC_X += float(i * 2) # Nm
-            self.AC_Y += i * 1.5  # Nm
-            self.listeACpositions.append(Point(self.AC_X, self.AC_Y))
-            self.update_signal.emit()
-        for i in range(50):
-            self.AC_X += float(100 - i * 2)# Nm
-            self.AC_Y += 75 + i * 1.5  # Nm
-            self.listeACpositions.append(Point(self.AC_X, self.AC_Y))
-        '''
 
     def create_AC_state_without_Ivy(self):
         self.listeHDG = []
