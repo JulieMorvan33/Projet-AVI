@@ -4,7 +4,9 @@ import time
 from predictions import SpeedPredictionsA320
 from predictions import *
 from constantParameters import *
-#from ivy.std_api import *
+import numpy as np
+from transitions import get_track
+from ivy.std_api import *
 
 DP = 20 # nb de positions à faire à l'avion sur chaque leg
 
@@ -12,6 +14,7 @@ class Simulation(QObject):
     update_signal = pyqtSignal() # signal d'update envoyé à radarmotion
     update_display_signal = pyqtSignal()  # signal d'update envoyé à radarview pour l'affichage
     update_param = pyqtSignal()
+    heading_update_signal = pyqtSignal()
 
     def __init__(self, USE_IVY, SIMU_DELAY, init_time=0):
         super(Simulation, self).__init__()
@@ -25,10 +28,11 @@ class Simulation(QObject):
         self.NextWPTParam = dict() # contient NEXTWPT, COURSE, TTWPT
         self.defineDict()
         self.speedPred = SpeedPredictionsA320()
-        self.AC_X, self.AC_Y, self.AC_GS = 0, 0, 0  # initialisation des paramètre de l'avion
+        self.defineSpeedsPrediction(CI, FL, WIND)
+        self.AC_X, self.AC_Y, self.AC_HDG, self.AC_TAS, self.AC_GS = 0, 0, 0, 0, 0  # initialisation des paramètre de l'avion
         if not(self.USE_IVY): # pour une simulation sans bus Ivy
+            self.create_waypoints_without_Ivy()  # pour les positions des WayPoints
             self.create_AC_positions() # pour les positions avion
-            self.create_waypoints_without_Ivy() # pour les positions des WayPoints
 
     def defineDict(self):
         self.defineFlightParam(0, 0, 0)
@@ -57,14 +61,8 @@ class Simulation(QObject):
         self.NextWPTParam["COURSE"] = course
         self.NextWPTParam["TTWPT"] = ttwpt
 
-    def create_AC_positions(self): # pour une simulation sans bus Ivy
-        self.listeACpositions = []
-        for i in range(50):
-            self.AC_X, self.AC_Y = float(i * 2), i * 1.5  # Nm
-            self.listeACpositions.append(Point(self.AC_X, self.AC_Y))
-        for i in range(50):
-            self.AC_X, self.AC_Y = float(100 - i * 2), 75 + i * 1.5  # Nm
-            self.listeACpositions.append(Point(self.AC_X, self.AC_Y))
+    def defineSpeedsPrediction(self, ci, fl, wind):
+        self.speedPred.computeSpeeds(ci, fl, wind)
 
     def horloge(self, *arg):
         self.time = float(arg[1])
@@ -73,18 +71,45 @@ class Simulation(QObject):
     def get_AC_state(self, agent, *data):
         state = data[0].split(" ")
         self.AC_X, self.AC_Y = float(state[0].strip("x=")), float(state[1].strip("y="))
-        print("SIMU, AC X et Y : ", self.AC_X, self.AC_Y)
+        self.AC_HDG = float(state[6].strip("Heading=")) # en degrés
+        self.AC_TAS, self.AC_GS = float(state[7].strip("Airspeed=")), float(state[8].strip("Groundspeed=")) # en kts
+        print("SIMU, X=", self.AC_X, " Y=", self.AC_Y, " HDG=", self.AC_HDG, " TAS=", self.AC_TAS, " GS=", self.AC_GS)
         self.update_signal.emit()
 
-    def get_AC_state_without_Ivy(self):
+    def create_AC_positions(self, n=NB_AC_INTER_POS): # pour une simulation sans bus Ivy
+        self.listeACpositions = []
+        self.listeHDG = []
+        wp0 = self.trajFMS.waypoint_list[0]
+        self.AC_X, self.AC_Y = wp0.x, wp0.y
+        #print("pos de l'avion initiale : ", self.AC_X, self.AC_Y)
+        self.listeACpositions.append(Point(self.AC_X, self.AC_Y))
+
+        for ind in range(self.trajFMS.nbr_waypoints-1):
+            a = self.trajFMS.waypoint_list[ind]
+            b = self.trajFMS.waypoint_list[ind + 1]
+            seg = Segment(a,b)
+            hdg = get_track(seg)
+            hdg = hdg * RAD2DEG
+            if hdg < 0:
+                hdg = 360 + hdg
+            x1, y1, x2, y2 = a.x, a.y, b.x, b.y
+            for i in range(1, n+1):
+                self.AC_X += (x2-x1)/n
+                self.AC_Y += (y2-y1)/n
+                self.listeACpositions.append(Point(self.AC_X, self.AC_Y))
+                self.listeHDG.append(hdg)
+                self.heading_update_signal.emit()
+
+    def create_AC_state_without_Ivy(self):
+        self.listeHDG = []
         for i in range(50):
-            self.AC_X, self.AC_Y = float(i * 2), i * 1.5  # Nm
-            self.update_signal.emit()
-            time.sleep(self.SIMU_DELAY)
+            self.AC_HDG = np.arcsin(0.5)*RAD2DEG
+            self.AC_TAS, self.AC_GS = self.speedPred.TAS, self.speedPred.GS
+            self.listeHDG.append(self.AC_HDG)
         for i in range(50):
-            self.AC_X, self.AC_Y = float(100 - i * 2), 75 + i * 1.5  # Nm
-            self.update_signal.emit()
-            time.sleep(self.SIMU_DELAY)
+            self.HDG = np.arcsin(-0.5)*RAD2DEG
+            self.AC_TAS, self.AC_GS = self.speedPred.TAS, self.speedPred.GS
+            self.listeHDG.append(self.AC_HDG)
 
     #### Liste de LEG de la part du groue LEGS ##############
     def from_LEGS(self, *data):
@@ -132,8 +157,6 @@ class Simulation(QObject):
         self.update_display_signal.emit()
 
     def create_waypoints_without_Ivy(self):
-
-
         self.trajFMS.add_waypoint(Point(180, 220))
         self.trajFMS.add_waypoint(Point(100, 180))
         self.trajFMS.add_waypoint(Point(200, 150))
@@ -143,14 +166,7 @@ class Simulation(QObject):
         self.trajFMS.add_waypoint(Point(0, 0))
         self.trajFMS.add_waypoint(Point(-60, 0))
         self.trajFMS.add_waypoint(Point(-160, -130))
-
-        # self.trajFMS.add_waypoint(Point(0, 0))
-        # self.trajFMS.add_waypoint(Point(20, 100))
-        # self.trajFMS.add_waypoint(Point(100, 60))
-        # self.trajFMS.add_waypoint(Point(110, -30))
-        # self.trajFMS.add_waypoint(Point(200, 150))
-        # self.trajFMS.add_waypoint(Point(100, 180))
-        # self.trajFMS.add_waypoint(Point(180, 220))
+        self.update_signal.emit()
 
     def next_wpt_param_without_IVY(self):
         nextwpt = "ABABI"

@@ -1,5 +1,5 @@
 from PyQt5 import QtWidgets, QtCore
-#from ivy.std_api import *
+from ivy.std_api import *
 import navigationDisplay
 import communication
 import ndWindowParameters
@@ -21,14 +21,17 @@ if __name__ == "__main__":
     # create the radar view
     rad = navigationDisplay.RadarView(sim)
 
+    ac = navigationDisplay.AircraftView(sim)
+
+
     # create the compass view
-    compass = navigationDisplay.CompassView()
+    compass = navigationDisplay.CompassView(sim)
 
     # create the parameters view displaying GS, TAS,...
     param = navigationDisplay.ParamView(sim)
 
     # create the QMainWindow
-    win = ndWindowParameters.mywindow(param.view, rad.view, compass.view)
+    win = ndWindowParameters.mywindow(param.view, rad.view, compass.view, ac.view)
     win.setWindowTitle("Navigation Display")
     win.show()
 
@@ -43,7 +46,7 @@ if __name__ == "__main__":
         IvyBindMsg(sim.horloge, "^Time t=(.*)")
 
         # Abonnement au vecteur d'état pour la récupération de x et y
-        IvyBindMsg(sim.get_AC_state, "StateVector (.*)")
+        IvyBindMsg(sim.get_AC_state, "AircraftSetPosition (.*)")
 
         # Abonnement au message du groupe LEGS (liste des segments)
         IvyBindMsg(sim.from_LEGS, "FL_LegList_TEST (.*)")

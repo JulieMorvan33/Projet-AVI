@@ -87,6 +87,3 @@ class SpeedPredictionsA320(SpeedPredictions):
         print("CI=40, FL=290, WIND = -50kt", self.computeSpeeds(40, 290, -50))
         print("CI=100, FL=370, WIND = -20kt", self.computeSpeeds(100, 370, -20))
         print("CI=200, FL=370, WIND = -20kt", self.computeSpeeds(100, 370, -20))
-
-pred = SpeedPredictionsA320()
-pred.examples()

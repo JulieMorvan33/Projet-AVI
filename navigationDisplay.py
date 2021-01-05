@@ -4,10 +4,10 @@ This module allows the visualization of the aircraft and its
 trajectory on a scalable view"""
 
 import math
-from PyQt5 import QtGui, QtCore
+from PyQt5.QtCore import QPoint
 from graphicsItems import *
 from transitions import *
-from constantParameters import WIDTH, HEIGHT
+from constantParameters import WIDTH, HEIGHT, NB_AC_INTER_POS
 import time
 from predictions import *
 from communication import *
@@ -73,7 +73,7 @@ class ParamView(QtWidgets.QWidget):
 
         textitem = QtWidgets.QGraphicsTextItem(self.items)
         textitem.setFont(font)
-        textitem.setPlainText(str(SpeedPredictions().GS))
+        textitem.setPlainText(str(self.simulation.AC_GS))
         textitem.setPos(-640, -55)
         textitem.setDefaultTextColor(color3)
 
@@ -148,12 +148,14 @@ class ParamView(QtWidgets.QWidget):
         self.TTWPTtextitem.setPlainText(str(self.simulation.NextWPTParam["TTWPT"]))
         self.WINDtextitem.setPlainText(str(self.simulation.flightParam["WIND"]))
 
+
 class CompassView(QtWidgets.QWidget):
-    def __init__(self):
+    def __init__(self, sim):
         super().__init__()
         self.scene = QtWidgets.QGraphicsScene()
         self.view = QtWidgets.QGraphicsView(self.scene)
         self.view.fitInView(self.view.sceneRect(), QtCore.Qt.KeepAspectRatio)
+        self.sim = sim
 
         # invert y axis for the view
         self.view.scale(1, -1)
@@ -164,31 +166,52 @@ class CompassView(QtWidgets.QWidget):
         # ajout du compas
         self.items = QtWidgets.QGraphicsItemGroup()
         self.scene.addItem(self.items)
-        self.compass = QGraphicsCompassItem(WIDTH, WIDTH, WIDTH*0.7, self.items, self.view)
+        self.compass = QGraphicsCompassItem2(WIDTH, WIDTH, WIDTH*0.5, self.items, self.view)
+        self.items.addToGroup(self.compass)
+        #self.rotation = self.compass.rotation()
+        #centre_rot = QtCore.QPointF(WIDTH + (WIDTH*0.7) / 2, WIDTH + (WIDTH*0.7)/2)
+        #self.compass.setTransformOriginPoint(centre_rot)  # Permet de changer le point où la rotation aura lieu
+        #self.compass.setRotation(self.rotation + 80)  # Décallage de 10° vers la droite, ce qui est bizarre, c'est que
+        # ça marche pas pour toutes les valeurs d'angle (essayer avec 50)
+        self.sim.update_signal.connect(self.update_hdg)
+
+        if self.sim.USE_IVY:
+            self.sim.update_signal.connect(self.compass.setRotation(self.rotation + self.sim.AC_HDG))
+
+    def update_hdg(self):
+        ind = int(self.sim.time / self.sim.SIMU_DELAY)
+        #if ind % NB_AC_INTER_POS == 0:
+        hdg = self.sim.listeHDG[ind]
+        print(hdg)
+        centre_rot = QtCore.QPointF(WIDTH + (WIDTH * 0.5) / 2, WIDTH + (WIDTH * 0.5) / 2)
+        self.compass.setTransformOriginPoint(centre_rot)
+        self.rotation = self.compass.rotation()
+        self.compass.setRotation(hdg)
+
+class AircraftView(QtWidgets.QWidget):
+    def __init__(self, sim):
+        super().__init__()
+        self.scene = QtWidgets.QGraphicsScene()
+        self.view = QtWidgets.QGraphicsView(self.scene)
+        self.sim = sim
+        self.view.fitInView(self.view.sceneRect(), QtCore.Qt.KeepAspectRatio)
+
+        # invert y axis for the view
+        self.view.scale(1, -1)
+
         self.aircraft = AircraftItem()
+        self.aircraft.update_position(0,0)
+        self.aircraft.setScale(0.01)
+        #self.sim.update_signal.connect(self.update_position) # pour visulaiser le mouvement de l'avion
+        self.scene.addItem(self.aircraft)
 
-
-class ItemsMotionManager:
-    """Collection of moving items and their motion management"""
-    def __init__(self, radar):
-        self.rad = radar
-        self.sim = self.rad.simulation
-        self.aircraft = AircraftItem()
-        self.aircraft.update_position(0, 0)
-        self.aircraft.setZValue(1)  # PLOT_Z_VALUE = 1 # display moving items OVER trajectory items
-        radar.scene.addItem(self.aircraft)
-        self.sim.update_signal.connect(self.update_items) # listen update signal on simulation
-
-    def update_items(self):
-        """Update moving items"""
+    def update_position(self):
         if not self.sim.USE_IVY:  # if Ivy Bus isn't used
-            pos = self.sim.listeACpositions[int(self.sim.time/self.sim.SIMU_DELAY)]
+            pos = self.sim.listeACpositions[int(self.sim.time / self.sim.SIMU_DELAY)]
             self.aircraft.update_position(pos.x, pos.y)
             time.sleep(self.sim.SIMU_DELAY)
         else:
             self.aircraft.update_position(self.sim.AC_Y, self.sim.AC_X)
-        # self.rad.scene.setSceneRect(self.sim.AC_X-self.rad.width/2, self.sim.AC_Y-self.rad.height/2, self.rad.width,
-        # self.rad.height)
 
 class RadarView(QtWidgets.QWidget):
     """An interactive view of the items displayed by a ND,
@@ -203,6 +226,7 @@ class RadarView(QtWidgets.QWidget):
 
         # signals connection
         self.simulation.update_display_signal.connect(self.update_ND_items)
+        self.simulation.update_signal.connect(self.update_ND_items_position)
 
         # Settings
         self.width, self.height = WIDTH, HEIGHT
@@ -223,9 +247,6 @@ class RadarView(QtWidgets.QWidget):
         if self.simulation.trajFMS.waypoint_list != []:
             self.add_ND_items()
             self.fit_scene_in_view()
-
-        # add the moving items
-        self.moving_items = ItemsMotionManager(self)
 
         # add components to the root_layout
         root_layout.addWidget(self.view)
@@ -260,22 +281,22 @@ class RadarView(QtWidgets.QWidget):
 
             if (i == 1): # si première transition
                 if transition_type == "fly_by":
-                    transition_list = compute_transition_fly_by(seg_actif, seg_next)
+                    transition_list = compute_transition_fly_by(seg_actif, seg_next, self.simulation.speedPred.GS)
                 elif transition_type == "fly_over":
-                    transition_list = compute_transition_fly_over(seg_actif, seg_next)
+                    transition_list = compute_transition_fly_over(seg_actif, seg_next, self.simulation.speedPred.GS)
                 start_segment = a
                 end_segment = transition_list[0].start
             else:
                 temp = transition_list[-1].end
                 if transition_type == "fly_by":
-                    transition_list = compute_transition_fly_by(seg_actif, seg_next)
+                    transition_list = compute_transition_fly_by(seg_actif, seg_next, self.simulation.speedPred.GS)
                 elif transition_type == "fly_over":
-                    transition_list = compute_transition_fly_over(seg_actif, seg_next)
+                    transition_list = compute_transition_fly_over(seg_actif, seg_next, self.simulation.speedPred.GS)
                 start_segment = temp
                 end_segment = transition_list[0].start
 
             # ajout des objets transitions et orthos dans la trajectoire pour envoi sur le bus IVY
-            self.simulation.trajFMS.add_path(g.Segment(start_segment, end_segment), g.Transition(transition_type, GS,
+            self.simulation.trajFMS.add_path(g.Segment(start_segment, end_segment), g.Transition(transition_type, self.simulation.speedPred.GS,
                                                                                                  transition_list))
             # self.simulation.trajFMS.bankAnglesList.append(bank_angle) # list de 2 banks pour un fly over ?
 
@@ -286,9 +307,9 @@ class RadarView(QtWidgets.QWidget):
                 for transition in transition_list:
                     if isinstance(transition, g.Arc):
                         # Affichage des points de start, end, centre (Bi, B0, Bc) pour chaque transition
-                        QGraphicsTransitionPoints(transition.start.x, transition.start.y, self.nd_items)
-                        QGraphicsTransitionPoints(transition.end.x, transition.end.y, self.nd_items)
-                        QGraphicsTransitionPoints(transition.centre.x, transition.centre.y, self.nd_items)
+                        #QGraphicsTransitionPoints(transition.start.x, transition.start.y, self.nd_items)
+                        #QGraphicsTransitionPoints(transition.end.x, transition.end.y, self.nd_items)
+                        #QGraphicsTransitionPoints(transition.centre.x, transition.centre.y, self.nd_items)
 
 
                         # Affiche l'arc associé à la transition
@@ -328,7 +349,35 @@ class RadarView(QtWidgets.QWidget):
             QGraphicsWayPointsItem(point.x, point.y, self.nd_items)
 
     def fit_scene_in_view(self):
+        global first_pos_x, first_pos_y
+        self.item = QtWidgets.QGraphicsItemGroup()
+        pos = self.simulation.listeACpositions[int(self.simulation.time / self.simulation.SIMU_DELAY)]
+        self.point = QGraphicsTransitionPoints(pos.x, pos.y, self.nd_items)
+        self.nd_items.addToGroup(self.point)
+        ind = int(self.simulation.time / self.simulation.SIMU_DELAY)
+        print("ind", ind%NB_AC_INTER_POS)
+        #if ind%NB_AC_INTER_POS==0:
+        print("ROTATE")
+        first_pos_x, first_pos_y = pos.x*PRECISION_FACTOR, pos.y*PRECISION_FACTOR
+        self.nd_items.setTransformOriginPoint(first_pos_x, first_pos_y)
+        self.nd_items.setRotation(self.simulation.listeHDG[int(self.simulation.time / self.simulation.SIMU_DELAY)])
+        #if first_pos_x != self.point.x and first_pos_y != self.point.y:
+        print("first :", first_pos_x, first_pos_y)
+            #self.point.setTransformOriginPoint(first_pos_x, first_pos_y)
+            #self.point.setRotation(self.simulation.listeHDG[int(self.simulation.time / self.simulation.SIMU_DELAY)])
+        print("pos ", pos.x * PRECISION_FACTOR, pos.y * PRECISION_FACTOR)
+        print("point ", self.point.x, self.point.y)
+        print("rotation du point :", self.point.rotation())
+        print("rotation des nd items : ", self.nd_items.rotation())
+        w, h = WIDTH/4*PRECISION_FACTOR, HEIGHT/4*PRECISION_FACTOR
+        self.scene.setSceneRect(self.point.x-w/2, self.point.y-h/2, w, h)
         self.view.fitInView(self.view.sceneRect(), QtCore.Qt.KeepAspectRatio)
+
+
+    def update_ND_items_position(self):
+        if not self.simulation.USE_IVY :
+            self.fit_scene_in_view()
+            time.sleep(self.simulation.SIMU_DELAY)
 
     def update_ND_items(self):
         # print("UPDATING ITEMS...")
@@ -343,3 +392,5 @@ class RadarView(QtWidgets.QWidget):
         To be used only if the Ivy bus isn't used"""
         self.simulation.horloge(None, self.simulation.time + self.simulation.SIMU_DELAY)
         self.simulation.update_signal.emit()
+
+

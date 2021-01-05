@@ -6,7 +6,7 @@ EPSILON = 10e-5
 #Transition parameters
 intersect_angle = np.pi/6
 
-def compute_transition_fly_by(seg_actif, seg_next):
+def compute_transition_fly_by(seg_actif, seg_next, GS):
 	"""Compute track_change, turn radius, seg_actif, seg_next, b_in, b_out, b_center
 	associated to the index i transition """
 
@@ -70,7 +70,7 @@ def compute_transition_fly_by(seg_actif, seg_next):
 	return [g.Arc(b_center, b_in, b_out, turn_radius, lead_distance, bank_angle, track_change, sens_virage)]
 
 
-def compute_transition_fly_over(seg_actif, seg_next):
+def compute_transition_fly_over(seg_actif, seg_next, GS):
 	# Recuperation des points A (debut) et B (fin) du premier segment
 	a = seg_actif.start
 	b = seg_actif.end
@@ -150,7 +150,7 @@ def compute_transition_fly_over(seg_actif, seg_next):
 	im_2 = seg_next_im.intersection(seg_next)
 	im_1_im2 = g.Segment(im1_out,im_2)
 	im_2_next = g.Segment(im_2, seg_next.end)
-	l_Arc2 = compute_transition_fly_by(im_1_im2, im_2_next)
+	l_Arc2 = compute_transition_fly_by(im_1_im2, im_2_next, GS)
 	Arc2 = l_Arc2[0]
 	segment_jointif = g.Segment(im1_out, Arc2.start)
 	return [Arc1, segment_jointif, Arc2]
