@@ -6,7 +6,7 @@ from predictions import *
 from constantParameters import *
 import numpy as np
 from transitions import get_track
-#from ivy.std_api import *
+from ivy.std_api import *
 
 DP = 20 # nb de positions à faire à l'avion sur chaque leg
 
