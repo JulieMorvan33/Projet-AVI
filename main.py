@@ -25,7 +25,7 @@ if __name__ == "__main__":
 
 
     # create the compass view
-    compass = navigationDisplay.CompassView()
+    compass = navigationDisplay.CompassView(sim)
 
     # create the parameters view displaying GS, TAS,...
     param = navigationDisplay.ParamView(sim)

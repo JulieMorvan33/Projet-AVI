@@ -74,19 +74,23 @@ class Simulation(QObject):
         self.AC_TAS, self.AC_GS = float(state[7].strip("Airspeed=")), float(state[8].strip("Groundspeed=")) # en kts
         print("SIMU, X=", self.AC_X, " Y=", self.AC_Y, " HDG=", self.AC_HDG, " TAS=", self.AC_TAS, " GS=", self.AC_GS)
         self.update_signal.emit()
+        self.heading_update_signal.emit()
 
     def create_AC_state_without_Ivy(self):
         self.listeACpositions = []
+        self.listeACheading = []
         for i in range(50):
             self.AC_X, self.AC_Y = float(i * 2), i * 1.5  # Nm
             self.listeACpositions.append(Point(self.AC_X, self.AC_Y))
-            self.AC_HDG = np.arcsin(0.5)*RAD2DEG
+            self.AC_HDG = np.arcsin(0.17)*RAD2DEG
+            self.listeACheading.append(self.AC_HDG)
             self.AC_TAS, self.AC_GS = self.speedPred.TAS, self.speedPred.GS
             self.heading_update_signal.emit()
         for i in range(50):
             self.AC_X, self.AC_Y = float(100 - i * 2), 75 + i * 1.5  # Nm
             self.listeACpositions.append(Point(self.AC_X, self.AC_Y))
-            self.HDG = np.arcsin(-0.5)*RAD2DEG
+            self.AC_HDG = np.arcsin(-0.17)*RAD2DEG
+            self.listeACheading.append(self.AC_HDG)
             self.AC_TAS, self.AC_GS = self.speedPred.TAS, self.speedPred.GS
             self.heading_update_signal.emit()
 

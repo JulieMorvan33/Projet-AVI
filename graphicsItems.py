@@ -2,6 +2,7 @@ from PyQt5 import QtWidgets
 from PyQt5.QtGui import QPainter, QColor, QPen, QBrush, QTransform, QFont, QFontMetrics
 from PyQt5.QtCore import Qt
 from PyQt5 import QtGui
+from PyQt5 import QtCore
 
 import communication
 import numpy as np
