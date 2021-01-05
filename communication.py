@@ -5,6 +5,7 @@ from predictions import SpeedPredictionsA320
 from predictions import *
 from constantParameters import *
 import numpy as np
+from transitions import get_track
 #from ivy.std_api import *
 
 DP = 20 # nb de positions à faire à l'avion sur chaque leg
@@ -30,8 +31,9 @@ class Simulation(QObject):
         self.defineSpeedsPrediction(CI, FL, WIND)
         self.AC_X, self.AC_Y, self.AC_HDG, self.AC_TAS, self.AC_GS = 0, 0, 0, 0, 0  # initialisation des paramètre de l'avion
         if not(self.USE_IVY): # pour une simulation sans bus Ivy
-            self.create_AC_state_without_Ivy() # pour les positions avion
-            self.create_waypoints_without_Ivy() # pour les positions des WayPoints
+            self.create_waypoints_without_Ivy()  # pour les positions des WayPoints
+            self.create_AC_positions() # pour les positions avion
+            self.create_AC_state_without_Ivy()
 
     def defineDict(self):
         self.defineFlightParam(0, 0, 0)
@@ -74,25 +76,54 @@ class Simulation(QObject):
         self.AC_TAS, self.AC_GS = float(state[7].strip("Airspeed=")), float(state[8].strip("Groundspeed=")) # en kts
         print("SIMU, X=", self.AC_X, " Y=", self.AC_Y, " HDG=", self.AC_HDG, " TAS=", self.AC_TAS, " GS=", self.AC_GS)
         self.update_signal.emit()
-        self.heading_update_signal.emit()
+
+    def create_AC_positions(self, n=10): # pour une simulation sans bus Ivy
+        self.listeACpositions = []
+        self.listeHDG = []
+        wp0 = self.trajFMS.waypoint_list[0]
+        self.AC_X, self.AC_Y = wp0.x, wp0.y
+        print("pos de l'avion initiale : ", self.AC_X, self.AC_Y)
+        self.listeACpositions.append(Point(self.AC_X, self.AC_Y))
+
+        for ind in range(self.trajFMS.nbr_waypoints-1):
+            a = self.trajFMS.waypoint_list[ind]
+            b = self.trajFMS.waypoint_list[ind + 1]
+            seg = Segment(a,b)
+            hdg = get_track(seg)
+            hdg = hdg * RAD2DEG
+            print(hdg)
+            if hdg < 0:
+                hdg = 360 + hdg
+            x1, y1, x2, y2 = a.x, a.y, b.x, b.y
+            for i in range(1, n+1):
+                self.AC_X += (x2-x1)/n
+                self.AC_Y += (y2-y1)/n
+                self.listeACpositions.append(Point(self.AC_X, self.AC_Y))
+                self.listeHDG.append(hdg)
+
+
+        '''
+        for i in range(50):
+            self.AC_X += float(i * 2) # Nm
+            self.AC_Y += i * 1.5  # Nm
+            self.listeACpositions.append(Point(self.AC_X, self.AC_Y))
+            self.update_signal.emit()
+        for i in range(50):
+            self.AC_X += float(100 - i * 2)# Nm
+            self.AC_Y += 75 + i * 1.5  # Nm
+            self.listeACpositions.append(Point(self.AC_X, self.AC_Y))
+        '''
 
     def create_AC_state_without_Ivy(self):
-        self.listeACpositions = []
-        self.listeACheading = []
+        self.listeHDG = []
         for i in range(50):
-            self.AC_X, self.AC_Y = float(i * 2), i * 1.5  # Nm
-            self.listeACpositions.append(Point(self.AC_X, self.AC_Y))
-            self.AC_HDG = np.arcsin(0.17)*RAD2DEG
-            self.listeACheading.append(self.AC_HDG)
+            self.AC_HDG = np.arcsin(0.5)*RAD2DEG
             self.AC_TAS, self.AC_GS = self.speedPred.TAS, self.speedPred.GS
-            self.heading_update_signal.emit()
+            self.listeHDG.append(self.AC_HDG)
         for i in range(50):
-            self.AC_X, self.AC_Y = float(100 - i * 2), 75 + i * 1.5  # Nm
-            self.listeACpositions.append(Point(self.AC_X, self.AC_Y))
-            self.AC_HDG = np.arcsin(-0.17)*RAD2DEG
-            self.listeACheading.append(self.AC_HDG)
+            self.HDG = np.arcsin(-0.5)*RAD2DEG
             self.AC_TAS, self.AC_GS = self.speedPred.TAS, self.speedPred.GS
-            self.heading_update_signal.emit()
+            self.listeHDG.append(self.AC_HDG)
 
     #### Liste de LEG de la part du groue LEGS ##############
     def from_LEGS(self, *data):
