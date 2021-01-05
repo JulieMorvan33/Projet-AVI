@@ -150,11 +150,12 @@ class ParamView(QtWidgets.QWidget):
 
 
 class CompassView(QtWidgets.QWidget):
-    def __init__(self):
+    def __init__(self, sim):
         super().__init__()
         self.scene = QtWidgets.QGraphicsScene()
         self.view = QtWidgets.QGraphicsView(self.scene)
         self.view.fitInView(self.view.sceneRect(), QtCore.Qt.KeepAspectRatio)
+        self.sim = sim
 
         # invert y axis for the view
         self.view.scale(1, -1)
@@ -167,11 +168,28 @@ class CompassView(QtWidgets.QWidget):
         self.scene.addItem(self.items)
         self.compass = QGraphicsCompassItem2(WIDTH, WIDTH, WIDTH*0.7, self.items, self.view)
         self.items.addToGroup(self.compass)
-        self.rotation = self.compass.rotation()
-        centre_rot = QtCore.QPointF(WIDTH + (WIDTH*0.7) / 2, WIDTH + (WIDTH*0.7)/2)
-        self.compass.setTransformOriginPoint(centre_rot)  # Permet de changer le point où la rotation aura lieu
-        self.compass.setRotation(self.rotation + 80)  # Décallage de 10° vers la droite, ce qui est bizarre, c'est que
+        #self.rotation = self.compass.rotation()
+        #centre_rot = QtCore.QPointF(WIDTH + (WIDTH*0.7) / 2, WIDTH + (WIDTH*0.7)/2)
+        #self.compass.setTransformOriginPoint(centre_rot)  # Permet de changer le point où la rotation aura lieu
+        #self.compass.setRotation(self.rotation + 80)  # Décallage de 10° vers la droite, ce qui est bizarre, c'est que
         # ça marche pas pour toutes les valeurs d'angle (essayer avec 50)
+        self.sim.heading_update_signal.connect(self.update_hdg)
+
+        if self.sim.USE_IVY:
+            self.sim.heading_update_signal.connect(self.compass.setRotation(self.rotation + self.sim.AC_HDG))
+
+
+    def update_hdg(self):
+        hdg = self.sim.listeACheading[int(self.sim.time / self.sim.SIMU_DELAY)]
+        print(hdg)
+        centre_rot = QtCore.QPointF(WIDTH + (WIDTH * 0.7) / 2, WIDTH + (WIDTH * 0.7) / 2)
+        self.compass.setTransformOriginPoint(centre_rot)
+        self.rotation = self.compass.rotation()
+        self.compass.setRotation(self.rotation + hdg)
+        time.sleep(self.sim.SIMU_DELAY)
+        # self.compass.setRotation(self.rotation + self.sim.AC_HDG)
+        # print(self.rotation + self.sim.AC_HDG)
+
 
 class AircraftView(QtWidgets.QWidget):
     def __init__(self, sim):
