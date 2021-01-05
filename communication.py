@@ -76,12 +76,24 @@ class Simulation(QObject):
         print("SIMU, X=", self.AC_X, " Y=", self.AC_Y, " HDG=", self.AC_HDG, " TAS=", self.AC_TAS, " GS=", self.AC_GS)
         self.update_signal.emit()
 
-    def create_AC_positions(self): # pour une simulation sans bus Ivy
+    def create_AC_positions(self, n=10): # pour une simulation sans bus Ivy
         self.listeACpositions = []
         wp0 = self.trajFMS.waypoint_list[0]
         self.AC_X, self.AC_Y = wp0.x, wp0.y
         print("pos de l'avion initiale : ", self.AC_X, self.AC_Y)
         self.listeACpositions.append(Point(self.AC_X, self.AC_Y))
+
+        for ind in range(self.trajFMS.nbr_waypoints-1):
+            a = self.trajFMS.waypoint_list[ind]
+            b = self.trajFMS.waypoint_list[ind + 1]
+            x1, y1, x2, y2 = a.x, a.y, b.x, b.y
+            for i in range(1, n+1):
+                self.AC_X += (x2-x1)/n
+                self.AC_Y -= (y2-y1)/n
+                print("envoi du signal")
+                self.listeACpositions.append(Point(self.AC_X, self.AC_Y))
+
+        '''
         for i in range(50):
             self.AC_X += float(i * 2) # Nm
             self.AC_Y += i * 1.5  # Nm
@@ -91,16 +103,18 @@ class Simulation(QObject):
             self.AC_X += float(100 - i * 2)# Nm
             self.AC_Y += 75 + i * 1.5  # Nm
             self.listeACpositions.append(Point(self.AC_X, self.AC_Y))
+        '''
 
     def create_AC_state_without_Ivy(self):
+        self.listeHDG = []
         for i in range(50):
             self.AC_HDG = np.arcsin(0.5)*RAD2DEG
             self.AC_TAS, self.AC_GS = self.speedPred.TAS, self.speedPred.GS
-            self.heading_update_signal.emit()
+            self.listeHDG.append(self.AC_HDG)
         for i in range(50):
             self.HDG = np.arcsin(-0.5)*RAD2DEG
             self.AC_TAS, self.AC_GS = self.speedPred.TAS, self.speedPred.GS
-            self.heading_update_signal.emit()
+            self.listeHDG.append(self.AC_HDG)
 
     #### Liste de LEG de la part du groue LEGS ##############
     def from_LEGS(self, *data):
