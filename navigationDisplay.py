@@ -166,7 +166,7 @@ class CompassView(QtWidgets.QWidget):
         # ajout du compas
         self.items = QtWidgets.QGraphicsItemGroup()
         self.scene.addItem(self.items)
-        self.compass = QGraphicsCompassItem2(WIDTH, WIDTH, WIDTH*0.7, self.items, self.view)
+        self.compass = QGraphicsCompassItem2(WIDTH, WIDTH, WIDTH*0.5, self.items, self.view)
         self.items.addToGroup(self.compass)
         #self.rotation = self.compass.rotation()
         #centre_rot = QtCore.QPointF(WIDTH + (WIDTH*0.7) / 2, WIDTH + (WIDTH*0.7)/2)
@@ -180,13 +180,13 @@ class CompassView(QtWidgets.QWidget):
 
     def update_hdg(self):
         ind = int(self.sim.time / self.sim.SIMU_DELAY)
-        if ind % NB_AC_INTER_POS == 0:
-            hdg = self.sim.listeHDG[ind]
-            print(hdg)
-            centre_rot = QtCore.QPointF(WIDTH + (WIDTH * 0.7) / 2, WIDTH + (WIDTH * 0.7) / 2)
-            self.compass.setTransformOriginPoint(centre_rot)
-            self.rotation = self.compass.rotation()
-            self.compass.setRotation(self.rotation + hdg)
+        #if ind % NB_AC_INTER_POS == 0:
+        hdg = self.sim.listeHDG[ind]
+        print(hdg)
+        centre_rot = QtCore.QPointF(WIDTH + (WIDTH * 0.5) / 2, WIDTH + (WIDTH * 0.5) / 2)
+        self.compass.setTransformOriginPoint(centre_rot)
+        self.rotation = self.compass.rotation()
+        self.compass.setRotation(hdg)
 
 class AircraftView(QtWidgets.QWidget):
     def __init__(self, sim):
@@ -351,22 +351,23 @@ class RadarView(QtWidgets.QWidget):
         global first_pos_x, first_pos_y
         self.item = QtWidgets.QGraphicsItemGroup()
         pos = self.simulation.listeACpositions[int(self.simulation.time / self.simulation.SIMU_DELAY)]
-        self.point = QGraphicsTransitionPoints(pos.x, pos.y, self.item)
-        #self.nd_items.addToGroup(self.point)
+        self.point = QGraphicsTransitionPoints(pos.x, pos.y, self.nd_items)
+        self.nd_items.addToGroup(self.point)
         ind = int(self.simulation.time / self.simulation.SIMU_DELAY)
         print("ind", ind%NB_AC_INTER_POS)
-        if ind%NB_AC_INTER_POS==0:
-            print("ROTATE")
-            first_pos_x, first_pos_y = pos.x*PRECISION_FACTOR, pos.y*PRECISION_FACTOR
-            self.nd_items.setTransformOriginPoint(first_pos_x, first_pos_y)
-            self.nd_items.setRotation(self.simulation.listeHDG[int(self.simulation.time / self.simulation.SIMU_DELAY)])
-        if first_pos_x != self.point.x and first_pos_y != self.point.y:
-            print("first :", first_pos_x, first_pos_y)
-            #self.item.setTransformOriginPoint(first_pos_x, first_pos_y)
+        #if ind%NB_AC_INTER_POS==0:
+        print("ROTATE")
+        first_pos_x, first_pos_y = pos.x*PRECISION_FACTOR, pos.y*PRECISION_FACTOR
+        self.nd_items.setTransformOriginPoint(first_pos_x, first_pos_y)
+        self.nd_items.setRotation(self.simulation.listeHDG[int(self.simulation.time / self.simulation.SIMU_DELAY)])
+        #if first_pos_x != self.point.x and first_pos_y != self.point.y:
+        print("first :", first_pos_x, first_pos_y)
+            #self.point.setTransformOriginPoint(first_pos_x, first_pos_y)
             #self.point.setRotation(self.simulation.listeHDG[int(self.simulation.time / self.simulation.SIMU_DELAY)])
         print("pos ", pos.x * PRECISION_FACTOR, pos.y * PRECISION_FACTOR)
         print("point ", self.point.x, self.point.y)
-        print(self.point.rotation())
+        print("rotation du point :", self.point.rotation())
+        print("rotation des nd items : ", self.nd_items.rotation())
         w, h = WIDTH/4*PRECISION_FACTOR, HEIGHT/4*PRECISION_FACTOR
         self.scene.setSceneRect(self.point.x-w/2, self.point.y-h/2, w, h)
         self.view.fitInView(self.view.sceneRect(), QtCore.Qt.KeepAspectRatio)
