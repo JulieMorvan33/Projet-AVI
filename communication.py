@@ -5,6 +5,7 @@ from predictions import SpeedPredictionsA320
 from predictions import *
 from constantParameters import *
 import numpy as np
+from transitions import get_track
 #from ivy.std_api import *
 
 DP = 20 # nb de positions à faire à l'avion sur chaque leg
@@ -78,6 +79,7 @@ class Simulation(QObject):
 
     def create_AC_positions(self, n=10): # pour une simulation sans bus Ivy
         self.listeACpositions = []
+        self.listeHDG = []
         wp0 = self.trajFMS.waypoint_list[0]
         self.AC_X, self.AC_Y = wp0.x, wp0.y
         print("pos de l'avion initiale : ", self.AC_X, self.AC_Y)
@@ -86,12 +88,19 @@ class Simulation(QObject):
         for ind in range(self.trajFMS.nbr_waypoints-1):
             a = self.trajFMS.waypoint_list[ind]
             b = self.trajFMS.waypoint_list[ind + 1]
+            seg = Segment(a,b)
+            hdg = get_track(seg)
+            hdg = hdg * RAD2DEG
+            print(hdg)
+            if hdg < 0:
+                hdg = 360 + hdg
             x1, y1, x2, y2 = a.x, a.y, b.x, b.y
             for i in range(1, n+1):
                 self.AC_X += (x2-x1)/n
-                self.AC_Y -= (y2-y1)/n
-                print("envoi du signal")
+                self.AC_Y += (y2-y1)/n
                 self.listeACpositions.append(Point(self.AC_X, self.AC_Y))
+                self.listeHDG.append(hdg)
+
 
         '''
         for i in range(50):
