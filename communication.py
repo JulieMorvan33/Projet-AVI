@@ -8,7 +8,8 @@ import numpy as np
 from transitions import get_track
 from ivy.std_api import *
 
-DP = 20 # nb de positions à faire à l'avion sur chaque leg
+DP = 20  # nb de positions à faire à l'avion sur chaque leg
+
 
 class Simulation(QObject):
     update_signal = pyqtSignal() # signal d'update envoyé à radarmotion
@@ -27,19 +28,19 @@ class Simulation(QObject):
         self.SIMU_DELAY = SIMU_DELAY
         self.time = init_time
         self.trajFMS = RefLatPath()
-        self.mode = None # mode de l'autopilot ("MAN" ou "SEL")
-        self.flightParam = dict() # contient CRZ_ALT, CI et WIND
-        self.SEQParam = dict() # contient XTK, TAE, DTWPT, ALDTWPT
-        self.NextWPTParam = dict() # contient NEXTWPT, COURSE, TTWPT
+        self.mode = None  # mode de l'autopilot ("MAN" ou "SEL")
+        self.flightParam = dict()  # contient CRZ_ALT, CI et WIND
+        self.SEQParam = dict()  # contient XTK, TAE, DTWPT, ALDTWPT
+        self.NextWPTParam = dict()  # contient NEXTWPT, COURSE, TTWPT
         self.speedPred = SpeedPredictionsA320()
         self.defineDict()
         self.AC_X, self.AC_Y, self.AC_HDG, self.AC_TAS, self.AC_GS = 0, 0, 0, 0, 0  # initialisation des paramètre de l'avion
         self.flight_started = False
         self.active_leg = None
         self.new_active_leg = False
-        if not(self.USE_IVY): # pour une simulation sans bus Ivy
+        if not self.USE_IVY:  # pour une simulation sans bus Ivy
             self.create_waypoints_without_Ivy()  # pour les positions des WayPoints
-            self.create_AC_positions() # pour les positions avion
+            self.create_AC_positions()  # pour les positions avion
 
     def defineDict(self):
         self.defineFlightParam(0, 0, (0, 0))
@@ -56,7 +57,7 @@ class Simulation(QObject):
         self.update_flight_param_signal.emit()
 
         if crz_alt!=0: # si c'est pas l'initialisation
-            "GT TAS=" + str(self.speedPred.TAS*KT2MS) + " CRZ_ALT=" + str(crz_alt*FT2M)
+            messageToCOMM = "GT TAS=" + str(self.speedPred.TAS*KT2MS) + " CRZ_ALT=" + str(crz_alt*FT2M)
             IvySendMsg(messageToCOMM)
 
     def defineSEQParam(self, xtk, tae, dtwpt, aldtwpt):
@@ -82,30 +83,30 @@ class Simulation(QObject):
         state = data[0].split(" ")
         self.AC_X, self.AC_Y = float(state[0].strip("X=")), float(state[1].strip("Y="))
         print("POs dans com ", self.AC_X, self.AC_Y)
-        self.AC_HDG = float(state[6].strip("Heading=")) # en degrés
-        self.AC_TAS, self.AC_GS = float(state[7].strip("Airspeed=")), float(state[8].strip("Groundspeed=")) # en kts
+        self.AC_HDG = float(state[6].strip("Heading="))  # en degrés
+        self.AC_TAS, self.AC_GS = float(state[7].strip("Airspeed=")), float(state[8].strip("Groundspeed="))  # en kts
         print("SIMU, X=", self.AC_X, " Y=", self.AC_Y, " HDG=", self.AC_HDG, " TAS=", self.AC_TAS, " GS=", self.AC_GS)
 
         # Envoi d'un message pour ROUTE spécifiant le début de vol
-        if not(self.flight_started) and (self.AC_X != 0 or self.AC_Y!=0):
+        if not self.flight_started and self.AC_X != 0 or self.AC_Y != 0:
             IvySendMsg("GT Flight_started")
             print("Flight start")
             self.flight_started = True
 
         self.update_aicraft_signal.emit()
 
-    def create_AC_positions(self, n=NB_AC_INTER_POS): # pour une simulation sans bus Ivy
+    def create_AC_positions(self, n=NB_AC_INTER_POS):  # pour une simulation sans bus Ivy
         self.listeACpositions = []
         self.listeHDG = []
         wp0 = self.trajFMS.waypoint_list[0]
         self.AC_X, self.AC_Y = wp0.x, wp0.y
-        #print("pos de l'avion initiale : ", self.AC_X, self.AC_Y)
+        # print("pos de l'avion initiale : ", self.AC_X, self.AC_Y)
         self.listeACpositions.append(Point(self.AC_X, self.AC_Y))
 
         for ind in range(self.trajFMS.nbr_waypoints-1):
             a = self.trajFMS.waypoint_list[ind]
             b = self.trajFMS.waypoint_list[ind + 1]
-            seg = Segment(a,b)
+            seg = Segment(a, b)
             hdg = get_track(seg)
             hdg = hdg * RAD2DEG
             if hdg < 0:

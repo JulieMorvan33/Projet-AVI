@@ -39,7 +39,7 @@ if __name__ == "__main__":
         # Initialisation du bus Ivy
         bus = "192.168.43.255:2010"
         IvyInit("GUID_TRAJ_APP", "Bonjour de GUID_TRAJ", 0, null_cb, null_cb)
-        IvyStart()
+        IvyStart(bus)
         time.sleep(1.0)  # attente du temps de l'initialisation
 
         # Abonnement à l'horloge
@@ -49,7 +49,7 @@ if __name__ == "__main__":
         IvyBindMsg(sim.get_AC_state, "AircraftSetPosition (.*)")
 
         # Abonnement au message du groupe LEGS (liste des segments)
-        IvyBindMsg(sim.from_LEGS, "FL_LegList_TEST (.*)")
+        IvyBindMsg(sim.from_LEGS, "FL_LegList (.*)")
 
         # Abonnement au numéro de séquence du leg actif venant de SEQ
         IvyBindMsg(sim.receive_active_leg, "GS_AL (.*)")

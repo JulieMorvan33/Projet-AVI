@@ -5,14 +5,16 @@ import random as r
 def receiveTRAJ(agent, *data):
     print("Message de TRAJ : ", data[0])
 
+def null_cb(*a):
+    pass
 
 if __name__ == '__main__':
     bus = "192.168.43.255:2010"
 
     # Initialisation
-    IvyInit("LEGS", "Bonjour du groupe SEQ")
-    IvyStart()
-
+    IvyInit("SEQ", "Bonjour du groupe SEQ", 0, null_cb, null_cb)
+    IvyStart(bus)
+    time.sleep(1.0)
     t = time.time()
     for i in range(1000):
         dt = time.time() - t
