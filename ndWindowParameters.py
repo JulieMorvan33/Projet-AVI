@@ -356,6 +356,7 @@ class Ui_MainWindow(object):
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
         self.sim.update_param_1.connect(self.update_labels)
+        self.sim.AP_mode_signal.connect(self.update_AP_mode)
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
@@ -382,7 +383,7 @@ class Ui_MainWindow(object):
         self.label_17.setText(_translate("MainWindow", "..."))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.PFD_Param), _translate("MainWindow", "Page"))
         self.label_18.setText(_translate("MainWindow", "MODE : "))
-        self.label_19.setText(_translate("MainWindow", "SELECTED"))
+        self.label_19.setText(_translate("MainWindow", "MANAGE"))
         self.label_20.setText(_translate("MainWindow", "ZOOM : "))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.Mode_Param), _translate("MainWindow", "Tab 2"))
 
@@ -402,6 +403,9 @@ class Ui_MainWindow(object):
         print("Paramètres de vol validés : CRZ_ALT=", crz_alt,"ft WIND=", str(wind), "kts CI=", ci)
         self.sim.defineFlightParam(crz_alt, ci, wind)
 
+    def update_AP_mode(self):
+        self.label_19.setText(self.sim.AP_mode)
+        print("Nouveau AP mode :", self.sim.AP_mode)
 
 class mywindow(QtWidgets.QMainWindow):
     def __init__(self, param_view, view, compass_view, aircraft_view, sim):

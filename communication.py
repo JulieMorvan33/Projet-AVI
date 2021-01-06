@@ -17,6 +17,8 @@ class Simulation(QObject):
     update_param_2 = pyqtSignal()
     update_aicraft_signal = pyqtSignal()
     update_flight_param_signal = pyqtSignal()
+    AP_mode_signal = pyqtSignal()
+    new_active_leg_signal = pyqtSignal()
 
     def __init__(self, USE_IVY, SIMU_DELAY, AC_SIMULATED, init_time=0):
         super(Simulation, self).__init__()
@@ -33,6 +35,8 @@ class Simulation(QObject):
         self.defineDict()
         self.AC_X, self.AC_Y, self.AC_HDG, self.AC_TAS, self.AC_GS = 0, 0, 0, 0, 0  # initialisation des paramètre de l'avion
         self.flight_started = False
+        self.active_leg = None
+        self.new_active_leg = False
         if not(self.USE_IVY): # pour une simulation sans bus Ivy
             self.create_waypoints_without_Ivy()  # pour les positions des WayPoints
             self.create_AC_positions() # pour les positions avion
@@ -50,6 +54,10 @@ class Simulation(QObject):
         self.flightParam["WIND"] = wind
         self.speedPred.computeSpeeds(ci, crz_alt/100, wind)
         self.update_flight_param_signal.emit()
+
+        if crz_alt!=0: # si c'est pas l'initialisation
+            "GT TAS=" + str(self.speedPred.TAS*KT2MS) + " CRZ_ALT=" + str(crz_alt*FT2M)
+            IvySendMsg(messageToCOMM)
 
     def defineSEQParam(self, xtk, tae, dtwpt, aldtwpt):
         # Rempli le dictionnaire SEQParam
@@ -73,10 +81,12 @@ class Simulation(QObject):
     def get_AC_state(self, agent, *data):
         state = data[0].split(" ")
         self.AC_X, self.AC_Y = float(state[0].strip("X=")), float(state[1].strip("Y="))
+        print("POs dans com ", self.AC_X, self.AC_Y)
         self.AC_HDG = float(state[6].strip("Heading=")) # en degrés
         self.AC_TAS, self.AC_GS = float(state[7].strip("Airspeed=")), float(state[8].strip("Groundspeed=")) # en kts
         print("SIMU, X=", self.AC_X, " Y=", self.AC_Y, " HDG=", self.AC_HDG, " TAS=", self.AC_TAS, " GS=", self.AC_GS)
 
+        # Envoi d'un message pour ROUTE spécifiant le début de vol
         if not(self.flight_started) and (self.AC_X != 0 or self.AC_Y!=0):
             IvySendMsg("GT Flight_started")
             print("Flight start")
@@ -174,6 +184,7 @@ class Simulation(QObject):
 
             self.trajFMS.add_waypoint(Point(x, y, self.waypoint_data))
         if self.AC_SIMULATED : self.create_AC_positions()
+        self.send_AC_init_position_to_Aircraft_Model()
         self.update_display_signal.emit()
 
     def create_waypoints_without_Ivy(self):
@@ -186,7 +197,12 @@ class Simulation(QObject):
         self.trajFMS.add_waypoint(Point(0, 0))
         self.trajFMS.add_waypoint(Point(-60, 0))
         self.trajFMS.add_waypoint(Point(-160, -130))
-        #self.update_signal.emit()
+        self.update_signal.emit()
+
+    def send_AC_init_position_to_Aircraft_Model(self):
+        wpt0 = self.trajFMS.waypoint_list[0]
+        print("Envoi de la position initiale de l'avion à l'Aircraft Model : ", wpt0.x, wpt0.y)
+        IvySendMsg("GT AC_InitPosition=Point(" + str(wpt0.x) + ", " + str(wpt0.y) + ")")
 
     def next_wpt_param_without_IVY(self):
         nextwpt = "ABABI"
@@ -231,9 +247,15 @@ class Simulation(QObject):
         ListTransitionsMessage = "GT Liste_Transitions=["
         ListOrthosMessage = "GT Liste_Orthos=["
         ListBankAnglesMessage = "GT Liste_BankAngles=["
-        for path in self.trajFMS.listePaths:
-            ortho, trans = path.segment, path.transition
 
+        if not self.new_active_leg:
+            liste_paths = self.trajFMS.listePaths
+        else:
+            liste_paths = self.trajFMS.listePaths[self.active_leg:self.active_leg+2]
+            self.new_active_leg = False
+
+        for path in liste_paths:
+            ortho, trans = path.segment, path.transition
             ### Transitions  A REVOIR CAR trans.centre n'existe plus
             if trans!=None: # si ce n'est pas la dernière transition
                 arc1 = trans.list_items[0]
@@ -314,7 +336,13 @@ class Simulation(QObject):
         activeLeg = int(mes[1].strip("NumSeqActiveLeg="))
         print("SEQ envoie le séquencement : time=", time, " active leg = ", activeLeg)
 
-        for leg in self.ListeFromLegs:
+        if activeLeg != self.active_leg:
+            self.active_leg = activeLeg
+            print("Nouveau leg actif :", self.active_leg)
+            self.new_active_leg = True
+            self.update_display_signal.emit()
+
+        for i, leg in enumerate(self.ListeFromLegs):
             if activeLeg==leg[1]:
                 nextwpt = leg[0]
                 course = leg[4]
@@ -327,7 +355,7 @@ class Simulation(QObject):
         mes = data[0].split(" ")
         time = float(mes[0].strip("Time="))
         self.AP_mode = mes[1].strip("AP_State=")
-        #signal
+        self.AP_mode_signal.emit()
 
 
 

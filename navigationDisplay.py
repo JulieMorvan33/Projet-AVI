@@ -208,7 +208,6 @@ class AircraftView(QtWidgets.QWidget):
         self.aircraft = AircraftItem()
         self.aircraft.update_position(0,0)
         self.aircraft.setScale(0.01)
-        #self.sim.update_signal.connect(self.update_position) # pour visulaiser le mouvement de l'avion
         self.scene.addItem(self.aircraft)
 
     def update_position(self):
@@ -353,21 +352,26 @@ class RadarView(QtWidgets.QWidget):
             QGraphicsWayPointsItem(point.x, point.y, self.nd_items)
 
     def fit_scene_in_view(self):
-        #global first_pos_x, first_pos_y
+        global first_pos_x, first_pos_y
         self.item = QtWidgets.QGraphicsItemGroup()
-        print("hello")
-        if self.simulation.USE_IVY:
+        if not self.simulation.USE_IVY:
             pos = self.simulation.listeACpositions[int(self.simulation.time / self.simulation.SIMU_DELAY)]
+            pos_x, pos_y = pos.x, pos.y
+            ind = int(self.simulation.time / self.simulation.SIMU_DELAY)
         else:
-            pos = self.simulation.AC_X, self.simulation.AC_Y
+            pos_x, pos_y = self.simulation.AC_X, self.simulation.AC_Y
 
-        self.point = QGraphicsTransitionPoints(pos.x, pos.y, self.nd_items)
+        self.point = QGraphicsImaginaryPoints(pos_x, pos_y, self.nd_items)
         self.nd_items.addToGroup(self.point)
-        ind = int(self.simulation.time / self.simulation.SIMU_DELAY)
-        first_pos_x, first_pos_y = pos.x*PRECISION_FACTOR, pos.y*PRECISION_FACTOR
+
+        first_pos_x, first_pos_y = pos_x*PRECISION_FACTOR, pos_y*PRECISION_FACTOR
         self.nd_items.setTransformOriginPoint(first_pos_x, first_pos_y)
-        self.nd_items.setRotation(self.simulation.listeHDG[int(self.simulation.time / self.simulation.SIMU_DELAY)])
-        #if first_pos_x != self.point.x and first_pos_y != self.point.y:
+
+        if not self.simulation.USE_IVY:
+            self.nd_items.setRotation(self.simulation.listeHDG[int(self.simulation.time / self.simulation.SIMU_DELAY)])
+        else:
+            self.nd_items.setRotation(self.simulation.AC_HDG)
+
         w, h = WIDTH/4*PRECISION_FACTOR, HEIGHT/4*PRECISION_FACTOR
         self.scene.setSceneRect(self.point.x-w/2, self.point.y-h/2, w, h)
         self.view.fitInView(self.view.sceneRect(), QtCore.Qt.KeepAspectRatio)
@@ -380,11 +384,9 @@ class RadarView(QtWidgets.QWidget):
     def update_ND_items(self):
         # print("UPDATING ITEMS...")
         self.scene.removeItem(self.nd_items)
-        print("REMOVE")
         self.add_ND_items()
-        print("ELEMENTS ADDED")
+        print("ND ELEMENTS ADDED")
         self.fit_scene_in_view()
-        print("FIN")
         self.simulation.send_trajectory() # émission du signal pour envoyer la trajectoire réactualisée au groupe SEQ
 
     @QtCore.pyqtSlot()

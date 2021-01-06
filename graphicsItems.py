@@ -134,6 +134,12 @@ class QGraphicsTransitionPoints(QtWidgets.QGraphicsRectItem):
         painter.drawRect(self.x * m11, self.y * m22, TP_WIDTH, TP_WIDTH)
         painter.restore()
 
+class QGraphicsImaginaryPoints(QtWidgets.QGraphicsRectItem):
+    def __init__(self, x, y, parent):
+        super().__init__(x, y, TP_WIDTH, TP_WIDTH, parent)
+        self.x, self.y = resize(x), resize(y)
+        #self.paint(QPainter())
+
 
 class QGraphicsLegsItem(QtWidgets.QGraphicsLineItem):
     """Affichage des legs"""
