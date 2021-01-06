@@ -16,9 +16,10 @@ def det(a, b):
 class Point(object):
     """Nm coordinates, with attributes x, y: int"""
 
-    def __init__(self, x, y):
+    def __init__(self, x, y, data=None):
         self.x = x
         self.y = y
+        self.data = data #dictionnaire de donnée (course, fly, FLmin, FLmax et CASmax)
 
     def __repr__(self):
         return "({0.x}, {0.y})".format(self)

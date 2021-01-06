@@ -71,11 +71,11 @@ class ParamView(QtWidgets.QWidget):
         textitem.setPos(-670, -55)
         textitem.setDefaultTextColor(color2)
 
-        textitem = QtWidgets.QGraphicsTextItem(self.items)
-        textitem.setFont(font)
-        textitem.setPlainText(str(self.simulation.AC_GS))
-        textitem.setPos(-640, -55)
-        textitem.setDefaultTextColor(color3)
+        self.GStextitem = QtWidgets.QGraphicsTextItem(self.items)
+        self.GStextitem.setFont(font)
+        self.GStextitem.setPlainText(str(self.simulation.AC_GS))
+        self.GStextitem.setPos(-640, -55)
+        self.GStextitem.setDefaultTextColor(color3)
 
         # Ajout de la TAS
         textitem = QtWidgets.QGraphicsTextItem(self.items)
@@ -84,11 +84,11 @@ class ParamView(QtWidgets.QWidget):
         textitem.setPos(-500, -55)
         textitem.setDefaultTextColor(color2)
 
-        textitem = QtWidgets.QGraphicsTextItem(self.items)
-        textitem.setFont(font)
-        textitem.setPlainText(str(SpeedPredictions().TAS))
-        textitem.setPos(-460, -55)
-        textitem.setDefaultTextColor(color3)
+        self.TAStextitem = QtWidgets.QGraphicsTextItem(self.items)
+        self.TAStextitem.setFont(font)
+        self.TAStextitem.setPlainText(str(SpeedPredictions().TAS))
+        self.TAStextitem.setPos(-460, -55)
+        self.TAStextitem.setDefaultTextColor(color3)
 
         textitem = QtWidgets.QGraphicsTextItem(self.items)
         textitem.setFont(font)
@@ -96,9 +96,10 @@ class ParamView(QtWidgets.QWidget):
         textitem.setPos(70, -30)
         textitem.setDefaultTextColor(color4)
 
-        self.simulation.seq_param_without_IVY()
-        self.simulation.next_wpt_param_without_IVY()
-        self.simulation.wind_without_IVY()
+        if not self.simulation.USE_IVY:
+            self.simulation.seq_param_without_IVY()
+            self.simulation.next_wpt_param_without_IVY()
+            self.simulation.wind_without_IVY()
 
         # Ajout du next Waypoint
         self.NEXTWPTtextitem = QtWidgets.QGraphicsTextItem(self.items)
@@ -133,21 +134,32 @@ class ParamView(QtWidgets.QWidget):
         # Ajout du vent
         self.WINDtextitem = QtWidgets.QGraphicsTextItem(self.items)
         self.WINDtextitem.setFont(font)
-        self.WINDtextitem.setPlainText(str(self.simulation.flightParam["WIND"]))
+        wind = self.simulation.flightParam["WIND"]
+        self.WINDtextitem.setPlainText(str(wind[0]) + "/" + str(wind[1]))
         self.WINDtextitem.setPos(-670, -30)
         self.WINDtextitem.setDefaultTextColor(color3)
 
         if self.simulation.USE_IVY:
-            self.simulation.update_param.connect(self.update_SEQ_param_display)
+            self.simulation.update_param_1.connect(self.update_DTWPT)
+            self.simulation.update_param_2.connect(self.update_SEQ_param_display)
+            self.simulation.update_flight_param_signal.connect(self.update_wind)
 
-    def update_SEQ_param_display(self):
-        print("nextwpt in nddisplay ", str(self.simulation.NextWPTParam["NEXTWPT"]))
-        self.NEXTWPTtextitem.setPlainText(str(self.simulation.NextWPTParam["NEXTWPT"]))
-        self.HDGtextitem.setPlainText(str(self.simulation.NextWPTParam["COURSE"]))
+    def update_DTWPT(self):
         self.DTWPTtextitem.setPlainText(str(self.simulation.SEQParam["DTWPT"]))
-        self.TTWPTtextitem.setPlainText(str(self.simulation.NextWPTParam["TTWPT"]))
+
+    def update_wind(self):
         self.WINDtextitem.setPlainText(str(self.simulation.flightParam["WIND"]))
 
+    def update_SEQ_param_display(self):
+        print("param ", self.simulation.SEQParam)
+        #print("nextwpt in nddisplay ", str(self.simulation.NextWPTParam["NEXTWPT"], self.simulation.SEQParam["DTWPT"]))
+        self.NEXTWPTtextitem.setPlainText(str(self.simulation.NextWPTParam["NEXTWPT"]))
+        self.HDGtextitem.setPlainText(str(self.simulation.NextWPTParam["COURSE"]))
+        self.TTWPTtextitem.setPlainText(str(self.simulation.NextWPTParam["TTWPT"]))
+
+    def update_speed_displays(self):
+        self.TAStextitem.setPlainText(str(int(self.simulation.AC_TAS)))
+        self.GStextitem.setPlainText(str(int(self.simulation.AC_GS)))
 
 class CompassView(QtWidgets.QWidget):
     def __init__(self, sim):
@@ -168,25 +180,19 @@ class CompassView(QtWidgets.QWidget):
         self.scene.addItem(self.items)
         self.compass = QGraphicsCompassItem2(WIDTH, WIDTH, WIDTH*0.5, self.items, self.view)
         self.items.addToGroup(self.compass)
-        #self.rotation = self.compass.rotation()
-        #centre_rot = QtCore.QPointF(WIDTH + (WIDTH*0.7) / 2, WIDTH + (WIDTH*0.7)/2)
-        #self.compass.setTransformOriginPoint(centre_rot)  # Permet de changer le point où la rotation aura lieu
-        #self.compass.setRotation(self.rotation + 80)  # Décallage de 10° vers la droite, ce qui est bizarre, c'est que
-        # ça marche pas pour toutes les valeurs d'angle (essayer avec 50)
-        self.sim.update_signal.connect(self.update_hdg)
 
-        if self.sim.USE_IVY:
-            self.sim.update_signal.connect(self.compass.setRotation(self.rotation + self.sim.AC_HDG))
+        self.sim.update_aicraft_signal.connect(self.update_hdg)
 
     def update_hdg(self):
-        ind = int(self.sim.time / self.sim.SIMU_DELAY)
-        #if ind % NB_AC_INTER_POS == 0:
-        hdg = self.sim.listeHDG[ind]
-        print(hdg)
+        if not self.sim.USE_IVY:
+            ind = int(self.sim.time / self.sim.SIMU_DELAY)
+            hdg = self.sim.listeHDG[ind]
+        else:
+            hdg = self.sim.AC_HDG
         centre_rot = QtCore.QPointF(WIDTH + (WIDTH * 0.5) / 2, WIDTH + (WIDTH * 0.5) / 2)
         self.compass.setTransformOriginPoint(centre_rot)
-        self.rotation = self.compass.rotation()
         self.compass.setRotation(hdg)
+
 
 class AircraftView(QtWidgets.QWidget):
     def __init__(self, sim):
@@ -202,7 +208,6 @@ class AircraftView(QtWidgets.QWidget):
         self.aircraft = AircraftItem()
         self.aircraft.update_position(0,0)
         self.aircraft.setScale(0.01)
-        #self.sim.update_signal.connect(self.update_position) # pour visulaiser le mouvement de l'avion
         self.scene.addItem(self.aircraft)
 
     def update_position(self):
@@ -226,7 +231,7 @@ class RadarView(QtWidgets.QWidget):
 
         # signals connection
         self.simulation.update_display_signal.connect(self.update_ND_items)
-        self.simulation.update_signal.connect(self.update_ND_items_position)
+        self.simulation.update_aicraft_signal.connect(self.update_ND_items_position)
 
         # Settings
         self.width, self.height = WIDTH, HEIGHT
@@ -266,11 +271,11 @@ class RadarView(QtWidgets.QWidget):
         self.nd_items.setZValue(TRAJ_Z_VALUE)
         self.scene.addItem(self.nd_items)
 
-        transition_type = "fly_over"
         for i in range(1, self.simulation.trajFMS.nbr_waypoints - 1):
             a, b, c = self.simulation.trajFMS.get_transition(i)  # récupère les trois WPT de la transition
             seg_actif = g.Segment(a, b)  # segment d'entrée de la transition
             seg_next = g.Segment(b, c)  # segment de sortie de la transition
+            transition_type = b.data["FLY"]
 
             ######### TEST ##########
             # if i%2==0:
@@ -278,7 +283,6 @@ class RadarView(QtWidgets.QWidget):
             # else:
             #     transition_type = "fly_by"
             #########################
-
             if (i == 1): # si première transition
                 if transition_type == "fly_by":
                     transition_list = compute_transition_fly_by(seg_actif, seg_next, self.simulation.speedPred.GS)
@@ -351,40 +355,40 @@ class RadarView(QtWidgets.QWidget):
     def fit_scene_in_view(self):
         global first_pos_x, first_pos_y
         self.item = QtWidgets.QGraphicsItemGroup()
-        pos = self.simulation.listeACpositions[int(self.simulation.time / self.simulation.SIMU_DELAY)]
-        self.point = QGraphicsTransitionPoints(pos.x, pos.y, self.nd_items)
+        if not self.simulation.USE_IVY:
+            pos = self.simulation.listeACpositions[int(self.simulation.time / self.simulation.SIMU_DELAY)]
+            pos_x, pos_y = pos.x, pos.y
+            ind = int(self.simulation.time / self.simulation.SIMU_DELAY)
+        else:
+            pos_x, pos_y = self.simulation.AC_X, self.simulation.AC_Y
+
+        self.point = QGraphicsImaginaryPoints(pos_x, pos_y, self.nd_items)
         self.nd_items.addToGroup(self.point)
-        ind = int(self.simulation.time / self.simulation.SIMU_DELAY)
-        print("ind", ind%NB_AC_INTER_POS)
-        #if ind%NB_AC_INTER_POS==0:
-        print("ROTATE")
-        first_pos_x, first_pos_y = pos.x*PRECISION_FACTOR, pos.y*PRECISION_FACTOR
+
+        first_pos_x, first_pos_y = pos_x*PRECISION_FACTOR, pos_y*PRECISION_FACTOR
         self.nd_items.setTransformOriginPoint(first_pos_x, first_pos_y)
-        self.nd_items.setRotation(self.simulation.listeHDG[int(self.simulation.time / self.simulation.SIMU_DELAY)])
-        #if first_pos_x != self.point.x and first_pos_y != self.point.y:
-        print("first :", first_pos_x, first_pos_y)
-            #self.point.setTransformOriginPoint(first_pos_x, first_pos_y)
-            #self.point.setRotation(self.simulation.listeHDG[int(self.simulation.time / self.simulation.SIMU_DELAY)])
-        print("pos ", pos.x * PRECISION_FACTOR, pos.y * PRECISION_FACTOR)
-        print("point ", self.point.x, self.point.y)
-        print("rotation du point :", self.point.rotation())
-        print("rotation des nd items : ", self.nd_items.rotation())
+
+        if not self.simulation.USE_IVY:
+            self.nd_items.setRotation(self.simulation.listeHDG[int(self.simulation.time / self.simulation.SIMU_DELAY)])
+        else:
+            self.nd_items.setRotation(self.simulation.AC_HDG)
+
         w, h = WIDTH/4*PRECISION_FACTOR, HEIGHT/4*PRECISION_FACTOR
         self.scene.setSceneRect(self.point.x-w/2, self.point.y-h/2, w, h)
         self.view.fitInView(self.view.sceneRect(), QtCore.Qt.KeepAspectRatio)
 
-
     def update_ND_items_position(self):
+        self.fit_scene_in_view()
         if not self.simulation.USE_IVY :
-            self.fit_scene_in_view()
             time.sleep(self.simulation.SIMU_DELAY)
 
     def update_ND_items(self):
         # print("UPDATING ITEMS...")
         self.scene.removeItem(self.nd_items)
         self.add_ND_items()
+        print("ND ELEMENTS ADDED")
         self.fit_scene_in_view()
-        # self.simulation.send_trajectory() # émission du signal pour envoyer la trajectoire réactualisée au groupe SEQ
+        self.simulation.send_trajectory() # émission du signal pour envoyer la trajectoire réactualisée au groupe SEQ
 
     @QtCore.pyqtSlot()
     def advance(self):

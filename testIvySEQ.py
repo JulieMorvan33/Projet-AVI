@@ -28,8 +28,9 @@ if __name__ == '__main__':
         aldtwpt = dtwpt - r.randint(2, 7)
         seqParamMess = "GS_Data Time="
         seqParamMess += str(round(dt, 1)) + " XTK=" + str(xtk)
-        seqParamMess += " TAE=" + str(tae) + " DTWPT=" + str(dtwpt) + " ALDTWPT=" + str(aldtwpt)
+        seqParamMess += " TAE=" + str(tae) + " DTWPT=" + str(dtwpt)
         seqParamMess += " BANK_ANGLE_REF=" + str(bank_angle_ref)
+        seqParamMess += " AlongPathDistance=" + str(aldtwpt)
         print(seqParamMess)
         IvySendMsg(seqParamMess)
 
