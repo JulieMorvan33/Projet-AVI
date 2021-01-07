@@ -57,7 +57,7 @@ class Simulation(QObject):
         self.update_flight_param_signal.emit()
 
         if crz_alt!=0: # si c'est pas l'initialisation
-            messageToCOMM = "GT TAS=" + str(self.speedPred.TAS*KT2MS) + " CRZ_ALT=" + str(crz_alt*FT2M)
+            messageToCOMM = "GT TAS=" + str(round(self.speedPred.TAS*KT2MS,2)) + " CRZ_ALT=" + str(round(crz_alt*FT2M, 2))
             IvySendMsg(messageToCOMM)
 
     def defineSEQParam(self, xtk, tae, dtwpt, aldtwpt):
@@ -332,16 +332,23 @@ class Simulation(QObject):
     #"GS_AL Time=time NumSeqActiveLeg=numseq"
     def receive_active_leg(self, agent, *data):
         mes = data[0].split(" ")
-        time = float(mes[0].strip("Time="))
+        t = float(mes[0].strip("Time="))
         activeLeg = int(mes[1].strip("NumSeqActiveLeg="))
-        print("SEQ envoie le séquencement : time=", time, " active leg = ", activeLeg)
+        print("SEQ envoie le séquencement : time=", t, " active leg = ", activeLeg)
 
         if activeLeg != self.active_leg:
             self.active_leg = activeLeg
-            print("Nouveau leg actif :", self.active_leg)
+            print("Nouveau leg actif :", self.active_leg, " Attente de la liste des legs")
+            print("3")
+            time.sleep(1)
+            print("2")
+            time.sleep(1)
+            print("1")
+            time.sleep(1)
             self.new_active_leg = True
             self.update_display_signal.emit()
 
+        # Affiche le NEXT Waypoint sur le ND
         for i, leg in enumerate(self.ListeFromLegs):
             if activeLeg==leg[1]:
                 nextwpt = leg[0]

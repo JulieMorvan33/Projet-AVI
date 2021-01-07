@@ -13,7 +13,7 @@ if __name__ == '__main__':
 
     # Initialisation
     IvyInit("SEQ", "Bonjour du groupe SEQ", 0, null_cb, null_cb)
-    IvyStart(bus)
+    IvyStart()
     time.sleep(1.0)
     t = time.time()
     for i in range(1000):
