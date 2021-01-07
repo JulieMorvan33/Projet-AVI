@@ -98,8 +98,8 @@ class Simulation(QObject):
     def create_AC_positions(self, n=NB_AC_INTER_POS):  # pour une simulation sans bus Ivy
         self.listeACpositions = []
         self.listeHDG = []
-        wp0 = self.trajFMS.waypoint_list[0]
-        self.AC_X, self.AC_Y = wp0.x, wp0.y
+        #wp0 = self.trajFMS.waypoint_list[0]
+        #self.AC_X, self.AC_Y = wp0.x, wp0.y
         # print("pos de l'avion initiale : ", self.AC_X, self.AC_Y)
         self.listeACpositions.append(Point(self.AC_X, self.AC_Y))
 
@@ -173,8 +173,7 @@ class Simulation(QObject):
             wpt = WayPoint(lat, long)
             x, y = wpt.convert()
             if ind==0:
-                x_airport_depart, y_airport_depart = lat, long
-            # on force le premier point (aéroport de départ) à 0,0
+                self.AC_X, self.AC_Y = x, y
 
             self.waypoint_data = dict()  # contient (course, flyby/flyover, les contraintes de FL et de vitesse)
             self.waypoint_data["COURSE"] = leg[4]
@@ -184,7 +183,7 @@ class Simulation(QObject):
             self.waypoint_data["CASmax"] = leg[8]
 
             self.trajFMS.add_waypoint(Point(x, y, self.waypoint_data))
-        if self.AC_SIMULATED : self.create_AC_positions()
+        if self.AC_SIMULATED: self.create_AC_positions()
         self.send_AC_init_position_to_Aircraft_Model()
         self.update_display_signal.emit()
 
