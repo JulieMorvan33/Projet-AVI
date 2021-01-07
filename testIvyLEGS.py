@@ -13,7 +13,7 @@ if __name__ == '__main__':
 
     # Initialisation
     IvyInit("LEGS", "Bonjour du groupe LEGS", 0, null_cb, null_cb)
-    IvyStart(bus)
+    IvyStart()
     time.sleep(1.0)
     IvyBindMsg(receiveTRAJ, "GT (.*)")
 

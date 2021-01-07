@@ -57,7 +57,7 @@ class Simulation(QObject):
         self.update_flight_param_signal.emit()
 
         if crz_alt!=0: # si c'est pas l'initialisation
-            messageToCOMM = "GT TAS=" + str(self.speedPred.TAS*KT2MS) + " CRZ_ALT=" + str(crz_alt*FT2M)
+            messageToCOMM = "GT TAS=" + str(round(self.speedPred.TAS*KT2MS,2)) + " CRZ_ALT=" + str(round(crz_alt*FT2M, 2))
             IvySendMsg(messageToCOMM)
 
     def defineSEQParam(self, xtk, tae, dtwpt, aldtwpt):
@@ -98,8 +98,8 @@ class Simulation(QObject):
     def create_AC_positions(self, n=NB_AC_INTER_POS):  # pour une simulation sans bus Ivy
         self.listeACpositions = []
         self.listeHDG = []
-        wp0 = self.trajFMS.waypoint_list[0]
-        self.AC_X, self.AC_Y = wp0.x, wp0.y
+        #wp0 = self.trajFMS.waypoint_list[0]
+        #self.AC_X, self.AC_Y = wp0.x, wp0.y
         # print("pos de l'avion initiale : ", self.AC_X, self.AC_Y)
         self.listeACpositions.append(Point(self.AC_X, self.AC_Y))
 
@@ -173,8 +173,7 @@ class Simulation(QObject):
             wpt = WayPoint(lat, long)
             x, y = wpt.convert()
             if ind==0:
-                x_airport_depart, y_airport_depart = lat, long
-            # on force le premier point (aéroport de départ) à 0,0
+                self.AC_X, self.AC_Y = x, y
 
             self.waypoint_data = dict()  # contient (course, flyby/flyover, les contraintes de FL et de vitesse)
             self.waypoint_data["COURSE"] = leg[4]
@@ -184,7 +183,7 @@ class Simulation(QObject):
             self.waypoint_data["CASmax"] = leg[8]
 
             self.trajFMS.add_waypoint(Point(x, y, self.waypoint_data))
-        if self.AC_SIMULATED : self.create_AC_positions()
+        if self.AC_SIMULATED: self.create_AC_positions()
         self.send_AC_init_position_to_Aircraft_Model()
         self.update_display_signal.emit()
 
@@ -333,16 +332,23 @@ class Simulation(QObject):
     #"GS_AL Time=time NumSeqActiveLeg=numseq"
     def receive_active_leg(self, agent, *data):
         mes = data[0].split(" ")
-        time = float(mes[0].strip("Time="))
+        t = float(mes[0].strip("Time="))
         activeLeg = int(mes[1].strip("NumSeqActiveLeg="))
-        print("SEQ envoie le séquencement : time=", time, " active leg = ", activeLeg)
+        print("SEQ envoie le séquencement : time=", t, " active leg = ", activeLeg)
 
         if activeLeg != self.active_leg:
             self.active_leg = activeLeg
-            print("Nouveau leg actif :", self.active_leg)
+            print("Nouveau leg actif :", self.active_leg, " Attente de la liste des legs")
+            print("3")
+            time.sleep(1)
+            print("2")
+            time.sleep(1)
+            print("1")
+            time.sleep(1)
             self.new_active_leg = True
             self.update_display_signal.emit()
 
+        # Affiche le NEXT Waypoint sur le ND
         for i, leg in enumerate(self.ListeFromLegs):
             if activeLeg==leg[1]:
                 nextwpt = leg[0]
