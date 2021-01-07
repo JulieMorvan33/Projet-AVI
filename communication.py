@@ -9,7 +9,7 @@ from transitions import get_track
 from ivy.std_api import *
 
 DP = 20  # nb de positions à faire à l'avion sur chaque leg
-
+PRECISION_FACTOR = 100
 
 class Simulation(QObject):
     update_signal = pyqtSignal() # signal d'update envoyé à radarmotion
@@ -56,7 +56,8 @@ class Simulation(QObject):
         self.speedPred.computeSpeeds(ci, crz_alt/100, wind)
         self.update_flight_param_signal.emit()
 
-        if crz_alt!=0: # si c'est pas l'initialisation
+
+        if crz_alt!=0 and self.USE_IVY: # si c'est pas l'initialisation
             messageToCOMM = "GT TAS=" + str(round(self.speedPred.TAS*KT2MS,2)) + " CRZ_ALT=" + str(round(crz_alt*FT2M, 2))
             IvySendMsg(messageToCOMM)
 
@@ -88,7 +89,7 @@ class Simulation(QObject):
         print("SIMU, X=", self.AC_X, " Y=", self.AC_Y, " HDG=", self.AC_HDG, " TAS=", self.AC_TAS, " GS=", self.AC_GS)
 
         # Envoi d'un message pour ROUTE spécifiant le début de vol
-        if not self.flight_started and self.AC_X != 0 or self.AC_Y != 0:
+        if not(self.flight_started) and (self.AC_X != 0 or self.AC_Y != 0):
             IvySendMsg("GT Flight_started")
             print("Flight start")
             self.flight_started = True
