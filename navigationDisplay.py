@@ -231,6 +231,7 @@ class RadarView(QtWidgets.QWidget):
 
         # signals connection
         self.simulation.update_display_signal.connect(self.update_ND_items)
+        self.simulation.update_display_signal.connect(self.start_timer)
         self.simulation.update_aicraft_signal.connect(self.update_ND_items_position)
 
         # Settings
@@ -256,14 +257,13 @@ class RadarView(QtWidgets.QWidget):
         # add components to the root_layout
         root_layout.addWidget(self.view)
 
-        if not self.simulation.USE_IVY:  # pour une simulation sans bus Ivy
+    def start_timer(self):
+        if not(self.simulation.USE_IVY) or self.simulation.AC_SIMULATED:  # pour une simulation sans bus Ivy
             # create and setup the timer
+            print("Lancement du timer")
             self.timer = QtCore.QTimer(self)
             self.timer.timeout.connect(self.advance)
             self.timer.start(self.simulation.SIMU_DELAY)
-
-        # update the scene anchor in order to be aircarft centered
-        # TO DO
 
     def add_ND_items(self):
         """ Add the static items to the QGraphicsScene, drawn by the view"""
@@ -275,7 +275,8 @@ class RadarView(QtWidgets.QWidget):
             a, b, c = self.simulation.trajFMS.get_transition(i)  # récupère les trois WPT de la transition
             seg_actif = g.Segment(a, b)  # segment d'entrée de la transition
             seg_next = g.Segment(b, c)  # segment de sortie de la transition
-            transition_type = b.data["FLY"]
+            if self.simulation.USE_IVY: transition_type = b.data["FLY"]
+            else: transition_type = "fly_by"
 
             ######### TEST ##########
             # if i%2==0:
@@ -355,12 +356,14 @@ class RadarView(QtWidgets.QWidget):
     def fit_scene_in_view(self):
         global first_pos_x, first_pos_y
         self.item = QtWidgets.QGraphicsItemGroup()
-        if not self.simulation.USE_IVY:
+        if not(self.simulation.USE_IVY) or self.simulation.AC_SIMULATED:
             pos = self.simulation.listeACpositions[int(self.simulation.time / self.simulation.SIMU_DELAY)]
             pos_x, pos_y = pos.x, pos.y
             ind = int(self.simulation.time / self.simulation.SIMU_DELAY)
         else:
             pos_x, pos_y = self.simulation.AC_X, self.simulation.AC_Y
+
+        print("POSITION DE L'AVION : ", pos_x, pos_y)
 
         self.point = QGraphicsImaginaryPoints(pos_x, pos_y, self.nd_items)
         self.nd_items.addToGroup(self.point)
@@ -368,7 +371,7 @@ class RadarView(QtWidgets.QWidget):
         first_pos_x, first_pos_y = pos_x*PRECISION_FACTOR, pos_y*PRECISION_FACTOR
         self.nd_items.setTransformOriginPoint(first_pos_x, first_pos_y)
 
-        if not self.simulation.USE_IVY:
+        if not self.simulation.USE_IVY or self.simulation.AC_SIMULATED:
             self.nd_items.setRotation(self.simulation.listeHDG[int(self.simulation.time / self.simulation.SIMU_DELAY)])
         else:
             self.nd_items.setRotation(self.simulation.AC_HDG)
@@ -379,7 +382,8 @@ class RadarView(QtWidgets.QWidget):
 
     def update_ND_items_position(self):
         self.fit_scene_in_view()
-        if not self.simulation.USE_IVY :
+        if not(self.simulation.USE_IVY) or self.simulation.AC_SIMULATED:
+            print("ON sleep")
             time.sleep(self.simulation.SIMU_DELAY)
 
     def update_ND_items(self):
@@ -395,6 +399,6 @@ class RadarView(QtWidgets.QWidget):
         """this slot computes the new time at each time out
         To be used only if the Ivy bus isn't used"""
         self.simulation.horloge(None, self.simulation.time + self.simulation.SIMU_DELAY)
-        self.simulation.update_signal.emit()
+        self.simulation.update_aicraft_signal.emit()
 
 
