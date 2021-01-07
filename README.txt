@@ -11,13 +11,16 @@ Pour lancer l'application AVEC le bus Ivy :
 - télécharger le module ivy.std_api
 - télécharger ivyprobe si besoin (pour visualiser le bus)
 disponible pour Windows sur https://www.eei.cena.fr/products/ivy/download/binaries.html#windows 
-
+- faire dans cet ordre :
 	USE_IVy --> True
 	Lancer le main.py --> lance le ND
-	Lancer ivyprobe.py --> initialise le bus Ivy
-	Lancer testIvySIMU.py --> lance le programme simulant l'envoi de données du simulateur
+	Attendre 2s
 	Lancer testIvyLEGS.py --> lance le programme simulant l'envoi des Legs par le groupe LEGS
-	Attendre 0.5s
+	Attendre 1s
+	Lancer testIvySEQ.py --> lance le programme simulant l'envoi de données de la part du groupe SEQ
+	Attendre 1s
+	Lancer testIvySIMU.py --> lance le programme simulant l'envoi de données du simulateur
+
 
 Attention : quelquefois, des problèmes peuvent apparaître dans le calcul de la trajectoire. 
             La seule manière de continuer la simulation et de relancer la console...
