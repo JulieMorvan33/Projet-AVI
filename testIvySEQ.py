@@ -32,7 +32,7 @@ if __name__ == '__main__':
         seqParamMess += str(round(dt, 1)) + " XTK=" + str(xtk)
         seqParamMess += " TAE=" + str(tae) + " DTWPT=" + str(dtwpt)
         seqParamMess += " BANK_ANGLE_REF=" + str(bank_angle_ref)
-        seqParamMess += " AlongPathDistance=" + str(aldtwpt)
+        seqParamMess += " ALDTWPT=" + str(aldtwpt)
         print(seqParamMess)
         IvySendMsg(seqParamMess)
 

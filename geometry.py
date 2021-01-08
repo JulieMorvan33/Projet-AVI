@@ -19,7 +19,7 @@ class Point(object):
     def __init__(self, x, y, data=None):
         self.x = x
         self.y = y
-        self.data = data #dictionnaire de donnée (course, fly, FLmin, FLmax et CASmax)
+        self.data = data  # dictionnaire de donnée (course, fly, FLmin, FLmax et CASmax)
 
     def __repr__(self):
         return "({0.x}, {0.y})".format(self)
@@ -77,6 +77,7 @@ class Point(object):
         else:
             return abs(ab.det(ap)) / abs(ab)
 
+
 class WayPoint(Point):
     def __init__(self, lat, long):
         self.lat = lat/RAD2DEG
@@ -93,10 +94,11 @@ class WayPoint(Point):
         prend en compte le cote elliptique de la Terre (si jamais on veut juste Mercator, remplacer a par R dans les
         formules) Merator/Pseudo-Mercator OK si base de donnée juste en Europe (pas trop de déformations)
         /!\ formules pas ok quand latitude = 90° (au pole)"""
-        R = 6371007 # Rayon de la Terre
+        R = 6371007  # Rayon de la Terre
         x = A*self.long
         y = A*np.log(np.tan(np.pi/4+self.lat/2))
         return x/NM2M, y/NM2M
+
 
 class Segment(object):
     def __init__(self, start, end):
@@ -112,14 +114,14 @@ class Segment(object):
     def scal(self, other):
         return self.affix()[0]*other.affix()[0] + self.affix()[1]*other.affix()[1]
 
-    def det(self,other):
+    def det(self, other):
         return self.affix()[0]*other.affix()[1] - self.affix()[1]*other.affix()[0]
 
-    def intersection(self,other):
+    def intersection(self, other):
         xdiff = (self.start.x - self.end.x, other.start.x - other.end.x)
         ydiff = (self.start.y - self.end.y, other.start.y - other.end.y)
 
-        div = det(xdiff,ydiff)
+        div = det(xdiff, ydiff)
         if div == 0:
             raise Exception('lines do not intersect')
 
@@ -138,13 +140,15 @@ class Arc(object):
         self.lead_distance = lead_distance
         self.bank_angle = bank_angle
         self.track_change = track_change
-        self.sens_virage = sens_virage # >0 à gauche
+        self.sens_virage = sens_virage  # >0 à gauche
+
 
 class Transition(object):
     def __init__(self, type, speed, list_items):
         self.type = type
         self.speed = speed
         self.list_items = list_items
+
 
 class Path(object):
     def __init__(self, segment, transition):
@@ -153,6 +157,7 @@ class Path(object):
 
     def get_speed(self):
         pass
+
 
 class RefLatPath(object):
     def __init__(self):

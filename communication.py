@@ -1,7 +1,6 @@
 from geometry import *
 from PyQt5.QtCore import pyqtSignal, QObject
 import time
-from predictions import SpeedPredictionsA320
 from predictions import *
 from constantParameters import *
 import numpy as np
@@ -11,8 +10,9 @@ from ivy.std_api import *
 DP = 20  # nb de positions à faire à l'avion sur chaque leg
 PRECISION_FACTOR = 100
 
+
 class Simulation(QObject):
-    update_signal = pyqtSignal() # signal d'update envoyé à radarmotion
+    update_signal = pyqtSignal()  # signal d'update envoyé à radarmotion
     update_display_signal = pyqtSignal()  # signal d'update envoyé à radarview pour l'affichage
     update_param_1 = pyqtSignal()
     update_param_2 = pyqtSignal()
@@ -89,7 +89,7 @@ class Simulation(QObject):
         print("SIMU, X=", self.AC_X, " Y=", self.AC_Y, " HDG=", self.AC_HDG, " TAS=", self.AC_TAS, " GS=", self.AC_GS)
 
         # Envoi d'un message pour ROUTE spécifiant le début de vol
-        if not(self.flight_started) and (self.AC_X != 0 or self.AC_Y != 0):
+        if not self.flight_started and (self.AC_X != 0 or self.AC_Y != 0):
             IvySendMsg("GT Flight_started")
             print("Flight start")
             self.flight_started = True
@@ -144,11 +144,11 @@ class Simulation(QObject):
             lat = data[2].strip("LAT=")  # string donnant la latitude
             long = data[3].strip("LONG=")  # string donnant la longitude
             course = float(data[4].strip("COURSE="))  # float course du leg angle vers le prochain leg (ex: 110°)
-            fly = data[5].strip("FLY=") # string spécifiant un fly_by ou un fly_over
+            fly = data[5].strip("FLY=")  # string spécifiant un fly_by ou un fly_over
             fl_min = float(data[6].strip("FLmin="))  # float FL min
-            fl_max = float(data[7].strip("FLmax=")) # float FL max
+            fl_max = float(data[7].strip("FLmax="))  # float FL max
             if j == len(dataListGlob) - 1:
-                cas_max = float(data[8][:-1].strip("SPEEDmax=")) # float CAS max
+                cas_max = float(data[8][:-1].strip("SPEEDmax="))  # float CAS max
             else:
                 cas_max = float(data[8].strip("SPEEDmax="))  # float CAS max
             self.ListeFromLegs.append([id, seq, lat, long, course, fly, fl_min, fl_max, cas_max])
@@ -173,7 +173,7 @@ class Simulation(QObject):
 
             wpt = WayPoint(lat, long)
             x, y = wpt.convert()
-            if ind==0:
+            if ind == 0:
                 self.AC_X, self.AC_Y = x, y
 
             self.waypoint_data = dict()  # contient (course, flyby/flyover, les contraintes de FL et de vitesse)
@@ -203,7 +203,8 @@ class Simulation(QObject):
     def send_AC_init_position_to_Aircraft_Model(self):
         wpt0 = self.trajFMS.waypoint_list[0]
         print("Envoi de la position initiale de l'avion à l'Aircraft Model : ", wpt0.x, wpt0.y)
-        IvySendMsg("GT AC_InitPosition=Point(" + str(wpt0.x) + ", " + str(wpt0.y) + ")")
+        IvySendMsg("InitStateVector x=" + str(wpt0.x) + " y=" + str(wpt0.y) + " z=" + str(self.flightParam["CRZ_ALT"])
+                   + " Vp=" + str(self.speedPred.TAS) + " fpa=" + str(0) + " psi=" + str(0) + " phi=" + str(0))
 
     def next_wpt_param_without_IVY(self):
         nextwpt = "ABABI"
@@ -214,14 +215,14 @@ class Simulation(QObject):
         # return ["ABABI", "0", "N40451900", "E018383000", "150"]
 
     def seq_param_without_IVY(self):
-        xtk= "15"
+        xtk = "15"
         tae = "0"
         dtwpt = "150"
         aldtwpt = "155"
         self.defineSEQParam(xtk, tae, dtwpt, aldtwpt)
 
     def wind_without_IVY(self):
-        self.defineFlightParam(400, 30, (163,10))
+        self.defineFlightParam(400, 30, (163, 10))
 
     #### Trajectoire envoyée à SEQ ##############
     def traj_To_SEQ(self):
@@ -235,7 +236,7 @@ class Simulation(QObject):
         ListPointsMessage = "GT Liste_Points=["
         for point in self.trajFMS.waypoint_list:
             ListPointsMessage += "Point(" + str(point.x) + ", " + str(point.y) + "),"
-        mes.append(ListPointsMessage[:-1] + "]") # on enlève la dernière virgule et on rajoute le crochet de la fin
+        mes.append(ListPointsMessage[:-1] + "]")  # on enlève la dernière virgule et on rajoute le crochet de la fin
 
         ###   Segments
         ListSegmentsMessage = "GT Liste_Segments=["
@@ -258,7 +259,7 @@ class Simulation(QObject):
         for path in liste_paths:
             ortho, trans = path.segment, path.transition
             ### Transitions  A REVOIR CAR trans.centre n'existe plus
-            if trans!=None: # si ce n'est pas la dernière transition
+            if trans != None: # si ce n'est pas la dernière transition
                 arc1 = trans.list_items[0]
                 ListTransitionsMessage += 'Transition("'
                 if trans.type == 'fly_by':
@@ -295,7 +296,7 @@ class Simulation(QObject):
         ListPathMessage = "GT Liste_Paths=["
         for ind in range(len(self.trajFMS.listePaths)):
             if ind==len(self.trajFMS.listePaths)-1:
-                ListPathMessage += "Path(Liste_Orthos[" + str(ind) + "], Transition(None, None, None))]"
+                ListPathMessage += "Path(Liste_Orthos[" + str(ind) + "], Transition(None, None))]"
             else:
                 ListPathMessage += "Path(Liste_Orthos[" + str(ind) + "], Liste_Transitions[" + str(ind) + "]), "
         mes.append(ListPathMessage)
@@ -323,7 +324,7 @@ class Simulation(QObject):
         xtk = float(mes[1].strip("XTK="))
         tae = float(mes[2].strip("TAE="))
         dtwpt = float(mes[3].strip("DTWPT="))
-        aldtwpt = float(mes[5].strip("AlongPathDistance="))
+        aldtwpt = float(mes[5].strip("ALDTWPT="))
         print("SEQ envoie les paramètres : XTK = ", xtk, " TAE = ", tae, " DTWPT = ", dtwpt, " ALDTWPT = ", aldtwpt)
         self.defineSEQParam(xtk, tae, dtwpt, aldtwpt)
         self.update_param_1.emit()

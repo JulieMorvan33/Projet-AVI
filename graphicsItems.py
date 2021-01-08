@@ -2,11 +2,7 @@ from PyQt5 import QtWidgets
 from PyQt5.QtGui import QPainter, QColor, QPen, QBrush, QTransform, QFont, QFontMetrics
 from PyQt5.QtCore import Qt
 from PyQt5 import QtGui
-from PyQt5 import QtCore
-
-import communication
 import numpy as np
-import geometry
 from constantParameters import *
 
 
@@ -15,7 +11,7 @@ WP_WIDTH = 15
 WP_DP = WP_WIDTH/2.
 TP_WIDTH = 10
 TP_DP = TP_WIDTH/2.
-ASW = 1 # ASW stands for Arc Semi Width
+ASW = 1  # ASW stands for Arc Semi Width
 
 # Aicraft width
 AC_WIDTH = 10
@@ -38,7 +34,7 @@ AC_PEN.setCosmetic(True)
 # Brushes
 TP_BRUSH = QBrush(QColor("grey"))
 WP_BRUSH = QBrush(QColor("red"))
-AC_BRUSH = QBrush(QColor("white")) # for the aicraft
+AC_BRUSH = QBrush(QColor("white"))  # for the aicraft
 
 # Coefficient multiplicateur pour les arc. Un cercle complet = 360*16
 SP_ANGLE_COEFF = 16
@@ -49,15 +45,18 @@ TEXT_SIZE = 10
 
 # to get rid of integers and floats distinction in QGraphicsItem
 PRECISION_FACTOR = 100
+
+
 def resize(x):
     return x*PRECISION_FACTOR
+
 
 class QGraphicsArcItem(QtWidgets.QGraphicsEllipseItem):
     """Classe graphique qui affiche un arc de cercle,
     comme portion du cercle commençant à start_angle et finissant à
     start_angle + span_angle"""
     def __init__(self, start, centre, alpha, turnRadius, det, parent):
-        self.det = det #déterminant entre les deux segments de la transition
+        self.det = det  # déterminant entre les deux segments de la transition
         self.set_XY(centre, turnRadius)
         self.w, self.h = resize(turnRadius*2), resize(turnRadius*2)
         super().__init__(self.x, self.y, self.w, self.h, parent)
@@ -106,7 +105,7 @@ class QGraphicsWayPointsItem(QtWidgets.QGraphicsRectItem):
 
         # the item itself will not be scaled, but when the scene is transformed
         # this item still anchor correctly
-        painter.translate(-WP_DP, -WP_DP) # translate de -WP_DP pour s'affranchir de l'épaisseur de l'item
+        painter.translate(-WP_DP, -WP_DP)  # translate de -WP_DP pour s'affranchir de l'épaisseur de l'item
         painter.drawRect(self.x*m11, self.y*m22, WP_WIDTH, WP_WIDTH)
 
         painter.restore()
@@ -134,11 +133,13 @@ class QGraphicsTransitionPoints(QtWidgets.QGraphicsRectItem):
         painter.drawRect(self.x * m11, self.y * m22, TP_WIDTH, TP_WIDTH)
         painter.restore()
 
+
 class QGraphicsImaginaryPoints(QtWidgets.QGraphicsRectItem):
     def __init__(self, x, y, parent):
         super().__init__(x, y, TP_WIDTH, TP_WIDTH, parent)
         self.x, self.y = resize(x), resize(y)
-        #self.paint(QPainter())
+
+        # self.paint(QPainter())
 
 
 class QGraphicsLegsItem(QtWidgets.QGraphicsLineItem):
@@ -164,10 +165,11 @@ class AircraftItem(QtWidgets.QGraphicsItemGroup):
         self.addToGroup(self.item)
 
     def update_position(self, x, y):
-         #self.item2.setPos(x, y)
-         x, y = resize(x), resize(y)
-         self.item.setPos(x-51/2, y-51/2)
-         #self.item2.setRect(x - AC_WIDTH / 2, y - AC_WIDTH / 2, resize(AC_WIDTH), resize(AC_WIDTH))
+        # self.item2.setPos(x, y)
+        x, y = resize(x), resize(y)
+        self.item.setPos(x-51/2, y-51/2)
+
+        # self.item2.setRect(x - AC_WIDTH / 2, y - AC_WIDTH / 2, resize(AC_WIDTH), resize(AC_WIDTH))
 
 
 class QGraphicsCompassItem2(QtWidgets.QGraphicsItemGroup):  # cette classe groupe tous les items composant le compas
