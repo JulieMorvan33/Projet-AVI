@@ -7,7 +7,7 @@ if __name__ == '__main__':
 
     # Initialisation
     IvyInit("SIMU", "Bonjour du simulateur")
-    IvyStart(bus)
+    IvyStart()
 
     time.sleep(2)
 

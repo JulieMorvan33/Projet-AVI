@@ -363,14 +363,14 @@ class RadarView(QtWidgets.QWidget):
             pos_x, pos_y = pos.x, pos.y
             ind = int(self.simulation.time / self.simulation.SIMU_DELAY)
         else:
-            pos_x, pos_y = self.simulation.AC_X * PRECISION_FACTOR, self.simulation.AC_Y * PRECISION_FACTOR
+            pos_x, pos_y = self.simulation.AC_X, self.simulation.AC_Y
 
         print("POSITION DE L'AVION : ", pos_x, pos_y)
 
         self.point = QGraphicsImaginaryPoints(pos_x, pos_y, self.nd_items)
         self.nd_items.addToGroup(self.point)
 
-        first_pos_x, first_pos_y = pos_x, pos_y
+        first_pos_x, first_pos_y = pos_x * PRECISION_FACTOR, pos_y * PRECISION_FACTOR
         self.nd_items.setTransformOriginPoint(first_pos_x, first_pos_y)
 
         if not self.simulation.USE_IVY or self.simulation.AC_SIMULATED:

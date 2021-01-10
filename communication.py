@@ -35,6 +35,7 @@ class Simulation(QObject):
         self.speedPred = SpeedPredictionsA320()
         self.defineDict()
         self.AC_X, self.AC_Y, self.AC_HDG, self.AC_TAS, self.AC_GS = 0, 0, 0, 0, 0  # initialisation des paramètre de l'avion
+        self.AC_X_rel, self.AC_Y_rel = 0, 0  # positions relatives à la position de départ présents dans AircraftSetPosition
         self.flight_started = False
         self.active_leg = None
         self.new_active_leg = False
@@ -82,17 +83,25 @@ class Simulation(QObject):
     #####  Aicraft state ####################################
     def get_AC_state(self, agent, *data):
         state = data[0].split(" ")
-        self.AC_X, self.AC_Y = float(state[0].strip("X=")), float(state[1].strip("Y="))
-        print("POs dans com ", self.AC_X, self.AC_Y)
+        self.AC_X_rel, self.AC_Y_rel = float(state[0].strip("X=")), float(state[1].strip("Y="))
+        print("Pos relative dans com ", self.AC_X_rel, self.AC_Y_rel)
         self.AC_HDG = float(state[6].strip("Heading="))  # en degrés
         self.AC_TAS, self.AC_GS = float(state[7].strip("Airspeed=")), float(state[8].strip("Groundspeed="))  # en kts
-        print("SIMU, X=", self.AC_X, " Y=", self.AC_Y, " HDG=", self.AC_HDG, " TAS=", self.AC_TAS, " GS=", self.AC_GS)
+        print("SIMU, X_rel=", self.AC_X_rel, " Y_rel=", self.AC_Y_rel, " HDG=", self.AC_HDG, " TAS=", self.AC_TAS, " GS=", self.AC_GS)
 
         # Envoi d'un message pour ROUTE spécifiant le début de vol
-        if not self.flight_started and (self.AC_X != 0 or self.AC_Y != 0):
+        if not self.flight_started and (self.AC_X_rel != 0 or self.AC_Y_rel != 0):
             IvySendMsg("GT Flight_started")
             print("Flight start")
             self.flight_started = True
+
+        self.update_aicraft_signal.emit()
+
+
+    def get_AC_position(self, agent, *data):
+        position = data[0].split(" ")
+        self.AC_X, self.AC_Y = float(position[0].strip("x=")), float(position[1].strip("y="))
+        print("Pos dans com ", self.AC_X, self.AC_Y)
 
         self.update_aicraft_signal.emit()
 
