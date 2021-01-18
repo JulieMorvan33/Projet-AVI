@@ -66,11 +66,11 @@ class ParamView(QtWidgets.QWidget):
         font.setWeight(10)  # epaisseur du texte
 
         # Ajout de la ground speed
-        textitem = QtWidgets.QGraphicsTextItem(self.items)
-        textitem.setFont(font)
-        textitem.setPlainText("GS")
-        textitem.setPos(-670, -55)
-        textitem.setDefaultTextColor(color2)
+        GSunittextitem = QtWidgets.QGraphicsTextItem(self.items)
+        GSunittextitem.setFont(font)
+        GSunittextitem.setPlainText("GS")
+        GSunittextitem.setPos(-670, -55)
+        GSunittextitem.setDefaultTextColor(color2)
 
         self.GStextitem = QtWidgets.QGraphicsTextItem(self.items)
         self.GStextitem.setFont(font)
@@ -79,11 +79,11 @@ class ParamView(QtWidgets.QWidget):
         self.GStextitem.setDefaultTextColor(color3)
 
         # Ajout de la TAS
-        textitem = QtWidgets.QGraphicsTextItem(self.items)
-        textitem.setFont(font)
-        textitem.setPlainText("TAS")
-        textitem.setPos(-500, -55)
-        textitem.setDefaultTextColor(color2)
+        TASunittextitem = QtWidgets.QGraphicsTextItem(self.items)
+        TASunittextitem.setFont(font)
+        TASunittextitem.setPlainText("TAS")
+        TASunittextitem.setPos(-500, -55)
+        TASunittextitem.setDefaultTextColor(color2)
 
         self.TAStextitem = QtWidgets.QGraphicsTextItem(self.items)
         self.TAStextitem.setFont(font)
@@ -91,11 +91,11 @@ class ParamView(QtWidgets.QWidget):
         self.TAStextitem.setPos(-460, -55)
         self.TAStextitem.setDefaultTextColor(color3)
 
-        textitem = QtWidgets.QGraphicsTextItem(self.items)
-        textitem.setFont(font)
-        textitem.setPlainText("NM")
-        textitem.setPos(70, -30)
-        textitem.setDefaultTextColor(color4)
+        NMtextitem = QtWidgets.QGraphicsTextItem(self.items)
+        NMtextitem.setFont(font)
+        NMtextitem.setPlainText("NM")
+        NMtextitem.setPos(30, -30)
+        NMtextitem.setDefaultTextColor(color4)
 
         if not self.simulation.USE_IVY:
             self.simulation.seq_param_without_IVY()
@@ -115,8 +115,8 @@ class ParamView(QtWidgets.QWidget):
         self.HDGtextitem.setPlainText(str(self.simulation.NextWPTParam["COURSE"]))
 
         # textitem.setPlainText(str(self.simulation.create_leg_without_Ivy()[4]))
-        textitem.setPos(50, -55)
-        textitem.setDefaultTextColor(color3)
+        #textitem.setPos(50, -55)
+        #textitem.setDefaultTextColor(color3)
 
         # Ajout du DTWPT
         self.DTWPTtextitem = QtWidgets.QGraphicsTextItem(self.items)
@@ -182,6 +182,18 @@ class CompassView(QtWidgets.QWidget):
         self.scene.addItem(self.items)
         self.compass = QGraphicsCompassItem2(WIDTH, WIDTH, WIDTH*0.5, self.items, self.view)
         self.items.addToGroup(self.compass)
+
+        # Ajout du HDG
+        color3 = QColor(0, 255, 0)  # vert
+        font = QtGui.QFont()
+        font.setWeight(20)
+        HDGtextitem = QtWidgets.QGraphicsTextItem(self.items)
+        HDGtextitem.setFont(font)
+        HDGtextitem.setPlainText("Hello")
+        HDGtextitem.setPos(WIDTH, WIDTH)
+        HDGtextitem.setDefaultTextColor(color3)
+        HDGtextitem.setTransform(self.view.transform())
+        self.items.addToGroup(HDGtextitem)
 
         self.sim.update_aicraft_signal.connect(self.update_hdg)
 

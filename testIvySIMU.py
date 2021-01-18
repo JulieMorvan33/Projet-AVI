@@ -11,6 +11,8 @@ if __name__ == '__main__':
 
     time.sleep(2)
 
+    # Envoi de l'identifiant de l'aéroport de départ
+    IvySendMsg("SP_AptId Identifier=LFMN")
 
     # Envoie du temps
     for i in range(50):

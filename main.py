@@ -6,7 +6,7 @@ import ndWindowParameters
 import time
 
 USE_IVY = True  # use or not use Ivy Bus ?
-AC_SIMULATED = True  # use bus IVY with no other groups ?
+AC_SIMULATED = False  # use bus IVY with no other groups ?
 SIMU_DELAY = 0.1  # increment time for the simulation if Ivy Bus isn't used
 
 def null_cb(*a):
@@ -45,6 +45,9 @@ if __name__ == "__main__":
         # Abonnement à l'horloge
         IvyBindMsg(sim.horloge, "^Time t=(.*)")
 
+        # Abonnement à l'identifiant de l'aéroport de départ
+        IvyBindMsg(sim.get_depart_airport, "SP_AptId Identifier= (.*)")
+
         # Abonnement au vecteur d'état pour la récupération du heading
         IvyBindMsg(sim.get_AC_state, "AircraftSetPosition (.*)")
 
@@ -62,6 +65,9 @@ if __name__ == "__main__":
 
         # Abonnement au mode de l'autopilot
         IvyBindMsg(sim.get_AP_mode, "GC_AP (.*)")
+
+        # Abonnement au HDG sélecté
+        IvyBindMsg(sim.get_HDG_selected, "FCULateral (.*)")
 
     # enter the main loop
     app.exec_()

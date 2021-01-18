@@ -279,3 +279,5 @@ class QGraphicsCompassItem(QtWidgets.QGraphicsEllipseItem):
 
 
 
+
+

@@ -89,12 +89,6 @@ class Simulation(QObject):
         self.AC_TAS, self.AC_GS = float(state[7].strip("Airspeed=")), float(state[8].strip("Groundspeed="))  # en kts
         print("SIMU, X_rel=", self.AC_X_rel, " Y_rel=", self.AC_Y_rel, " HDG=", self.AC_HDG, " TAS=", self.AC_TAS, " GS=", self.AC_GS)
 
-        # Envoi d'un message pour ROUTE spécifiant le début de vol
-        if not self.flight_started and (self.AC_X_rel != 0 or self.AC_Y_rel != 0):
-            IvySendMsg("GT Flight_started")
-            print("Flight start")
-            self.flight_started = True
-
         self.update_aicraft_signal.emit()
 
 
@@ -194,8 +188,9 @@ class Simulation(QObject):
 
             self.trajFMS.add_waypoint(Point(x, y, self.waypoint_data))
         if self.AC_SIMULATED: self.create_AC_positions()
-        self.send_AC_init_position_to_Aircraft_Model()
         self.update_display_signal.emit()
+        self.send_AC_init_position_to_Aircraft_Model()
+
 
     def create_waypoints_without_Ivy(self):
         self.trajFMS.add_waypoint(Point(180, 220))
@@ -212,8 +207,14 @@ class Simulation(QObject):
     def send_AC_init_position_to_Aircraft_Model(self):
         wpt0 = self.trajFMS.waypoint_list[0]
         print("Envoi de la position initiale de l'avion à l'Aircraft Model : ", wpt0.x, wpt0.y)
-        IvySendMsg("InitStateVector x=" + str(wpt0.x) + " y=" + str(wpt0.y) + " z=" + str(self.flightParam["CRZ_ALT"])
-                   + " Vp=" + str(self.speedPred.TAS) + " fpa=" + str(0) + " psi=" + str(0) + " phi=" + str(0))
+        mes = "AircraftSetPosition X=" + str(wpt0.x) + " Y=" + str(wpt0.y) + " Altitude-ft=" + str(self.flightParam["CRZ_ALT"]) + " Roll=0 Pitch=0 Yaw=0" +  " Heading=" + str(self.AC_HDG) + " Airspeed=" + str(int(self.AC_TAS)) + " Groundspeed=" + str(int(self.AC_GS))
+        print("Message envoyé à l'Aircraft Model :", mes)
+        IvySendMsg(mes)
+
+        # Envoi d'un message pour ROUTE spécifiant le début de vol
+        IvySendMsg("GT Flight_started")
+        print("Flight start")
+        self.flight_started = True
 
     def next_wpt_param_without_IVY(self):
         nextwpt = "ABABI"
@@ -374,6 +375,19 @@ class Simulation(QObject):
         time = float(mes[0].strip("Time="))
         self.AP_mode = mes[1].strip("AP_State=")
         self.AP_mode_signal.emit()
+
+    def get_HDG_selected(self, agent, *data):
+        mes = data[0].split(" ")
+        self.AP_mode = mes[1].strip("Mode=")
+        self.HDG_selected = mes[1].strip("Val=")
+        print("Mode Heading enclenché :", self.AP_mode, self.HDG_selected)
+        self.update_aicraft_signal.emit()
+
+
+    def get_depart_airport(self, agent, *data):
+        self.DEPART_ID = data[0]
+        print("Aéroport de départ : ", self.DEPART_ID)
+
 
 
 
