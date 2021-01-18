@@ -5,9 +5,9 @@ import communication
 import ndWindowParameters
 import time
 
-USE_IVY = True# use or not use Ivy Bus ?
-AC_SIMULATED = True # use bus IVY with no other groups ?
-SIMU_DELAY = 0.1 # increment time for the simulation if Ivy Bus isn't used
+USE_IVY = True  # use or not use Ivy Bus ?
+AC_SIMULATED = True  # use bus IVY with no other groups ?
+SIMU_DELAY = 0.1  # increment time for the simulation if Ivy Bus isn't used
 
 def null_cb(*a):
     pass
@@ -39,14 +39,17 @@ if __name__ == "__main__":
         # Initialisation du bus Ivy
         bus = "192.168.43.255:2010"
         IvyInit("GUID_TRAJ_APP", "Bonjour de GUID_TRAJ", 0, null_cb, null_cb)
-        IvyStart(bus)
+        IvyStart()
         time.sleep(1.0)  # attente du temps de l'initialisation
 
         # Abonnement à l'horloge
         IvyBindMsg(sim.horloge, "^Time t=(.*)")
 
-        # Abonnement au vecteur d'état pour la récupération de x et y
+        # Abonnement au vecteur d'état pour la récupération du heading
         IvyBindMsg(sim.get_AC_state, "AircraftSetPosition (.*)")
+
+        # Abonnement au vecteur d'état pour la récupération de x et y
+        IvyBindMsg(sim.get_AC_position, "StateVector (.*)")
 
         # Abonnement au message du groupe LEGS (liste des segments)
         IvyBindMsg(sim.from_LEGS, "FL_LegList (.*)")

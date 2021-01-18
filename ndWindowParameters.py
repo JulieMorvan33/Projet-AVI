@@ -369,7 +369,7 @@ class Ui_MainWindow(object):
         self.label_5.setText(_translate("MainWindow", "kts"))
         self.label_6.setText(_translate("MainWindow", "COST INDEX :"))
         self.pushButton.setText(_translate("MainWindow", "VALIDATE"))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.Flight_Param), _translate("MainWindow", "Tab 1"))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.Flight_Param), _translate("MainWindow", "Performance param"))
         self.label_7.setText(_translate("MainWindow", "XTK :"))
         self.label_8.setText(_translate("MainWindow", "..."))
         self.label_9.setText(_translate("MainWindow", "NM"))
@@ -381,11 +381,11 @@ class Ui_MainWindow(object):
         self.label_15.setText(_translate("MainWindow", "NM"))
         self.label_16.setText(_translate("MainWindow", "FL_OPTI : "))
         self.label_17.setText(_translate("MainWindow", "..."))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.PFD_Param), _translate("MainWindow", "Page"))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.PFD_Param), _translate("MainWindow", "PDF param"))
         self.label_18.setText(_translate("MainWindow", "MODE : "))
         self.label_19.setText(_translate("MainWindow", "MANAGE"))
         self.label_20.setText(_translate("MainWindow", "ZOOM : "))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.Mode_Param), _translate("MainWindow", "Tab 2"))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.Mode_Param), _translate("MainWindow", "Mode"))
 
     def update_labels(self):
         dict = self.sim.SEQParam

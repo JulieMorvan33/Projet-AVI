@@ -11,6 +11,7 @@ from constantParameters import WIDTH, HEIGHT, NB_AC_INTER_POS
 import time
 from predictions import *
 from communication import *
+from PyQt5 import QtCore
 
 
 TRAJ_Z_VALUE = 0  # display trajectory items UNDER moving items
@@ -145,7 +146,7 @@ class ParamView(QtWidgets.QWidget):
             self.simulation.update_flight_param_signal.connect(self.update_wind)
 
     def update_DTWPT(self):
-        self.DTWPTtextitem.setPlainText(str(self.simulation.SEQParam["DTWPT"]))
+        self.DTWPTtextitem.setPlainText(str(round(self.simulation.SEQParam["DTWPT"], 0)))
 
     def update_wind(self):
         self.WINDtextitem.setPlainText(str(self.simulation.flightParam["WIND"]))
@@ -160,6 +161,7 @@ class ParamView(QtWidgets.QWidget):
     def update_speed_displays(self):
         self.TAStextitem.setPlainText(str(int(self.simulation.AC_TAS)))
         self.GStextitem.setPlainText(str(int(self.simulation.AC_GS)))
+
 
 class CompassView(QtWidgets.QWidget):
     def __init__(self, sim):
@@ -206,7 +208,7 @@ class AircraftView(QtWidgets.QWidget):
         self.view.scale(1, -1)
 
         self.aircraft = AircraftItem()
-        self.aircraft.update_position(0,0)
+        self.aircraft.update_position(0, 0)
         self.aircraft.setScale(0.01)
         self.scene.addItem(self.aircraft)
 
@@ -217,6 +219,7 @@ class AircraftView(QtWidgets.QWidget):
             time.sleep(self.sim.SIMU_DELAY)
         else:
             self.aircraft.update_position(self.sim.AC_Y, self.sim.AC_X)
+
 
 class RadarView(QtWidgets.QWidget):
     """An interactive view of the items displayed by a ND,
@@ -356,7 +359,7 @@ class RadarView(QtWidgets.QWidget):
     def fit_scene_in_view(self):
         global first_pos_x, first_pos_y
         self.item = QtWidgets.QGraphicsItemGroup()
-        if not(self.simulation.USE_IVY) or self.simulation.AC_SIMULATED:
+        if not self.simulation.USE_IVY or self.simulation.AC_SIMULATED:
             pos = self.simulation.listeACpositions[int(self.simulation.time / self.simulation.SIMU_DELAY)]
             pos_x, pos_y = pos.x, pos.y
             ind = int(self.simulation.time / self.simulation.SIMU_DELAY)
@@ -368,7 +371,7 @@ class RadarView(QtWidgets.QWidget):
         self.point = QGraphicsImaginaryPoints(pos_x, pos_y, self.nd_items)
         self.nd_items.addToGroup(self.point)
 
-        first_pos_x, first_pos_y = pos_x*PRECISION_FACTOR, pos_y*PRECISION_FACTOR
+        first_pos_x, first_pos_y = pos_x * PRECISION_FACTOR, pos_y * PRECISION_FACTOR
         self.nd_items.setTransformOriginPoint(first_pos_x, first_pos_y)
 
         if not self.simulation.USE_IVY or self.simulation.AC_SIMULATED:
@@ -376,7 +379,7 @@ class RadarView(QtWidgets.QWidget):
         else:
             self.nd_items.setRotation(self.simulation.AC_HDG)
 
-        w, h = WIDTH/4*PRECISION_FACTOR, HEIGHT/4*PRECISION_FACTOR
+        w, h = WIDTH*PRECISION_FACTOR, HEIGHT*PRECISION_FACTOR
         self.scene.setSceneRect(self.point.x-w/2, self.point.y-h/2, w, h)
         self.view.fitInView(self.view.sceneRect(), QtCore.Qt.KeepAspectRatio)
 

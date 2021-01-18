@@ -2,18 +2,21 @@ from ivy.std_api import *
 import time
 import random as r
 
+
 def receiveTRAJ(agent, *data):
     print("Message de TRAJ : ", data[0])
 
+
 def null_cb(*a):
     pass
+
 
 if __name__ == '__main__':
     bus = "192.168.43.255:2010"
 
     # Initialisation
     IvyInit("LEGS", "Bonjour du groupe LEGS", 0, null_cb, null_cb)
-    IvyStart(bus)
+    IvyStart()
     time.sleep(1.0)
     IvyBindMsg(receiveTRAJ, "GT (.*)")
 
@@ -46,8 +49,10 @@ if __name__ == '__main__':
         message += "FLmin=" + str(100) + " "
         message += "FLmax=" + str(400) + " "
         message += "SPEEDmax=" + str(350)
-        if j==len(NAMES)-1: message+= ")"  # si c'est le dernier leg
-        else: message += "; "
+        if j == len(NAMES)-1:
+            message += ")"  # si c'est le dernier leg
+        else:
+            message += "; "
     print("Message envoyé : ", message)
     IvySendMsg(message)
 
