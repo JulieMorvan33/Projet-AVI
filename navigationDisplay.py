@@ -287,11 +287,13 @@ class RadarView(QtWidgets.QWidget):
         self.scene.addItem(self.nd_items)
 
         for i in range(1, self.simulation.trajFMS.nbr_waypoints - 1):
+            print(1)
             a, b, c = self.simulation.trajFMS.get_transition(i)  # récupère les trois WPT de la transition
+            print(2)
             seg_actif = g.Segment(a, b)  # segment d'entrée de la transition
             seg_next = g.Segment(b, c)  # segment de sortie de la transition
             if self.simulation.USE_IVY: transition_type = b.data["FLY"]
-            else: transition_type = "fly_by"
+            else: transition_type = "Flyby"
 
             ######### TEST ##########
             # if i%2==0:
@@ -300,21 +302,22 @@ class RadarView(QtWidgets.QWidget):
             #     transition_type = "fly_by"
             #########################
             if (i == 1): # si première transition
-                if transition_type == "fly_by":
+                if transition_type == "Flyby":
                     transition_list = compute_transition_fly_by(seg_actif, seg_next, self.simulation.speedPred.GS)
-                elif transition_type == "fly_over":
+                elif transition_type == "Flyover":
                     transition_list = compute_transition_fly_over(seg_actif, seg_next, self.simulation.speedPred.GS)
                 start_segment = a
                 end_segment = transition_list[0].start
             else:
                 temp = transition_list[-1].end
-                if transition_type == "fly_by":
+                if transition_type == "Flyby":
                     transition_list = compute_transition_fly_by(seg_actif, seg_next, self.simulation.speedPred.GS)
-                elif transition_type == "fly_over":
+                elif transition_type == "Flyover":
                     transition_list = compute_transition_fly_over(seg_actif, seg_next, self.simulation.speedPred.GS)
                 start_segment = temp
                 end_segment = transition_list[0].start
 
+            print(3)
             # ajout des objets transitions et orthos dans la trajectoire pour envoi sur le bus IVY
             self.simulation.trajFMS.add_path(g.Segment(start_segment, end_segment), g.Transition(transition_type, self.simulation.speedPred.GS,
                                                                                                  transition_list))
@@ -353,6 +356,7 @@ class RadarView(QtWidgets.QWidget):
                                               self.nd_items)
             leg_item_path.setPen(TRAJ_PEN)
 
+        print(4)
         # Affiche le dernier leg après la dernière transition
         leg_item = QGraphicsLegsItem(b.x, b.y, c.x, c.y, self.nd_items)
         leg_item.setPen(leg_item.pen)
@@ -365,7 +369,8 @@ class RadarView(QtWidgets.QWidget):
 
         # Affiche tous les WayPoints
         for point in self.simulation.trajFMS.waypoint_list:
-            QGraphicsWayPointsItem(point.x, point.y, self.nd_items)
+            point = QGraphicsWayPointsItem(point.x, point.y, self.nd_items)
+            point.setPen(point.pen)
 
     def fit_scene_in_view(self):
         global first_pos_x, first_pos_y

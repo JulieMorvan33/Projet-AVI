@@ -142,6 +142,38 @@ class Simulation(QObject):
         self.ListeFromLegs = []
         for j, dataList in enumerate(dataListGlob):
             data = dataList.split(" ")
+            seq = int(data[0].strip("SEQ="))  # int numéro de séquencement (ex: 1)
+            type = str(data[1].strip("TYPE="))  # type de leg (IF, TF)
+            id = data[2].strip("ID=")  # string donnant l'ID du leg (ex : 'WPT1)
+
+            if j==0: # si c'est l'aéroport de départ
+                lat = data[3].strip("LAT=")  # string donnant la latitude
+                long = data[4].strip("LONG=")  # string donnant la longitude
+                self.ListeFromLegs.append([id, seq, lat, long, 0, 'flyby', 0, 0, 0])
+            else:
+                fly = str(data[3].strip("WPT_TYPE="))  # string spécifiant un fly_by ou un fly_over
+                lat = data[4].strip("LAT=")  # string donnant la latitude
+                long = data[5].strip("LONG=")  # string donnant la longitude
+                course = float(data[6].strip("COURSE="))  # float course du leg angle vers le prochain leg (ex: 110°)
+                distance = float(data[7].strip("DISTANCE=")) # float donnant la longueur du leg en Nm
+                fl_min = float(data[8].strip("FLmin=FL"))  # float FL min
+                if j == len(dataListGlob) - 1:
+                    fl_max = float(data[9][:-1].strip("FLmax=FL"))  # float FL max
+                else:
+                    fl_max = float(data[9].strip("FLmax=FL"))  # float FL max
+                self.ListeFromLegs.append([id, seq, lat, long, course, fly, fl_min, fl_max])
+        print(self.ListeFromLegs)
+        self.create_WayPoints()
+
+    """
+    def from_LEGS(self, *data):
+        print("Agent %r is sending a LEGS message!" % data[0])
+        message = data[1].split(" LegList=(")
+        time = float(message[0].strip("Time="))
+        dataListGlob = message[1].split("; ")
+        self.ListeFromLegs = []
+        for j, dataList in enumerate(dataListGlob):
+            data = dataList.split(" ")
             id = data[0].strip("ID=")  # string donnant l'ID du leg (ex : 'WPT1)
             seq = int(data[1].strip("SEQ="))  # int numéro de séquencement (ex: 1)
             lat = data[2].strip("LAT=")  # string donnant la latitude
@@ -157,6 +189,7 @@ class Simulation(QObject):
             self.ListeFromLegs.append([id, seq, lat, long, course, fly, fl_min, fl_max, cas_max])
         print(self.ListeFromLegs)
         self.create_WayPoints()
+    """
 
 
     def create_WayPoints(self):
@@ -164,6 +197,7 @@ class Simulation(QObject):
         # on pourrait faire mieux en ne rajoutant que les waypoints en plus
         print("SIMU : CREATE WAYPOINTS")
         for ind, leg in enumerate(self.ListeFromLegs):
+
             lat, long = leg[2][1:], leg[3][1:]
 
             lat = float(lat[0:2]) + float(lat[2:4]) / 60 + float(lat[4:6])/3600
@@ -176,17 +210,23 @@ class Simulation(QObject):
 
             wpt = WayPoint(lat, long)
             x, y = wpt.convert()
+
             if ind == 0:
                 self.AC_X, self.AC_Y = x, y
-
-            self.waypoint_data = dict()  # contient (course, flyby/flyover, les contraintes de FL et de vitesse)
-            self.waypoint_data["COURSE"] = leg[4]
-            self.waypoint_data["FLY"] = leg[5]
-            self.waypoint_data["FLmin"] = leg[6]
-            self.waypoint_data["FLmax"] = leg[7]
-            self.waypoint_data["CASmax"] = leg[8]
+                self.waypoint_data = dict()  # contient (course, flyby/flyover, les contraintes de FL et de vitesse)
+                self.waypoint_data["COURSE"] = 0
+                self.waypoint_data["FLY"] = 'Flyby'
+                self.waypoint_data["FLmin"] = 0
+                self.waypoint_data["FLmax"] = 0
+            else:
+                self.waypoint_data = dict()  # contient (course, flyby/flyover, les contraintes de FL et de vitesse)
+                self.waypoint_data["COURSE"] = leg[4]
+                self.waypoint_data["FLY"] = leg[5]
+                self.waypoint_data["FLmin"] = leg[6]
+                self.waypoint_data["FLmax"] = leg[7]
 
             self.trajFMS.add_waypoint(Point(x, y, self.waypoint_data))
+
         if self.AC_SIMULATED: self.create_AC_positions()
         self.update_display_signal.emit()
         self.send_AC_init_position_to_Aircraft_Model()
@@ -206,10 +246,28 @@ class Simulation(QObject):
 
     def send_AC_init_position_to_Aircraft_Model(self):
         wpt0 = self.trajFMS.waypoint_list[0]
+        time.sleep(1)
+        print(5)
+        time.sleep(1)
+        print(4)
+        time.sleep(1)
+        print(3)
+        time.sleep(1)
+        print(2)
+        time.sleep(1)
+        print(1)
+
+        print("Envoi de la position initiale de l'avion à l'Aircraft Model : ", wpt0.x, wpt0.y)
+        mes = "InitStateVector x=" + str(wpt0.x*NM2M) + " y=" + str(wpt0.y*NM2M) + " z=" + str(self.flightParam["CRZ_ALT"]*FT2M) + " Vp=" + str(int(self.speedPred.TAS*KT2MS)) + " fpa=" + str(self.AC_HDG) + " psi=" + str(0) + " phi=" + str(0)
+        print("Message envoyé à l'Aircraft Model :", mes)
+        IvySendMsg(mes)
+
+        """
         print("Envoi de la position initiale de l'avion à l'Aircraft Model : ", wpt0.x, wpt0.y)
         mes = "AircraftSetPosition X=" + str(wpt0.x) + " Y=" + str(wpt0.y) + " Altitude-ft=" + str(self.flightParam["CRZ_ALT"]) + " Roll=0 Pitch=0 Yaw=0" +  " Heading=" + str(self.AC_HDG) + " Airspeed=" + str(int(self.AC_TAS)) + " Groundspeed=" + str(int(self.AC_GS))
         print("Message envoyé à l'Aircraft Model :", mes)
         IvySendMsg(mes)
+        """
 
         # Envoi d'un message pour ROUTE spécifiant le début de vol
         IvySendMsg("GT Flight_started")
@@ -272,14 +330,14 @@ class Simulation(QObject):
             if trans != None: # si ce n'est pas la dernière transition
                 arc1 = trans.list_items[0]
                 ListTransitionsMessage += 'Transition("'
-                if trans.type == 'fly_by':
-                    ListTransitionsMessage += 'fly_by"'
+                if trans.type == 'Flyby':
+                    ListTransitionsMessage += 'Flyby"'
                     ListBankAnglesMessage += str(arc1.bank_angle) + ", "
                 else:
-                    ListTransitionsMessage += 'fly_over"'
+                    ListTransitionsMessage += 'Flyover"'
                 ListTransitionsMessage += ',[Arc(Point(' + str(arc1.centre.x) + ", " + str(arc1.centre.y) + "), "
                 ListTransitionsMessage += str(arc1.turn_radius) + ", " + str(arc1.lead_distance) + "), "
-                if trans.type == 'fly_by':
+                if trans.type == 'Flyby':
                     ListTransitionsMessage = ListTransitionsMessage[:-2] + "]), "
                 else:
                     seg = trans.list_items[1]

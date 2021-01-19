@@ -20,7 +20,7 @@ AC_WIDTH = 10
 white = QColor(255, 255, 255)
 
 # Pens
-P_PEN = QPen(Qt.transparent)
+P_PEN = QPen(QColor("green"), WP_DP)
 P_PEN.setCosmetic(True)
 TRAJ_PEN = QPen(QColor(0, 255, 0), ASW)
 TRAJ_PEN.setCosmetic(True)
@@ -85,8 +85,15 @@ class QGraphicsArcItem(QtWidgets.QGraphicsEllipseItem):
         self.y = resize(centre.y - turnRadius)
 
 
-class QGraphicsWayPointsItem(QtWidgets.QGraphicsRectItem):
-    """Affichage des Way Points"""
+class QGraphicsWayPointsItem(QtWidgets.QGraphicsEllipseItem): #QtWidgets.QGraphicsRectItem):
+    """Affichage des legs"""
+    def __init__(self, x, y, parent):
+        super().__init__(resize(x), resize(y), resize(WP_WIDTH), resize(WP_WIDTH), parent)
+        self.pen = P_PEN
+        self.moveBy(-resize(WP_DP), -resize(WP_DP))
+
+
+    """Affichage des Way Points
     def __init__(self, x, y, parent):
         self.x, self.y = resize(x), resize(y)
         super().__init__(x, y, WP_WIDTH, WP_WIDTH, parent)
@@ -109,7 +116,7 @@ class QGraphicsWayPointsItem(QtWidgets.QGraphicsRectItem):
         painter.drawRect(self.x*m11, self.y*m22, WP_WIDTH, WP_WIDTH)
 
         painter.restore()
-
+    """
 
 class QGraphicsTransitionPoints(QtWidgets.QGraphicsRectItem):
     def __init__(self, x, y, parent):
