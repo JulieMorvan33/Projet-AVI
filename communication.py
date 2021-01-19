@@ -83,10 +83,11 @@ class Simulation(QObject):
     #####  Aicraft state ####################################
     def get_AC_state(self, agent, *data):
         state = data[0].split(" ")
-        self.AC_X_rel, self.AC_Y_rel = float(state[0].strip("X=")), float(state[1].strip("Y="))
+        self.AC_X_rel, self.AC_Y_rel = float(state[0].strip("X="))/NM2M, float(state[1].strip("Y="))/NM2M
+        self.AC_X, self.AC_Y = float(state[0].strip("X="))/NM2M, float(state[1].strip("Y="))/NM2M
         print("Pos relative dans com ", self.AC_X_rel, self.AC_Y_rel)
         self.AC_HDG = float(state[6].strip("Heading="))  # en degrés
-        self.AC_TAS, self.AC_GS = float(state[7].strip("Airspeed=")), float(state[8].strip("Groundspeed="))  # en kts
+        self.AC_TAS, self.AC_GS = float(state[7].strip("Airspeed="))/NM2M/3600, float(state[8].strip("Groundspeed="))/NM2M/3600  # en kts
         print("SIMU, X_rel=", self.AC_X_rel, " Y_rel=", self.AC_Y_rel, " HDG=", self.AC_HDG, " TAS=", self.AC_TAS, " GS=", self.AC_GS)
 
         self.update_aicraft_signal.emit()
@@ -94,7 +95,7 @@ class Simulation(QObject):
 
     def get_AC_position(self, agent, *data):
         position = data[0].split(" ")
-        self.AC_X, self.AC_Y = float(position[0].strip("x=")), float(position[1].strip("y="))
+        self.AC_X, self.AC_Y = float(position[0].strip("x="))/NM2M, float(position[1].strip("y="))/NM2M
         print("Pos dans com ", self.AC_X, self.AC_Y)
 
         self.update_aicraft_signal.emit()
@@ -258,7 +259,7 @@ class Simulation(QObject):
         print(1)
 
         print("Envoi de la position initiale de l'avion à l'Aircraft Model : ", wpt0.x, wpt0.y)
-        mes = "InitStateVector x=" + str(wpt0.x*NM2M) + " y=" + str(wpt0.y*NM2M) + " z=" + str(self.flightParam["CRZ_ALT"]*FT2M) + " Vp=" + str(int(self.speedPred.TAS*KT2MS)) + " fpa=" + str(self.AC_HDG) + " psi=" + str(0) + " phi=" + str(0)
+        mes = "StateVector x=" + str(wpt0.x*NM2M) + " y=" + str(wpt0.y*NM2M) + " z=" + str(self.flightParam["CRZ_ALT"]*FT2M) + " Vp=" + str(int(self.speedPred.TAS*KT2MS)) + " fpa=" + str(self.AC_HDG) + " psi=" + str(0) + " phi=" + str(0)
         print("Message envoyé à l'Aircraft Model :", mes)
         IvySendMsg(mes)
 
