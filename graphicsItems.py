@@ -7,7 +7,7 @@ from constantParameters import *
 
 
 # Waypoints width
-WP_WIDTH = 15
+WP_WIDTH = 5
 WP_DP = WP_WIDTH/2.
 TP_WIDTH = 10
 TP_DP = TP_WIDTH/2.
@@ -26,8 +26,8 @@ TRAJ_PEN = QPen(QColor(0, 255, 0), ASW)
 TRAJ_PEN.setCosmetic(True)
 LEG_PEN = QPen(QColor("lightgrey"), ASW)
 LEG_PEN.setCosmetic(True)
-COMPASS_PEN = QPen(white,ASW)
-COMPASS_PEN.setCosmetic(True)
+ROSE_PEN = QPen(white,ASW)
+ROSE_PEN.setCosmetic(True)
 AC_PEN = QPen(QColor(255, 255, 0))
 AC_PEN.setCosmetic(True)
 
@@ -39,7 +39,7 @@ AC_BRUSH = QBrush(QColor("white"))  # for the aicraft
 # Coefficient multiplicateur pour les arc. Un cercle complet = 360*16
 SP_ANGLE_COEFF = 16
 
-# COMPASS
+# ROSE
 LARGE_GRAD_LONG = 20
 TEXT_SIZE = 10
 
@@ -179,7 +179,7 @@ class AircraftItem(QtWidgets.QGraphicsItemGroup):
         # self.item2.setRect(x - AC_WIDTH / 2, y - AC_WIDTH / 2, resize(AC_WIDTH), resize(AC_WIDTH))
 
 
-class QGraphicsCompassItem2(QtWidgets.QGraphicsItemGroup):  # cette classe groupe tous les items composant le compas
+class QGraphicsRoseItem2(QtWidgets.QGraphicsItemGroup):  # cette classe groupe tous les items composant le compas
     def __init__(self, x, y, width, parent, view):
         self.x, self.y, self.w = x, y, width
         self.centre = (self.x + self.w / 2, self.y + self.w / 2)
@@ -207,7 +207,7 @@ class QGraphicsCompassItem2(QtWidgets.QGraphicsItemGroup):  # cette classe group
             self.addToGroup(hdg)
 
     def paint(self, painter=QPainter(), style=None, widget=None):
-        painter.setPen(COMPASS_PEN)
+        painter.setPen(ROSE_PEN)
 
         # Large graduations
         for i in range(36):
@@ -233,7 +233,7 @@ class QGraphicsCompassItem2(QtWidgets.QGraphicsItemGroup):  # cette classe group
         self.addToGroup(e)
 
 
-class QGraphicsCompassItem(QtWidgets.QGraphicsEllipseItem):
+class QGraphicsRoseItem(QtWidgets.QGraphicsEllipseItem):
     def __init__(self, x, y, width, parent, view):
         self.x, self.y, self.w = x, y, width
         self.centre = (self.x + self.w/2, self.y + self.w/2)
@@ -261,7 +261,7 @@ class QGraphicsCompassItem(QtWidgets.QGraphicsEllipseItem):
             hdg.setDefaultTextColor(white)
 
     def paint(self, painter=QPainter(), style=None, widget=None):
-        painter.setPen(COMPASS_PEN)
+        painter.setPen(ROSE_PEN)
 
         # Large graduations
         for i in range(36):

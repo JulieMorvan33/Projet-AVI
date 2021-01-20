@@ -164,7 +164,7 @@ class ParamView(QtWidgets.QWidget):
         self.GStextitem.setPlainText(str(int(self.simulation.AC_GS)))
 
 
-class CompassView(QtWidgets.QWidget):
+class RoseView(QtWidgets.QWidget):
     def __init__(self, sim):
         super().__init__()
         self.scene = QtWidgets.QGraphicsScene()
@@ -181,8 +181,8 @@ class CompassView(QtWidgets.QWidget):
         # ajout du compas
         self.items = QtWidgets.QGraphicsItemGroup()
         self.scene.addItem(self.items)
-        self.compass = QGraphicsCompassItem2(WIDTH, WIDTH, WIDTH*0.5, self.items, self.view)
-        self.items.addToGroup(self.compass)
+        self.rose = QGraphicsRoseItem2(WIDTH, WIDTH, WIDTH*0.5, self.items, self.view)
+        self.items.addToGroup(self.rose)
 
         # Ajout du HDG
         color3 = QColor(0, 255, 0)  # vert
@@ -205,8 +205,8 @@ class CompassView(QtWidgets.QWidget):
         else:
             hdg = self.sim.AC_HDG
         centre_rot = QtCore.QPointF(WIDTH + (WIDTH * 0.5) / 2, WIDTH + (WIDTH * 0.5) / 2)
-        self.compass.setTransformOriginPoint(centre_rot)
-        self.compass.setRotation(hdg)
+        self.rose.setTransformOriginPoint(centre_rot)
+        self.rose.setRotation(hdg)
 
 
 class AircraftView(QtWidgets.QWidget):
