@@ -231,6 +231,7 @@ class Simulation(QObject):
 
         if self.AC_SIMULATED: self.create_AC_positions()
         self.update_display_signal.emit()
+        IvySendMsg("GT Traj_Ready")
         self.send_AC_init_position_to_Aircraft_Model()
 
 
@@ -445,7 +446,6 @@ class Simulation(QObject):
         print('HDG_sel =', self.HDG_selected)
         #print("Mode Heading enclenché :", self.AP_mode, self.HDG_selected)
         self.update_aicraft_signal.emit()
-
 
     def get_depart_airport(self, agent, *data):
         self.DEPART_ID = data[0]
