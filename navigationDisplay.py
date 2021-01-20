@@ -181,7 +181,7 @@ class RoseView(QtWidgets.QWidget):
         # ajout du compas
         self.items = QtWidgets.QGraphicsItemGroup()
         self.scene.addItem(self.items)
-        self.rose = QGraphicsRoseItem2(WIDTH, WIDTH, WIDTH*0.5, self.items, self.view)
+        self.rose = QGraphicsRoseItem2(self.sim, WIDTH, WIDTH, WIDTH*0.5, self.items, self.view)
         self.items.addToGroup(self.rose)
 
         # Ajout du HDG
@@ -196,7 +196,16 @@ class RoseView(QtWidgets.QWidget):
         HDGtextitem.setTransform(self.view.transform())
         self.items.addToGroup(HDGtextitem)
 
+
+
         self.sim.update_aicraft_signal.connect(self.update_hdg)
+
+        self.sim.update_aicraft_signal.connect(self.ajouter_rose)
+
+    def ajouter_rose(self):
+        self.items.removeFromGroup(self.rose)
+        self.rose = QGraphicsRoseItem2(self.sim, WIDTH, WIDTH, WIDTH * 0.5, self.items, self.view)
+        self.items.addToGroup(self.rose)
 
     def update_hdg(self):
         if not self.sim.USE_IVY:
@@ -249,6 +258,7 @@ class RadarView(QtWidgets.QWidget):
         self.simulation.update_display_signal.connect(self.update_ND_items)
         self.simulation.update_display_signal.connect(self.start_timer)
         self.simulation.update_aicraft_signal.connect(self.update_ND_items_position)
+        self.simulation.AP_mode_signal.connect(self.mode_heading)
 
         # Settings
         self.width, self.height = WIDTH, HEIGHT
@@ -345,18 +355,23 @@ class RadarView(QtWidgets.QWidget):
                                                                         self.nd_items)
                         leg_item_transition_segment.setPen(TRAJ_PEN)
 
-            # Affiche le leg
+            # Affiche le leg (pas quand la ligne est commentée
             leg_item = QGraphicsLegsItem(a.x, a.y, b.x, b.y, self.nd_items)
-            leg_item.setPen(leg_item.pen)
+            # leg_item.setPen(leg_item.pen)
 
             # Affiche l'ortho
             leg_item_path = QGraphicsLegsItem(start_segment.x, start_segment.y, end_segment.x, end_segment.y,
                                               self.nd_items)
+
             leg_item_path.setPen(TRAJ_PEN)
+
+            if self.simulation.AP_mode == "Selected":
+                TRAJ_PEN.setStyle(Qt.DashLine)
+            # Affichage de la trajectoire en pointillé si mode heading
 
         # Affiche le dernier leg après la dernière transition
         leg_item = QGraphicsLegsItem(b.x, b.y, c.x, c.y, self.nd_items)
-        leg_item.setPen(leg_item.pen)
+        #leg_item.setPen(leg_item.pen)
 
         # Affiche la dernière ortho après la dernière transition
         leg_item_path = QGraphicsLegsItem(transition.end.x, transition.end.y, c.x, c.y, self.nd_items)
@@ -368,6 +383,13 @@ class RadarView(QtWidgets.QWidget):
         for point in self.simulation.trajFMS.waypoint_list:
             point = QGraphicsWayPointsItem(point.x, point.y, self.nd_items)
             point.setPen(point.pen)
+
+    def mode_heading(self):
+        if self.simulation.AP_mode == "'Selected'":
+            TRAJ_PEN.setStyle(Qt.DashLine)
+            self.scene.removeItem(self.nd_items)
+            self.add_ND_items()
+            print('mode heading')
 
     def fit_scene_in_view(self):
         global first_pos_x, first_pos_y

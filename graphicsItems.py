@@ -4,6 +4,7 @@ from PyQt5.QtCore import Qt
 from PyQt5 import QtGui
 import numpy as np
 from constantParameters import *
+from navigationDisplay import *
 
 
 # Waypoints width
@@ -180,13 +181,14 @@ class AircraftItem(QtWidgets.QGraphicsItemGroup):
 
 
 class QGraphicsRoseItem2(QtWidgets.QGraphicsItemGroup):  # cette classe groupe tous les items composant le compas
-    def __init__(self, x, y, width, parent, view):
+    def __init__(self, sim,  x, y, width, parent, view):
         self.x, self.y, self.w = x, y, width
         self.centre = (self.x + self.w / 2, self.y + self.w / 2)
         super().__init__(None)
         self.view = view
         self.parent = parent
-
+        self.sim = sim
+        #self.sim.update_aicraft_signal.connect(self.update_select_hdg)
         font = QFont()
         font_metric = QFontMetrics(font)
         font.setWeight(TEXT_SIZE)
@@ -205,6 +207,8 @@ class QGraphicsRoseItem2(QtWidgets.QGraphicsItemGroup):  # cette classe groupe t
             hdg.moveBy(-np.cos(i) * text_width / 1.2, np.sin(i) * text_width / 1.2)
             hdg.setDefaultTextColor(white)
             self.addToGroup(hdg)
+
+
 
     def paint(self, painter=QPainter(), style=None, widget=None):
         painter.setPen(ROSE_PEN)
@@ -231,6 +235,59 @@ class QGraphicsRoseItem2(QtWidgets.QGraphicsItemGroup):  # cette classe groupe t
 
         e = painter.drawEllipse(self.x, self.y, self.w, self.w)
         self.addToGroup(e)
+
+        if self.sim.AP_mode == "'Selected'":
+            print("entrer dans la fonction")
+            a_x2 = self.centre[0] + np.sin(float(self.sim.HDG_selected)/RAD2DEG)*self.w / 2
+            a_y2 = self.centre[1] + np.cos(float(self.sim.HDG_selected)/RAD2DEG) * self.w / 2
+            b_x2 = self.centre[0] + np.sin((float(self.sim.HDG_selected)+180) % 360/RAD2DEG) * self.w / 2
+            b_y2 = self.centre[1] + np.cos((float(self.sim.HDG_selected)+180) % 360/RAD2DEG) * self.w / 2
+            self.line = painter.drawLine(a_x2, a_y2, b_x2, b_y2)
+            self.addToGroup(self.line)
+            painter.save()
+            font = QtGui.QFont()
+            font.setWeight(20)
+            self.selHDGtextitem = painter.drawText(WIDTH + 180, WIDTH + 460, self.sim.HDG_selected)
+            self.addToGroup(self.selHDGtextitem)
+            painter.restore()
+
+            #color1 = QColor(255, 255, 255)
+            #font = QtGui.QFont()
+            #font.setWeight(20)
+            #self.selHDGtextitem = QtWidgets.QGraphicsTextItem(self.parent)
+            #self.selHDGtextitem.setFont(font)
+            #self.selHDGtextitem.setPlainText("Hello")
+            #self.selHDGtextitem.setPos(WIDTH + 180, WIDTH + 460)
+            #self.selHDGtextitem.setDefaultTextColor(color1)
+            #self.selHDGtextitem.setTransform(self.view.transform())
+            #self.addToGroup(self.selHDGtextitem)
+
+    #def update_select_hdg(self):
+    #    if self.sim.AP_mode == "'Selected'":
+    #        print("oook")
+    #        color1 = QColor(255, 255, 255)
+    #        font = QtGui.QFont()
+    #        font.setWeight(20)
+    #        self.selHDGtextitem = QtWidgets.QGraphicsTextItem(RoseView.items)
+    #        self.selHDGtextitem.setFont(font)
+            #self.selHDGtextitem.setPlainText(str(self.sim.HDG_selected))
+    #        self.selHDGtextitem.setPlainText("Hello")
+    #        self.selHDGtextitem.setPos(WIDTH + 180, WIDTH + 460)
+    #        self.selHDGtextitem.setDefaultTextColor(color1)
+    #        self.selHDGtextitem.setTransform(self.view.transform())
+    #        self.addToGroup(self.selHDGtextitem)
+
+    #def mode_heading(self):
+    #    if self.sim.AP_mode == "'Selected'":
+    #        painter = QPainter()
+    #        painter.setPen(ROSE_PEN)
+    #        print("entrer dans la fonction")
+    #        a_x2 = self.centre[0] + np.sin(140/RAD2DEG)*self.w / 2
+    #        a_y2 = self.centre[1] + np.cos(140/RAD2DEG) * self.w / 2
+    #        b_x2 = self.centre[0] + np.sin((140+180) % 360/RAD2DEG) * self.w / 2
+    #        b_y2 = self.centre[1] + np.cos((140+180) % 360/RAD2DEG) * self.w / 2
+    #        self.line = painter.drawLine(a_x2, a_y2, b_x2, b_y2)
+    #        self.addToGroup(self.line)
 
 
 class QGraphicsRoseItem(QtWidgets.QGraphicsEllipseItem):

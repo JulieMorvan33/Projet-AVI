@@ -28,7 +28,8 @@ class Simulation(QObject):
         self.SIMU_DELAY = SIMU_DELAY
         self.time = init_time
         self.trajFMS = RefLatPath()
-        self.mode = None  # mode de l'autopilot ("MAN" ou "SEL")
+        self.AP_mode = "Managed"  # mode de l'autopilot ("Managed" ou "Selected")
+        self.HDG_selected = 0
         self.flightParam = dict()  # contient CRZ_ALT, CI et WIND
         self.SEQParam = dict()  # contient XTK, TAE, DTWPT, ALDTWPT
         self.NextWPTParam = dict()  # contient NEXTWPT, COURSE, TTWPT
@@ -259,7 +260,7 @@ class Simulation(QObject):
         print(1)
 
         print("Envoi de la position initiale de l'avion à l'Aircraft Model : ", wpt0.x, wpt0.y)
-        mes = "StateVector x=" + str(wpt0.x*NM2M) + " y=" + str(wpt0.y*NM2M) + " z=" + str(self.flightParam["CRZ_ALT"]*FT2M) + " Vp=" + str(int(self.speedPred.TAS*KT2MS)) + " fpa=" + str(self.AC_HDG) + " psi=" + str(0) + " phi=" + str(0)
+        mes = "InitStateVector x=" + str(wpt0.x*NM2M) + " y=" + str(wpt0.y*NM2M) + " z=" + str(self.flightParam["CRZ_ALT"]*FT2M) + " Vp=" + str(int(self.speedPred.TAS*KT2MS)) + " fpa=" + str(self.AC_HDG) + " psi=" + str(0) + " phi=" + str(0)
         print("Message envoyé à l'Aircraft Model :", mes)
         IvySendMsg(mes)
 
@@ -433,13 +434,16 @@ class Simulation(QObject):
         mes = data[0].split(" ")
         time = float(mes[0].strip("Time="))
         self.AP_mode = mes[1].strip("AP_State=")
+        print("nouveau mode", self.AP_mode)
         self.AP_mode_signal.emit()
+        print("OK")
 
     def get_HDG_selected(self, agent, *data):
         mes = data[0].split(" ")
-        self.AP_mode = mes[1].strip("Mode=")
+        #self.AP_mode = mes[1].strip("Mode=")
         self.HDG_selected = mes[1].strip("Val=")
-        print("Mode Heading enclenché :", self.AP_mode, self.HDG_selected)
+        print('HDG_sel =', self.HDG_selected)
+        #print("Mode Heading enclenché :", self.AP_mode, self.HDG_selected)
         self.update_aicraft_signal.emit()
 
 
