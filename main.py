@@ -49,7 +49,7 @@ if __name__ == "__main__":
         IvyBindMsg(sim.get_depart_airport, "SP_AptId Identifier= (.*)")
 
         # Abonnement au vecteur d'état pour la récupération du heading
-        IvyBindMsg(sim.get_AC_state, "AircraftSetPosition (.*)")
+        IvyBindMsg(sim.get_AC_current_heading_and_speeds, "AircraftSetPosition (.*)")
 
         # Abonnement au vecteur d'état pour la récupération de x et y
         IvyBindMsg(sim.get_AC_position, "StateVector (.*)")

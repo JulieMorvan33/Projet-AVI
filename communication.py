@@ -20,6 +20,7 @@ class Simulation(QObject):
     update_flight_param_signal = pyqtSignal()
     AP_mode_signal = pyqtSignal()
     new_active_leg_signal = pyqtSignal()
+    update_mode = pyqtSignal()
 
     def __init__(self, USE_IVY, SIMU_DELAY, AC_SIMULATED, init_time=0):
         super(Simulation, self).__init__()
@@ -82,22 +83,23 @@ class Simulation(QObject):
         self.time = float(arg[1])
 
     #####  Aicraft state ####################################
-    def get_AC_state(self, agent, *data):
+    def get_AC_current_heading_and_speeds(self, agent, *data):
+        # Utilisation de AircraftSetPosition pour avoir le heading courant de l'avion
         state = data[0].split(" ")
-        self.AC_X_rel, self.AC_Y_rel = float(state[0].strip("X="))/NM2M, float(state[1].strip("Y="))/NM2M
-        self.AC_X, self.AC_Y = float(state[0].strip("X="))/NM2M, float(state[1].strip("Y="))/NM2M
-        print("Pos relative dans com ", self.AC_X_rel, self.AC_Y_rel)
+        #self.AC_X_rel, self.AC_Y_rel = float(state[0].strip("X="))/NM2M, float(state[1].strip("Y="))/NM2M
+        #self.AC_X, self.AC_Y = float(state[0].strip("X="))/NM2M, float(state[1].strip("Y="))/NM2M
+        #print("Pos relative dans com ", self.AC_X_rel, self.AC_Y_rel)
         self.AC_HDG = float(state[6].strip("Heading="))  # en degrés
-        self.AC_TAS, self.AC_GS = float(state[7].strip("Airspeed="))/NM2M/3600, float(state[8].strip("Groundspeed="))/NM2M/3600  # en kts
-        print("SIMU, X_rel=", self.AC_X_rel, " Y_rel=", self.AC_Y_rel, " HDG=", self.AC_HDG, " TAS=", self.AC_TAS, " GS=", self.AC_GS)
+        self.AC_TAS, self.AC_GS = float(state[7].strip("Airspeed=")), float(state[8].strip("Groundspeed=")) # en kts
+        print("SIMU HDG=", self.AC_HDG, " TAS=", self.AC_TAS, " GS=", self.AC_GS)
 
         self.update_aicraft_signal.emit()
 
-
     def get_AC_position(self, agent, *data):
+        # Use de StateVector pour avoir la position courante de l'avion
         position = data[0].split(" ")
-        self.AC_X, self.AC_Y = float(position[0].strip("x="))/NM2M, float(position[1].strip("y="))/NM2M
-        print("Pos dans com ", self.AC_X, self.AC_Y)
+        self.AC_X, self.AC_Y = float(position[0].strip("x="))/NM2M, float(position[1].strip("y="))/NM2M # en NM (en m dans le SIMU)
+        print("Pos dans SIMU ", self.AC_X, self.AC_Y)
 
         self.update_aicraft_signal.emit()
 
@@ -166,33 +168,6 @@ class Simulation(QObject):
                 self.ListeFromLegs.append([id, seq, lat, long, course, fly, fl_min, fl_max])
         print(self.ListeFromLegs)
         self.create_WayPoints()
-
-    """
-    def from_LEGS(self, *data):
-        print("Agent %r is sending a LEGS message!" % data[0])
-        message = data[1].split(" LegList=(")
-        time = float(message[0].strip("Time="))
-        dataListGlob = message[1].split("; ")
-        self.ListeFromLegs = []
-        for j, dataList in enumerate(dataListGlob):
-            data = dataList.split(" ")
-            id = data[0].strip("ID=")  # string donnant l'ID du leg (ex : 'WPT1)
-            seq = int(data[1].strip("SEQ="))  # int numéro de séquencement (ex: 1)
-            lat = data[2].strip("LAT=")  # string donnant la latitude
-            long = data[3].strip("LONG=")  # string donnant la longitude
-            course = float(data[4].strip("COURSE="))  # float course du leg angle vers le prochain leg (ex: 110°)
-            fly = data[5].strip("FLY=")  # string spécifiant un fly_by ou un fly_over
-            fl_min = float(data[6].strip("FLmin="))  # float FL min
-            fl_max = float(data[7].strip("FLmax="))  # float FL max
-            if j == len(dataListGlob) - 1:
-                cas_max = float(data[8][:-1].strip("SPEEDmax="))  # float CAS max
-            else:
-                cas_max = float(data[8].strip("SPEEDmax="))  # float CAS max
-            self.ListeFromLegs.append([id, seq, lat, long, course, fly, fl_min, fl_max, cas_max])
-        print(self.ListeFromLegs)
-        self.create_WayPoints()
-    """
-
 
     def create_WayPoints(self):
         self.trajFMS = RefLatPath() # on écrase les données de waypoints
@@ -264,13 +239,6 @@ class Simulation(QObject):
         mes = "InitStateVector x=" + str(wpt0.x*NM2M) + " y=" + str(wpt0.y*NM2M) + " z=" + str(self.flightParam["CRZ_ALT"]*FT2M) + " Vp=" + str(int(self.speedPred.TAS*KT2MS)) + " fpa=" + str(self.AC_HDG) + " psi=" + str(0) + " phi=" + str(0)
         print("Message envoyé à l'Aircraft Model :", mes)
         IvySendMsg(mes)
-
-        """
-        print("Envoi de la position initiale de l'avion à l'Aircraft Model : ", wpt0.x, wpt0.y)
-        mes = "AircraftSetPosition X=" + str(wpt0.x) + " Y=" + str(wpt0.y) + " Altitude-ft=" + str(self.flightParam["CRZ_ALT"]) + " Roll=0 Pitch=0 Yaw=0" +  " Heading=" + str(self.AC_HDG) + " Airspeed=" + str(int(self.AC_TAS)) + " Groundspeed=" + str(int(self.AC_GS))
-        print("Message envoyé à l'Aircraft Model :", mes)
-        IvySendMsg(mes)
-        """
 
         # Envoi d'un message pour ROUTE spécifiant le début de vol
         IvySendMsg("GT Flight_started")
@@ -445,7 +413,7 @@ class Simulation(QObject):
         self.HDG_selected = mes[1].strip("Val=")
         print('HDG_sel =', self.HDG_selected)
         #print("Mode Heading enclenché :", self.AP_mode, self.HDG_selected)
-        self.update_aicraft_signal.emit()
+        self.update_mode.emit()
 
     def get_depart_airport(self, agent, *data):
         self.DEPART_ID = data[0]

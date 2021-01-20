@@ -197,7 +197,7 @@ class RoseView(QtWidgets.QWidget):
         self.items.addToGroup(HDGtextitem)
 
         self.sim.update_aicraft_signal.connect(self.update_hdg)
-        self.sim.update_aicraft_signal.connect(self.add_rose)
+        self.sim.update_mode.connect(self.add_rose)
 
     def add_rose(self):
         self.items.removeFromGroup(self.rose)
@@ -398,7 +398,7 @@ class RadarView(QtWidgets.QWidget):
         else:
             pos_x, pos_y = self.simulation.AC_X, self.simulation.AC_Y
 
-        print("POSITION DE L'AVION : ", pos_x, pos_y)
+        print("POSITION DE L'AVION sur le ND: ", pos_x, pos_y)
 
         self.point = QGraphicsImaginaryPoints(pos_x, pos_y, self.nd_items)
         self.nd_items.addToGroup(self.point)

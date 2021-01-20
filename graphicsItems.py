@@ -216,7 +216,7 @@ class QGraphicsRoseItem(QtWidgets.QGraphicsItemGroup):  # cette classe groupe to
             self.selHDGtextitem.setFont(font)
             self.selHDGtextitem.setDefaultTextColor(green)
             self.selHDGtextitem.setTransform(self.view.transform())
-            self.addToGroup(self.selHDGtextitem)
+            #self.addToGroup(self.selHDGtextitem)
 
 
     def paint(self, painter=QPainter(), style=None, widget=None):
@@ -246,7 +246,6 @@ class QGraphicsRoseItem(QtWidgets.QGraphicsItemGroup):  # cette classe groupe to
         self.addToGroup(e)
 
         if self.sim.AP_mode == "'Selected'":
-            print("entrer dans la fonction")
             a_x2 = self.centre[0] + np.sin(float(self.sim.HDG_selected)/RAD2DEG)*self.w / 2
             a_y2 = self.centre[1] + np.cos(float(self.sim.HDG_selected)/RAD2DEG) * self.w / 2
             b_x2 = self.centre[0] #+ np.sin((float(self.sim.HDG_selected)+180) % 360/RAD2DEG) * self.w / 2
