@@ -19,11 +19,12 @@ AC_WIDTH = 10
 
 # Colors
 white = QColor(255, 255, 255)
+green = QColor(0, 255, 0)
 
 # Pens
-P_PEN = QPen(QColor("green"), WP_DP)
+P_PEN = QPen(green, WP_DP)
 P_PEN.setCosmetic(True)
-TRAJ_PEN = QPen(QColor(0, 255, 0), ASW)
+TRAJ_PEN = QPen(green, ASW)
 TRAJ_PEN.setCosmetic(True)
 LEG_PEN = QPen(QColor("lightgrey"), ASW)
 LEG_PEN.setCosmetic(True)
@@ -180,7 +181,7 @@ class AircraftItem(QtWidgets.QGraphicsItemGroup):
         # self.item2.setRect(x - AC_WIDTH / 2, y - AC_WIDTH / 2, resize(AC_WIDTH), resize(AC_WIDTH))
 
 
-class QGraphicsRoseItem2(QtWidgets.QGraphicsItemGroup):  # cette classe groupe tous les items composant le compas
+class QGraphicsRoseItem(QtWidgets.QGraphicsItemGroup):  # cette classe groupe tous les items composant le compas
     def __init__(self, sim,  x, y, width, parent, view):
         self.x, self.y, self.w = x, y, width
         self.centre = (self.x + self.w / 2, self.y + self.w / 2)
@@ -207,7 +208,15 @@ class QGraphicsRoseItem2(QtWidgets.QGraphicsItemGroup):  # cette classe groupe t
             hdg.moveBy(-np.cos(i) * text_width / 1.2, np.sin(i) * text_width / 1.2)
             hdg.setDefaultTextColor(white)
             self.addToGroup(hdg)
-
+        if self.sim.AP_mode == "'Selected'":
+            font.setWeight(3*TEXT_SIZE)
+            self.selHDGtextitem = QtWidgets.QGraphicsTextItem(self.parent)
+            self.selHDGtextitem.setPos(WIDTH + 180, WIDTH + 460)
+            self.selHDGtextitem.setPlainText(str(self.sim.HDG_selected))
+            self.selHDGtextitem.setFont(font)
+            self.selHDGtextitem.setDefaultTextColor(green)
+            self.selHDGtextitem.setTransform(self.view.transform())
+            self.addToGroup(self.selHDGtextitem)
 
 
     def paint(self, painter=QPainter(), style=None, widget=None):
@@ -244,68 +253,3 @@ class QGraphicsRoseItem2(QtWidgets.QGraphicsItemGroup):  # cette classe groupe t
             b_y2 = self.centre[1] #+ np.cos((float(self.sim.HDG_selected)+180) % 360/RAD2DEG) * self.w / 2
             self.line = painter.drawLine(a_x2, a_y2, b_x2, b_y2)
             self.addToGroup(self.line)
-            painter.save()
-            font = QtGui.QFont()
-            font.setWeight(20)
-            #painter.setTransform(self.view.transform())
-            self.selHDGtextitem = painter.drawText(WIDTH + 180, WIDTH + 460, self.sim.HDG_selected)
-            self.addToGroup(self.selHDGtextitem)
-            painter.restore()
-
-
-
-class QGraphicsRoseItem(QtWidgets.QGraphicsEllipseItem):
-    def __init__(self, x, y, width, parent, view):
-        self.x, self.y, self.w = x, y, width
-        self.centre = (self.x + self.w/2, self.y + self.w/2)
-        super().__init__(self.x, self.y, self.w, self.w, parent)
-        self.view = view
-        self.parent = parent
-
-        # Textes caps
-        font = QFont()
-        font_metric = QFontMetrics(font)
-        font.setWeight(TEXT_SIZE)
-        for i in range(12):
-            i = i / RAD2DEG * 30
-            a_x = self.centre[0] + np.sin(i) * self.w / 2 + np.sin(i) * (LARGE_GRAD_LONG + 2.3 * TEXT_SIZE)
-            a_y = self.centre[1] + np.cos(i) * self.w / 2 + np.cos(i) * (LARGE_GRAD_LONG + 2.3 * TEXT_SIZE)
-            hdg = QtWidgets.QGraphicsTextItem(self.parent)
-            hdg.setFont(font)
-            hdg.setTransform(self.view.transform())
-            heading = round(i * RAD2DEG / 10)
-            hdg.setPlainText(str(heading))
-            hdg.setRotation(heading * 10)
-            hdg.setPos(a_x, a_y)
-            text_width = font_metric.width(str(round(i * RAD2DEG / 10)))
-            hdg.moveBy(-np.cos(i) * text_width / 1.2, np.sin(i) * text_width / 1.2)
-            hdg.setDefaultTextColor(white)
-
-    def paint(self, painter=QPainter(), style=None, widget=None):
-        painter.setPen(ROSE_PEN)
-
-        # Large graduations
-        for i in range(36):
-            i = i/RAD2DEG*10
-            a_x = self.centre[0] + np.sin(i)*self.w/2
-            a_y = self.centre[1] + np.cos(i)*self.w/2
-            b_x = a_x + np.sin(i)*LARGE_GRAD_LONG
-            b_y = a_y + np.cos(i)*LARGE_GRAD_LONG
-            painter.drawLine(a_x, a_y, b_x, b_y)
-
-        # Small graduations
-        for i in range(1, 72, 2):
-            i = i/RAD2DEG*5
-            a_x = self.centre[0] + np.sin(i)*self.w/2
-            a_y = self.centre[1] + np.cos(i)*self.w/2
-            b_x = a_x + np.sin(i)*LARGE_GRAD_LONG/2
-            b_y = a_y + np.cos(i)*LARGE_GRAD_LONG/2
-            painter.drawLine(a_x, a_y, b_x, b_y)
-
-        painter.drawEllipse(self.x, self.y, self.w, self.w)
-
-
-
-
-
-

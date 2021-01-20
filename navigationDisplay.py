@@ -181,7 +181,7 @@ class RoseView(QtWidgets.QWidget):
         # ajout du compas
         self.items = QtWidgets.QGraphicsItemGroup()
         self.scene.addItem(self.items)
-        self.rose = QGraphicsRoseItem2(self.sim, WIDTH, WIDTH, WIDTH*0.5, self.items, self.view)
+        self.rose = QGraphicsRoseItem(self.sim, WIDTH, WIDTH, WIDTH*0.5, self.items, self.view)
         self.items.addToGroup(self.rose)
 
         # Ajout du HDG
@@ -196,15 +196,12 @@ class RoseView(QtWidgets.QWidget):
         HDGtextitem.setTransform(self.view.transform())
         self.items.addToGroup(HDGtextitem)
 
-
-
         self.sim.update_aicraft_signal.connect(self.update_hdg)
+        self.sim.update_aicraft_signal.connect(self.add_rose)
 
-        self.sim.update_aicraft_signal.connect(self.ajouter_rose)
-
-    def ajouter_rose(self):
+    def add_rose(self):
         self.items.removeFromGroup(self.rose)
-        self.rose = QGraphicsRoseItem2(self.sim, WIDTH, WIDTH, WIDTH * 0.5, self.items, self.view)
+        self.rose = QGraphicsRoseItem(self.sim, WIDTH, WIDTH, WIDTH * 0.5, self.items, self.view)
         self.items.addToGroup(self.rose)
 
     def update_hdg(self):
