@@ -240,54 +240,18 @@ class QGraphicsRoseItem2(QtWidgets.QGraphicsItemGroup):  # cette classe groupe t
             print("entrer dans la fonction")
             a_x2 = self.centre[0] + np.sin(float(self.sim.HDG_selected)/RAD2DEG)*self.w / 2
             a_y2 = self.centre[1] + np.cos(float(self.sim.HDG_selected)/RAD2DEG) * self.w / 2
-            b_x2 = self.centre[0] + np.sin((float(self.sim.HDG_selected)+180) % 360/RAD2DEG) * self.w / 2
-            b_y2 = self.centre[1] + np.cos((float(self.sim.HDG_selected)+180) % 360/RAD2DEG) * self.w / 2
+            b_x2 = self.centre[0] #+ np.sin((float(self.sim.HDG_selected)+180) % 360/RAD2DEG) * self.w / 2
+            b_y2 = self.centre[1] #+ np.cos((float(self.sim.HDG_selected)+180) % 360/RAD2DEG) * self.w / 2
             self.line = painter.drawLine(a_x2, a_y2, b_x2, b_y2)
             self.addToGroup(self.line)
             painter.save()
             font = QtGui.QFont()
             font.setWeight(20)
+            #painter.setTransform(self.view.transform())
             self.selHDGtextitem = painter.drawText(WIDTH + 180, WIDTH + 460, self.sim.HDG_selected)
             self.addToGroup(self.selHDGtextitem)
             painter.restore()
 
-            #color1 = QColor(255, 255, 255)
-            #font = QtGui.QFont()
-            #font.setWeight(20)
-            #self.selHDGtextitem = QtWidgets.QGraphicsTextItem(self.parent)
-            #self.selHDGtextitem.setFont(font)
-            #self.selHDGtextitem.setPlainText("Hello")
-            #self.selHDGtextitem.setPos(WIDTH + 180, WIDTH + 460)
-            #self.selHDGtextitem.setDefaultTextColor(color1)
-            #self.selHDGtextitem.setTransform(self.view.transform())
-            #self.addToGroup(self.selHDGtextitem)
-
-    #def update_select_hdg(self):
-    #    if self.sim.AP_mode == "'Selected'":
-    #        print("oook")
-    #        color1 = QColor(255, 255, 255)
-    #        font = QtGui.QFont()
-    #        font.setWeight(20)
-    #        self.selHDGtextitem = QtWidgets.QGraphicsTextItem(RoseView.items)
-    #        self.selHDGtextitem.setFont(font)
-            #self.selHDGtextitem.setPlainText(str(self.sim.HDG_selected))
-    #        self.selHDGtextitem.setPlainText("Hello")
-    #        self.selHDGtextitem.setPos(WIDTH + 180, WIDTH + 460)
-    #        self.selHDGtextitem.setDefaultTextColor(color1)
-    #        self.selHDGtextitem.setTransform(self.view.transform())
-    #        self.addToGroup(self.selHDGtextitem)
-
-    #def mode_heading(self):
-    #    if self.sim.AP_mode == "'Selected'":
-    #        painter = QPainter()
-    #        painter.setPen(ROSE_PEN)
-    #        print("entrer dans la fonction")
-    #        a_x2 = self.centre[0] + np.sin(140/RAD2DEG)*self.w / 2
-    #        a_y2 = self.centre[1] + np.cos(140/RAD2DEG) * self.w / 2
-    #        b_x2 = self.centre[0] + np.sin((140+180) % 360/RAD2DEG) * self.w / 2
-    #        b_y2 = self.centre[1] + np.cos((140+180) % 360/RAD2DEG) * self.w / 2
-    #        self.line = painter.drawLine(a_x2, a_y2, b_x2, b_y2)
-    #        self.addToGroup(self.line)
 
 
 class QGraphicsRoseItem(QtWidgets.QGraphicsEllipseItem):
