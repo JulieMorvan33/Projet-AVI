@@ -10,7 +10,7 @@ F = (A - B) / A  # Aplatissement
 E = (F * (2 - F)) ** 0.5  # Excentricite de l'ellipsoide WGS-84
 
 
-trans = Transformer.from_crs("epsg:4326", "+proj=utm +zone=32 +ellps=WGS84 +lat_ts=46", always_xy=True)
+trans = Transformer.from_crs("epsg:4326", "+proj=merc +zone=32 +ellps=WGS84 +lat_ts=45", always_xy=True)
 
 def det(a, b):
     return a[0] * b[1] - a[1] * b[0]
@@ -86,7 +86,7 @@ class WayPoint(Point):
         self.lat = lat
         self.long = long
         self.x, self.y = self.convert()
-        #self.x2, self.y2 = self.convert_with_pyproj()
+        #self.x2, self.y2 = self.convert_without_pyproj()
         super().__init__(self.x, self.y)
 
     def __repr__(self):
@@ -193,8 +193,9 @@ class RefLatPath(object):
     def get_bank_angles(self):
         pass
 
+
+wptOrly = WayPoint(0, 0)
 """
-wptOrly = WayPoint(48.726, 2.365)
 wptToulouse = WayPoint(43.629, 1.363)
 print("GT_TRAJ Orly :", round(wptOrly.x),"km ", round(wptOrly.y),"km ", end=" \t ")
 print("Py-proj Orly : ", round(wptOrly.x2),"km ", round(wptOrly.y2), "km")
