@@ -1,6 +1,7 @@
 """Geometry classes and utilities."""
 import numpy as np
 from constantParameters import *
+from pyproj import Transformer
 
 # Mercator Projection
 A = 6378137.0  # Demi grand axe de l'ellipsoide de reference WGS-84 (m)
@@ -8,6 +9,8 @@ B = 6356752.3142  # Demi petit axe de l'ellipsoide de reference WGS-84 (m)
 F = (A - B) / A  # Aplatissement
 E = (F * (2 - F)) ** 0.5  # Excentricite de l'ellipsoide WGS-84
 
+
+trans = Transformer.from_crs("epsg:4326", "+proj=utm +zone=32 +ellps=WGS84 +lat_ts=46", always_xy=True)
 
 def det(a, b):
     return a[0] * b[1] - a[1] * b[0]
@@ -80,23 +83,28 @@ class Point(object):
 
 class WayPoint(Point):
     def __init__(self, lat, long):
-        self.lat = lat/RAD2DEG
-        self.long = long/RAD2DEG
+        self.lat = lat
+        self.long = long
         self.x, self.y = self.convert()
+        #self.x2, self.y2 = self.convert_with_pyproj()
         super().__init__(self.x, self.y)
 
     def __repr__(self):
         return "({0.x}, {0.y}, {0.lat}, {0.long})".format(self)
 
-    def convert(self):
+    def convert_without_pyproj(self):
         """La latitude et la longitude sont à rentrer en RADIANS (mettre un moins quand coordonnées en S ou W)
         Retourne les coordonnées (x,y) en mde la projection pseudo-Mercator. Pseudo-Mercator par rapport à Mercator
         prend en compte le cote elliptique de la Terre (si jamais on veut juste Mercator, remplacer a par R dans les
         formules) Merator/Pseudo-Mercator OK si base de donnée juste en Europe (pas trop de déformations)
         /!\ formules pas ok quand latitude = 90° (au pole)"""
         R = 6371007  # Rayon de la Terre
-        x = A*self.long
-        y = A*np.log(np.tan(np.pi/4+self.lat/2))
+        x = A*self.long/RAD2DEG
+        y = A*np.log(np.tan(np.pi/4+self.lat/2/RAD2DEG))
+        return x/1000, y/1000
+
+    def convert(self):
+        y, x = trans.transform(self.lat, self.long)
         return x/NM2M, y/NM2M
 
 
@@ -184,4 +192,25 @@ class RefLatPath(object):
 
     def get_bank_angles(self):
         pass
+
+"""
+wptOrly = WayPoint(48.726, 2.365)
+wptToulouse = WayPoint(43.629, 1.363)
+print("GT_TRAJ Orly :", round(wptOrly.x),"km ", round(wptOrly.y),"km ", end=" \t ")
+print("Py-proj Orly : ", round(wptOrly.x2),"km ", round(wptOrly.y2), "km")
+
+print("GT_TRAJ Toulouse :", round(wptToulouse.x),"km ", round(wptToulouse.y),"km ", end=" \t ")
+print("Py-proj Toulouse : ", round(wptToulouse.x2),"km ", round(wptToulouse.y2), "km ")
+
+print("Différence TRAJ :", round(wptToulouse.y-wptOrly.y), "km ")
+print("Différence Pyproj:", round(wptToulouse.y2-wptOrly.y2), "km ")
+
+
+for lat in [40, 45, 50]:
+    for long in [-1, 0, 2, 5]:
+        wpt = WayPoint(lat, long)
+        print("LAT="+str(lat)+"°", "LONG="+str(long)+"°", end=" \t ")
+        print("GT_TRAJ :", round(wpt.x), round(wpt.y), end=" \t ")
+        print("Py-proj : ", round(wpt.x2), round(wpt.y2))
+"""
 
