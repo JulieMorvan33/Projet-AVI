@@ -105,7 +105,7 @@ class WayPoint(Point):
 
     def convert(self):
         y, x = trans.transform(self.lat, self.long)
-        return x/1000, y/1000
+        return x/NM2M, y/NM2M
 
 
 class Segment(object):
@@ -199,9 +199,9 @@ wptOrly = WayPoint(48.726, 2.365)
 wptToulouse = WayPoint(43.629, 1.363)
 
 
-print("Point 0:", round(wpt0.x),"km ", round(wpt0.y),"km ", end=" \t ")
-print("Orly :", round(wptOrly.x),"km ", round(wptOrly.y),"km ", end=" \t ")
-print("Toulouse :", round(wptToulouse.x),"km ", round(wptToulouse.y),"km ", end=" \t ")
-print("Distance Toulouse-Orly :", round(wptToulouse.distance(wptOrly)))
+print("Point 0:", round(wpt0.x*NM2M/1000),"km ", round(wpt0.y*NM2M/1000),"km ", end=" \t ")
+print("Orly :", round(wptOrly.x*NM2M/1000),"km ", round(wptOrly.y*NM2M/1000),"km ", end=" \t ")
+print("Toulouse :", round(wptToulouse.x*NM2M/1000),"km ", round(wptToulouse.y*NM2M/1000),"km ", end=" \t ")
+print("Distance Toulouse-Orly :", round(wptToulouse.distance(wptOrly)),"km ")
 
 
