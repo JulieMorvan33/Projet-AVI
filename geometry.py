@@ -101,11 +101,11 @@ class WayPoint(Point):
         R = 6371007  # Rayon de la Terre
         x = A*self.long/RAD2DEG
         y = A*np.log(np.tan(np.pi/4+self.lat/2/RAD2DEG))
-        return x/1000, y/1000
+        return x/NM2M, y/NM2M
 
     def convert(self):
         y, x = trans.transform(self.lat, self.long)
-        return x/NM2M, y/NM2M
+        return x/1000, y/1000
 
 
 class Segment(object):
@@ -194,24 +194,14 @@ class RefLatPath(object):
         pass
 
 
-wptOrly = WayPoint(0, 0)
-"""
+wpt0 = WayPoint(0, 0)
+wptOrly = WayPoint(48.726, 2.365)
 wptToulouse = WayPoint(43.629, 1.363)
-print("GT_TRAJ Orly :", round(wptOrly.x),"km ", round(wptOrly.y),"km ", end=" \t ")
-print("Py-proj Orly : ", round(wptOrly.x2),"km ", round(wptOrly.y2), "km")
-
-print("GT_TRAJ Toulouse :", round(wptToulouse.x),"km ", round(wptToulouse.y),"km ", end=" \t ")
-print("Py-proj Toulouse : ", round(wptToulouse.x2),"km ", round(wptToulouse.y2), "km ")
-
-print("Différence TRAJ :", round(wptToulouse.y-wptOrly.y), "km ")
-print("Différence Pyproj:", round(wptToulouse.y2-wptOrly.y2), "km ")
 
 
-for lat in [40, 45, 50]:
-    for long in [-1, 0, 2, 5]:
-        wpt = WayPoint(lat, long)
-        print("LAT="+str(lat)+"°", "LONG="+str(long)+"°", end=" \t ")
-        print("GT_TRAJ :", round(wpt.x), round(wpt.y), end=" \t ")
-        print("Py-proj : ", round(wpt.x2), round(wpt.y2))
-"""
+print("Point 0:", round(wpt0.x),"km ", round(wpt0.y),"km ", end=" \t ")
+print("Orly :", round(wptOrly.x),"km ", round(wptOrly.y),"km ", end=" \t ")
+print("Toulouse :", round(wptToulouse.x),"km ", round(wptToulouse.y),"km ", end=" \t ")
+print("Distance Toulouse-Orly :", round(wptToulouse.distance(wptOrly)))
+
 
