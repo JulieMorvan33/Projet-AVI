@@ -186,10 +186,9 @@ class Simulation(QObject):
                 long = -long
 
             wpt = WayPoint(lat, long)
-            x, y = wpt.convert()
 
             if ind == 0:
-                self.AC_X, self.AC_Y = x, y
+                self.AC_X, self.AC_Y = wpt.x, wpt.y
                 self.waypoint_data = dict()  # contient (course, flyby/flyover, les contraintes de FL et de vitesse)
                 self.waypoint_data["COURSE"] = 0
                 self.waypoint_data["FLY"] = 'Flyby'
@@ -202,7 +201,7 @@ class Simulation(QObject):
                 self.waypoint_data["FLmin"] = leg[6]
                 self.waypoint_data["FLmax"] = leg[7]
 
-            self.trajFMS.add_waypoint(Point(x, y, self.waypoint_data))
+            self.trajFMS.add_waypoint(Point(wpt.x, wpt.y, self.waypoint_data))
 
         if self.AC_SIMULATED: self.create_AC_positions()
         self.update_display_signal.emit()
@@ -356,7 +355,7 @@ class Simulation(QObject):
 
 
     # Réception des valeurs de XTK, TAE, DTWPT
-    #"GS_Data Time=time XTK=xtk TAE=tae DTWPT=dtwpt BANK_ANGLE_REF=ref"
+    #"GS_Data Time=time XTK=xtk TAE=tae DTWPT=dtwpt ALDTWPT=aldtwp BANK_ANGLE_REF=ref"
     def receive_SEQ_parameters(self, agent, *data):
         mes = data[0].split(" ")
         time = float(mes[0].strip("Time="))
