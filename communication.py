@@ -362,8 +362,8 @@ class Simulation(QObject):
         xtk = float(mes[1].strip("XTK="))
         tae = float(mes[2].strip("TAE="))*RAD2DEG
         dtwpt = float(mes[3].strip("DTWPT="))
-        aldtwpt = float(mes[5].strip("ALDTWPT="))
-        bank_angle = float(mes[6].strip("BANK_ANGLE_REF"))
+        aldtwpt = float(mes[4].strip("ALDTWPT="))
+        bank_angle = float(mes[5].strip("BANK_ANGLE_REF"))
         print("SEQ envoie les paramètres : XTK = ", xtk, " TAE = ", tae, " DTWPT = ", dtwpt, " ALDTWPT = ", aldtwpt, "BANK_ANGLE_REF = ", bank_angle)
         self.defineSEQParam(xtk, tae, dtwpt, aldtwpt)
         self.update_param_1.emit()
