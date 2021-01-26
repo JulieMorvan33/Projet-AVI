@@ -412,7 +412,7 @@ class RadarView(QtWidgets.QWidget):
             self.nd_items.setRotation(self.simulation.AC_HDG)
 
         w, h = WIDTH*PRECISION_FACTOR, HEIGHT*PRECISION_FACTOR
-        self.scene.setSceneRect(self.point.x-w/20, self.point.y-h/20, w, h)
+        self.scene.setSceneRect(self.point.x-w/2, self.point.y-h/2, w, h)
         self.view.fitInView(self.view.sceneRect(), QtCore.Qt.KeepAspectRatio)
 
     def update_ND_items_position(self):
