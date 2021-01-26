@@ -240,8 +240,8 @@ class Simulation(QObject):
         IvySendMsg(mes)
 
         # Envoi d'un message pour ROUTE spécifiant le début de vol
-        IvySendMsg("GT Flight_started")
-        print("Flight start")
+        IvySendMsg("GT Traj_Ready")
+        print("Trajectory computed")
         self.flight_started = True
 
     def next_wpt_param_without_IVY(self):
@@ -416,8 +416,12 @@ class Simulation(QObject):
         self.update_mode.emit()
 
     def get_depart_airport(self, agent, *data):
-        self.DEPART_ID = data[0]
-        print("Aéroport de départ : ", self.DEPART_ID)
+        mes = data[0].split(" ")
+        lat0, lon0 = mes[0].strip("Lat="), mes[1].strip("Long=")
+        print("Aéroport de départ : ", lat0, lon0)
+
+        if False:
+            IvySendMsg("GT AC_InitPosition_unknown")
 
 
 

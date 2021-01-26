@@ -16,10 +16,11 @@ def compute_transition_fly_by(seg_actif, seg_next, GS):
 
 	#calcul du track change entre les deux segments
 	track_change = np.arccos((seg_actif.scal(seg_next)) / (seg_actif.norm() * seg_next.norm())) * RAD2DEG  # en degrés
-	#print("track_change=", track_change) #en degré
+	print("track_change=", track_change) #en degré
 
 	#si pas de virage :
 	if track_change < EPSILON:
+		print("TRACK CHANGE entrée dans boucle epsilon")
 		b_in = b
 		b_out = b
 		b_center = b
@@ -76,15 +77,15 @@ def compute_transition_fly_over(seg_actif, seg_next, GS):
 	b = seg_actif.end
 
 	# calcul du track change entre les deux segments
-	track_change = np.arccos((seg_actif.scal(seg_next)) / (seg_actif.norm() * seg_next.norm()))* RAD2DEG
-	if track_change < 60 :
-		intersect_angle = 10/RAD2DEG# en degrés
+	track_change_initial = np.arccos((seg_actif.scal(seg_next)) / (seg_actif.norm() * seg_next.norm()))* RAD2DEG
+	if track_change_initial < 60 :
+		intersect_angle = track_change_initial/(3*RAD2DEG)# en degrés
 	else:
 		intersect_angle = np.pi/6
-	track_change += intersect_angle*RAD2DEG
+	track_change = track_change_initial + intersect_angle*RAD2DEG
 
 	# si pas de virage :
-	if track_change < EPSILON:
+	if track_change_initial < EPSILON:
 		b_in = b
 		b_out = b
 		b_center = b

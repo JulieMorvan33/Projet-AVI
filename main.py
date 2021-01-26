@@ -39,14 +39,14 @@ if __name__ == "__main__":
         # Initialisation du bus Ivy
         bus = "192.168.43.255:2010"
         IvyInit("GUID_TRAJ_APP", "Bonjour de GUID_TRAJ", 0, null_cb, null_cb)
-        IvyStart() # mettre 'bus' entre parenthèse si utilisation du wifi
+        IvyStart(bus) # mettre 'bus' entre parenthèse si utilisation du wifi
         time.sleep(1.0)  # attente du temps de l'initialisation
 
         # Abonnement à l'horloge
         IvyBindMsg(sim.horloge, "^Time t=(.*)")
 
         # Abonnement à l'identifiant de l'aéroport de départ
-        IvyBindMsg(sim.get_depart_airport, "SP_AptId Identifier= (.*)")
+        IvyBindMsg(sim.get_depart_airport, "SP_InitialCoord (.*)")
 
         # Abonnement au vecteur d'état pour la récupération du heading
         IvyBindMsg(sim.get_AC_current_heading_and_speeds, "AircraftSetPosition (.*)")

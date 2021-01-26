@@ -12,7 +12,7 @@ WP_WIDTH = 5
 WP_DP = WP_WIDTH/2.
 TP_WIDTH = 10
 TP_DP = TP_WIDTH/2.
-ASW = 1  # ASW stands for Arc Semi Width
+ASW = 2  # ASW stands for Arc Semi Width
 
 # Aicraft width
 AC_WIDTH = 10

@@ -190,7 +190,7 @@ class RoseView(QtWidgets.QWidget):
         font.setWeight(20)
         HDGtextitem = QtWidgets.QGraphicsTextItem(self.items)
         HDGtextitem.setFont(font)
-        HDGtextitem.setPlainText("Hello")
+        #HDGtextitem.setPlainText("Hello")
         HDGtextitem.setPos(WIDTH, WIDTH)
         HDGtextitem.setDefaultTextColor(color3)
         HDGtextitem.setTransform(self.view.transform())
@@ -411,7 +411,7 @@ class RadarView(QtWidgets.QWidget):
         else:
             self.nd_items.setRotation(self.simulation.AC_HDG)
 
-        w, h = WIDTH*PRECISION_FACTOR, HEIGHT*PRECISION_FACTOR
+        w, h = WIDTH*PRECISION_FACTOR/10, HEIGHT*PRECISION_FACTOR/10
         self.scene.setSceneRect(self.point.x-w/2, self.point.y-h/2, w, h)
         self.view.fitInView(self.view.sceneRect(), QtCore.Qt.KeepAspectRatio)
 
