@@ -1,6 +1,6 @@
 from PyQt5 import QtWidgets
 from PyQt5.QtGui import QPainter, QColor, QPen, QBrush, QTransform, QFont, QFontMetrics
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QPointF
 from PyQt5 import QtGui
 import numpy as np
 from constantParameters import *
@@ -93,7 +93,6 @@ class QGraphicsWayPointsItem(QtWidgets.QGraphicsEllipseItem): #QtWidgets.QGraphi
         super().__init__(resize(x), resize(y), resize(WP_WIDTH), resize(WP_WIDTH), parent)
         self.pen = P_PEN
         self.moveBy(-resize(WP_DP), -resize(WP_DP))
-
 
     """Affichage des Way Points
     def __init__(self, x, y, parent):
