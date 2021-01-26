@@ -355,15 +355,15 @@ class Simulation(QObject):
 
 
     # Réception des valeurs de XTK, TAE, DTWPT
-    #"GS_Data Time=time XTK=xtk TAE=tae DTWPT=dtwpt ALDTWPT=aldtwp BANK_ANGLE_REF=ref"
+    #"GS_Data Time=time XTK=xtk TAE=tae DTWPT=dtwpt BANK_ANGLE_REF=ref ALDTWPT=aldtwp"
     def receive_SEQ_parameters(self, agent, *data):
         mes = data[0].split(" ")
         time = float(mes[0].strip("Time="))
-        xtk = float(mes[1].strip("XTK="))
-        tae = float(mes[2].strip("TAE="))*RAD2DEG
-        dtwpt = float(mes[3].strip("DTWPT="))
+        xtk = round(float(mes[1].strip("XTK=")), 3)
+        tae = round(float(mes[2].strip("TAE="))*RAD2DEG, 3)
+        dtwpt = round(float(mes[3].strip("DTWPT=")), 3)
+        bank_angle = float(mes[4].strip("BANK_ANGLE_REF="))
         aldtwpt = float(mes[5].strip("ALDTWPT="))
-        bank_angle = float(mes[4].strip("BANK_ANGLE_REF"))
         print("SEQ envoie les paramètres : XTK = ", xtk, " TAE = ", tae, " DTWPT = ", dtwpt, " ALDTWPT = ", aldtwpt, "BANK_ANGLE_REF = ", bank_angle)
         self.defineSEQParam(xtk, tae, dtwpt, aldtwpt)
         self.update_param_1.emit()
