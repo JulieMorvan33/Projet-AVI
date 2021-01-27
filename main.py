@@ -6,7 +6,7 @@ import ndWindowParameters
 import time
 
 USE_IVY = True  # use or not use Ivy Bus ?
-AC_SIMULATED = True  # use bus IVY with no other groups ?
+AC_SIMULATED = False  # use bus IVY with no other groups ?
 SIMU_DELAY = 0.1  # increment time for the simulation if Ivy Bus isn't used
 
 def null_cb(*a):
