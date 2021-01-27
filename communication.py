@@ -125,6 +125,7 @@ class Simulation(QObject):
                 self.AC_Y += (y2-y1)/n
                 self.listeACpositions.append(Point(self.AC_X, self.AC_Y))
                 self.listeHDG.append(hdg)
+            print(self.listeACpositions)
 
     def create_AC_state_without_Ivy(self):
         self.listeHDG = []

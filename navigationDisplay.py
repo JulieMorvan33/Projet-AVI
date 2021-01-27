@@ -205,7 +205,7 @@ class RoseView(QtWidgets.QWidget):
         self.items.addToGroup(self.rose)
 
     def update_hdg(self):
-        if not self.sim.USE_IVY:
+        if not self.sim.USE_IVY or self.sim.AC_SIMULATED:
             ind = int(self.sim.time / self.sim.SIMU_DELAY)
             hdg = self.sim.listeHDG[ind]
         else:
@@ -389,29 +389,27 @@ class RadarView(QtWidgets.QWidget):
             print('mode heading')
 
     def fit_scene_in_view(self):
-        global first_pos_x, first_pos_y
         self.item = QtWidgets.QGraphicsItemGroup()
         if not self.simulation.USE_IVY or self.simulation.AC_SIMULATED:
-            pos = self.simulation.listeACpositions[int(self.simulation.time / self.simulation.SIMU_DELAY)]
-            pos_x, pos_y = pos.x, pos.y
             ind = int(self.simulation.time / self.simulation.SIMU_DELAY)
+            pos = self.simulation.listeACpositions[ind]
+            pos_x, pos_y = pos.x, pos.y
+
         else:
             pos_x, pos_y = self.simulation.AC_X, self.simulation.AC_Y
 
-        print("POSITION DE L'AVION sur le ND: ", pos_x, pos_y)
+        print("POSITION DE L'AVION sur le ND: ", round(pos_x, 1), round(pos_y, 1), round(pos_x*NM2M), round(pos_y)*NM2M)
 
         self.point = QGraphicsImaginaryPoints(pos_x, pos_y, self.nd_items)
         self.nd_items.addToGroup(self.point)
-
-        first_pos_x, first_pos_y = pos_x * PRECISION_FACTOR, pos_y * PRECISION_FACTOR
-        self.nd_items.setTransformOriginPoint(first_pos_x, first_pos_y)
+        self.nd_items.setTransformOriginPoint(pos_x * PRECISION_FACTOR, pos_y * PRECISION_FACTOR)
 
         if not self.simulation.USE_IVY or self.simulation.AC_SIMULATED:
-            self.nd_items.setRotation(self.simulation.listeHDG[int(self.simulation.time / self.simulation.SIMU_DELAY)])
+            self.nd_items.setRotation(self.simulation.listeHDG[ind])
         else:
             self.nd_items.setRotation(self.simulation.AC_HDG)
 
-        w, h = WIDTH*PRECISION_FACTOR/10, HEIGHT*PRECISION_FACTOR/10
+        w, h = WIDTH*PRECISION_FACTOR/2, HEIGHT*PRECISION_FACTOR/2
         self.scene.setSceneRect(self.point.x-w/2, self.point.y-h/2, w, h)
         self.view.fitInView(self.view.sceneRect(), QtCore.Qt.KeepAspectRatio)
 

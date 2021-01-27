@@ -8,7 +8,7 @@ from navigationDisplay import *
 
 
 # Waypoints width
-WP_WIDTH = 5
+WP_WIDTH = 2.5
 WP_DP = WP_WIDTH/2.
 TP_WIDTH = 10
 TP_DP = TP_WIDTH/2.
@@ -87,12 +87,21 @@ class QGraphicsArcItem(QtWidgets.QGraphicsEllipseItem):
         self.y = resize(centre.y - turnRadius)
 
 
-class QGraphicsWayPointsItem(QtWidgets.QGraphicsEllipseItem): #QtWidgets.QGraphicsRectItem):
+class QGraphicsWayPointsItem2(QtWidgets.QGraphicsEllipseItem): #QtWidgets.QGraphicsRectItem):
     """Affichage des legs"""
     def __init__(self, x, y, parent):
         super().__init__(resize(x), resize(y), resize(WP_WIDTH), resize(WP_WIDTH), parent)
         self.pen = P_PEN
         self.moveBy(-resize(WP_DP), -resize(WP_DP))
+
+class QGraphicsWayPointsItem(QtWidgets.QGraphicsRectItem):  # QtWidgets.QGraphicsRectItem):
+    """Affichage des legs"""
+
+    def __init__(self, x, y, parent):
+        super().__init__(resize(x), resize(y), resize(WP_WIDTH), resize(WP_WIDTH), parent)
+        self.pen = P_PEN
+        self.moveBy(-resize(WP_DP), -resize(WP_DP))
+
 
     """Affichage des Way Points
     def __init__(self, x, y, parent):

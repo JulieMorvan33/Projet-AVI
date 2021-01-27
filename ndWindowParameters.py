@@ -43,7 +43,7 @@ class Ui_MainWindow(object):
         # QGraphicsView pour le compas
         self.graphicsView_3.setFixedSize(QtCore.QSize(WIDTH, HEIGHT))
         self.graphicsView_3.setObjectName("graphicsView_3")
-        self.graphicsView_3.setStyleSheet("background:transparent;")
+        self.graphicsView_3.setStyleSheet("background:black;")
         self.stackedLayout.insertWidget(1, self.graphicsView_3)
         self.graphicsView_3.setRenderHint(QtGui.QPainter.Antialiasing)  # enable anti-aliasing
 

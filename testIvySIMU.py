@@ -41,6 +41,7 @@ if __name__ == '__main__':
     for i in range(50):
         IvySendMsg("Time t=" + str(float(i)))
         x, y = (100 + i * 0.1)*100*NM2M , (75 + i * 1.5/20)*100*NM2M   # m
+
         #if USING_STATE_VECTOR:
         message1 = "InitStateVector x=" + str(x) + " y=" + str(y) + " z=" + str(30000*FT2M)
         message1 += " Vp=" + str(250*NM2M*3600) + " fpa=" + str(273) + " psi=" + str(0) + " phi=" + str(0)
