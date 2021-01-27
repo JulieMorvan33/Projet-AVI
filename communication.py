@@ -31,6 +31,7 @@ class Simulation(QObject):
         self.trajFMS = RefLatPath()
         self.AP_mode = "Managed"  # mode de l'autopilot ("Managed" ou "Selected")
         self.HDG_selected = 0
+        self.AC_init_HDG = 0
         self.flightParam = dict()  # contient CRZ_ALT, CI et WIND
         self.SEQParam = dict()  # contient XTK, TAE, DTWPT, ALDTWPT
         self.NextWPTParam = dict()  # contient NEXTWPT, COURSE, TTWPT
@@ -125,7 +126,6 @@ class Simulation(QObject):
                 self.AC_Y += (y2-y1)/n
                 self.listeACpositions.append(Point(self.AC_X, self.AC_Y))
                 self.listeHDG.append(hdg)
-            print(self.listeACpositions)
 
     def create_AC_state_without_Ivy(self):
         self.listeHDG = []
@@ -160,6 +160,8 @@ class Simulation(QObject):
                 lat = data[4].strip("LAT=")  # string donnant la latitude
                 long = data[5].strip("LONG=")  # string donnant la longitude
                 course = float(data[6].strip("COURSE="))  # float course du leg angle vers le prochain leg (ex: 110°)
+                if j == 1:# if this is the second waypoint
+                    self.AC_init_HDG = course
                 distance = float(data[7].strip("DISTANCE=")) # float donnant la longueur du leg en Nm
                 fl_min = float(data[8].strip("FLmin=FL"))  # float FL min
                 if j == len(dataListGlob) - 1:
@@ -225,18 +227,15 @@ class Simulation(QObject):
     def send_AC_init_position_to_Aircraft_Model(self):
         wpt0 = self.trajFMS.waypoint_list[0]
         time.sleep(1)
-        print(5)
-        time.sleep(1)
-        print(4)
-        time.sleep(1)
         print(3)
         time.sleep(1)
         print(2)
         time.sleep(1)
         print(1)
+        time.sleep(1)
 
         print("Envoi de la position initiale de l'avion à l'Aircraft Model : ", wpt0.x, wpt0.y)
-        mes = "InitStateVector x=" + str(wpt0.x*NM2M) + " y=" + str(wpt0.y*NM2M) + " z=" + str(self.flightParam["CRZ_ALT"]*FT2M) + " Vp=" + str(int(self.speedPred.TAS*KT2MS)) + " fpa=" + str(self.AC_HDG) + " psi=" + str(0) + " phi=" + str(0)
+        mes = "InitStateVector x=" + str(wpt0.x*NM2M) + " y=" + str(wpt0.y*NM2M) + " z=" + str(self.flightParam["CRZ_ALT"]*FT2M) + " Vp=" + str(int(self.speedPred.TAS*KT2MS)) + " fpa=0" + " psi=" + str(0) + " phi=" + str(self.AC_init_HDG/RAD2DEG)
         print("Message envoyé à l'Aircraft Model :", mes)
         IvySendMsg(mes)
 
