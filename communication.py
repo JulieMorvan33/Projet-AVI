@@ -420,7 +420,8 @@ class Simulation(QObject):
 
     def get_depart_airport(self, agent, *data):
         mes = data[0].split(" ")
-        lat0, lon0 = mes[0].strip("Lat="), mes[1].strip("Long=")
+        #attention le simulateur interchange les x avec les y
+        lon0, lat0 = mes[0].strip("Lat="), mes[1].strip("Long=")
         print("Aéroport de départ : ", lat0, lon0)
         if False:
             IvySendMsg("GT AC_InitPosition_unknown")
