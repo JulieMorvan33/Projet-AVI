@@ -234,13 +234,16 @@ class Simulation(QObject):
         print(1)
         time.sleep(1)
 
-        print("Envoi de la position initiale de l'avion à l'Aircraft Model : ", wpt0.x, wpt0.y)
-        mes = "InitStateVector x=" + str(wpt0.x*NM2M) + " y=" + str(wpt0.y*NM2M) + " z=" + str(self.flightParam["CRZ_ALT"]*FT2M) + " Vp=" + str(int(self.speedPred.TAS*KT2MS)) + " fpa=0" + " psi=" + str(0) + " phi=" + str(self.AC_init_HDG/RAD2DEG)
-        print("Message envoyé à l'Aircraft Model :", mes)
+        #print("Envoi de la position initiale de l'avion à l'Aircraft Model : ", wpt0.x, wpt0.y)
+        #mes = "InitStateVector x=" + str(wpt0.x*NM2M) + " y=" + str(wpt0.y*NM2M) + " z=" + str(self.flightParam["CRZ_ALT"]*FT2M) + " Vp=" + str(int(self.speedPred.TAS*KT2MS)) + " fpa=0" + " psi=" + str(0) + " phi=" + str(self.AC_init_HDG/RAD2DEG)
+        #print("Message envoyé à l'Aircraft Model :", mes)
+        #IvySendMsg(mes)
+
+        print("Envoi de la position initiale de l'avion à SIM_PARAM : ", wpt0.x, wpt0.y)
+        mes = "GT Traj_Ready" + " z=" + str(self.flightParam["CRZ_ALT"] * FT2M) + " Vp=" + str(int(self.speedPred.TAS * KT2MS)) + " fpa=0" + " psi=" + str(0) + " phi=" + str(self.AC_init_HDG / RAD2DEG)
+        print("Message envoyé à SIM_PARAM :", mes)
         IvySendMsg(mes)
 
-        # Envoi d'un message pour ROUTE spécifiant le début de vol
-        IvySendMsg("GT Traj_Ready")
         print("Trajectory computed")
         self.flight_started = True
 
@@ -419,7 +422,6 @@ class Simulation(QObject):
         mes = data[0].split(" ")
         lat0, lon0 = mes[0].strip("Lat="), mes[1].strip("Long=")
         print("Aéroport de départ : ", lat0, lon0)
-
         if False:
             IvySendMsg("GT AC_InitPosition_unknown")
 
