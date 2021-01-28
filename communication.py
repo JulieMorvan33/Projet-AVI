@@ -99,7 +99,8 @@ class Simulation(QObject):
     def get_AC_position(self, agent, *data):
         # Use de StateVector pour avoir la position courante de l'avion
         position = data[0].split(" ")
-        self.AC_X, self.AC_Y = float(position[0].strip("x="))/NM2M, float(position[1].strip("y="))/NM2M # en NM (en m dans le SIMU)
+        # attention : le simulateur envoyant les données interchange les x avec les y
+        self.AC_Y, self.AC_X = float(position[0].strip("x="))/NM2M, float(position[1].strip("y="))/NM2M # en NM (en m dans le SIMU)
         print("Pos dans SIMU ", self.AC_X, self.AC_Y)
 
         self.update_aicraft_signal.emit()
@@ -208,7 +209,6 @@ class Simulation(QObject):
 
         if self.AC_SIMULATED: self.create_AC_positions()
         self.update_display_signal.emit()
-        IvySendMsg("GT Traj_Ready")
         self.send_AC_init_position_to_Aircraft_Model()
 
 
