@@ -240,7 +240,7 @@ class Simulation(QObject):
         #IvySendMsg(mes)
 
         print("Envoi de la position initiale de l'avion à SIM_PARAM : ", wpt0.x, wpt0.y)
-        mes = "GT Traj_Ready" + " z=" + str(self.flightParam["CRZ_ALT"] * FT2M) + " Vp=" + str(int(self.speedPred.TAS * KT2MS)) + " fpa=0" + " psi=" + str(0) + " phi=" + str(self.AC_init_HDG / RAD2DEG)
+        mes = "GT Traj_Ready" + " z=" + str(self.flightParam["CRZ_ALT"] * FT2M) + " Vp=" + str(int(self.speedPred.TAS * KT2MS)) + " fpa=0" + " psi=" + str(self.AC_init_HDG / RAD2DEG) + " phi=" + str(0.0)
         print("Message envoyé à SIM_PARAM :", mes)
         IvySendMsg(mes)
 
