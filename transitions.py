@@ -20,13 +20,7 @@ def compute_transition_fly_by(seg_actif, seg_next, TAS):
 
 	#si pas de virage :
 	if track_change < EPSILON:
-		print("TRACK CHANGE entrée dans boucle epsilon")
-		b_in = b
-		b_out = b
-		b_center = b
-		lead_distance = 0
-		turn_radius = 0
-		bank_angle = 0
+		return [g.Arc(b, b, b, 0, 0, 0, 0, 0)]
 
 	#si virage :
 	else :
@@ -86,12 +80,9 @@ def compute_transition_fly_over(seg_actif, seg_next, TAS):
 
 	# si pas de virage :
 	if track_change_initial < EPSILON:
-		b_in = b
-		b_out = b
-		b_center = b
-		lead_distance = 0
-		turn_radius = 0
-		bank_angle = 0
+		arc = g.Arc(b, b, b, 0, 0, 0, 0, 0)
+		segment_jointif = g.Segment(b,b)
+		return([arc, segment_jointif, arc])
 
 	# si virage :
 	else:
@@ -146,15 +137,17 @@ def compute_transition_fly_over(seg_actif, seg_next, TAS):
 			im1_center = g.Point(im_1.x + d * np.sin((a_im1_im1c_angle - active_track)),
 							   im_1.y - d * np.cos((a_im1_im1c_angle - active_track)))
 
-	Arc1 = g.Arc(im1_center, im1_in, im1_out, turn_radius, lead_distance, bank_angle, track_change, sens_virage)
+	arc1 = g.Arc(im1_center, im1_in, im1_out, turn_radius, lead_distance, bank_angle, track_change, sens_virage)
 
+	#try:
 	im_2 = seg_next_im.intersection(seg_next)
 	im_1_im2 = g.Segment(im1_out,im_2)
 	im_2_next = g.Segment(im_2, seg_next.end)
-	l_Arc2 = compute_transition_fly_by(im_1_im2, im_2_next, TAS)
-	Arc2 = l_Arc2[0]
-	segment_jointif = g.Segment(im1_out, Arc2.start)
-	return [Arc1, segment_jointif, Arc2]
+	l_arc2 = compute_transition_fly_by(im_1_im2, im_2_next, TAS)
+	arc2 = l_arc2[0]
+	segment_jointif = g.Segment(im1_out, arc2.start)
+	return [arc1, segment_jointif, arc2]
+	#except Exception:
 
 def get_track(segment_courant):
 	"""La route est calculee en RAD, entre -pi et pi"""

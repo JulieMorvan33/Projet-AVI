@@ -371,9 +371,9 @@ class RadarView(QtWidgets.QWidget):
         #leg_item.setPen(leg_item.pen)
 
         # Affiche la dernière ortho après la dernière transition
-        leg_item_path = QGraphicsLegsItem(transition.end.x, transition.end.y, c.x, c.y, self.nd_items)
+        leg_item_path = QGraphicsLegsItem(transition_list[-1].end.x,  transition_list[-1].end.y, c.x, c.y, self.nd_items)
         leg_item_path.setPen(TRAJ_PEN)
-        self.simulation.trajFMS.add_path(g.Segment(transition.end, c), None)  # ajout de la dernière ortho, None pour
+        self.simulation.trajFMS.add_path(g.Segment(transition_list[-1].end, c), None)  # ajout de la dernière ortho, None pour
         # la dernière transition
 
         # Affiche tous les WayPoints
