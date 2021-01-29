@@ -309,22 +309,22 @@ class RadarView(QtWidgets.QWidget):
             #########################
             if (i == 1): # si première transition
                 if transition_type == "Flyby":
-                    transition_list = compute_transition_fly_by(seg_actif, seg_next, self.simulation.speedPred.GS)
+                    transition_list = compute_transition_fly_by(seg_actif, seg_next, self.simulation.speedPred.TAS)
                 elif transition_type == "Flyover":
-                    transition_list = compute_transition_fly_over(seg_actif, seg_next, self.simulation.speedPred.GS)
+                    transition_list = compute_transition_fly_over(seg_actif, seg_next, self.simulation.speedPred.TAS)
                 start_segment = a
                 end_segment = transition_list[0].start
             else:
                 temp = transition_list[-1].end
                 if transition_type == "Flyby":
-                    transition_list = compute_transition_fly_by(seg_actif, seg_next, self.simulation.speedPred.GS)
+                    transition_list = compute_transition_fly_by(seg_actif, seg_next, self.simulation.speedPred.TAS)
                 elif transition_type == "Flyover":
-                    transition_list = compute_transition_fly_over(seg_actif, seg_next, self.simulation.speedPred.GS)
+                    transition_list = compute_transition_fly_over(seg_actif, seg_next, self.simulation.speedPred.TAS)
                 start_segment = temp
                 end_segment = transition_list[0].start
 
             # ajout des objets transitions et orthos dans la trajectoire pour envoi sur le bus IVY
-            self.simulation.trajFMS.add_path(g.Segment(start_segment, end_segment), g.Transition(transition_type, self.simulation.speedPred.GS,
+            self.simulation.trajFMS.add_path(g.Segment(start_segment, end_segment), g.Transition(transition_type, self.simulation.speedPred.TAS,
                                                                                                  transition_list))
             # self.simulation.trajFMS.bankAnglesList.append(bank_angle) # list de 2 banks pour un fly over ?
 

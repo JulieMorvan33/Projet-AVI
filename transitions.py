@@ -6,7 +6,7 @@ EPSILON = 10e-5
 #Transition parameters
 intersect_angle = np.pi/6
 
-def compute_transition_fly_by(seg_actif, seg_next, GS):
+def compute_transition_fly_by(seg_actif, seg_next, TAS):
 	"""Compute track_change, turn radius, seg_actif, seg_next, b_in, b_out, b_center
 	associated to the index i transition """
 
@@ -34,17 +34,17 @@ def compute_transition_fly_by(seg_actif, seg_next, GS):
 		if ALTITUDE>195:
 			max_angle = (16 - 25) / (300 - 195) * (ALTITUDE - 195) + 25
 			bank_angle = max(5, min(0.5 * track_change, max_angle)) #en DEG
-			turn_radius = GS ** 2 / (G * np.tan(bank_angle / RAD2DEG)) / NM2M  # NM
+			turn_radius = TAS ** 2 / (G * np.tan(bank_angle / RAD2DEG)) / NM2M  # NM
 			lead_distance = turn_radius * np.tan(0.5 * track_change / RAD2DEG)  # NM
 			if lead_distance > 20:  # NM
 				lead_distance = 20  # NM
 				turn_radius = lead_distance / np.tan(0.5 * track_change / RAD2DEG)
-				bank_angle = max(5, min(np.arctan(GS ** 2) / (G * turn_radius), max_angle))
+				bank_angle = max(5, min(np.arctan(TAS ** 2) / (G * turn_radius), max_angle))
 			#print("lead_distance", lead_distance)
 		else :
 			max_angle = 25 #DEG
 			bank_angle = max(5, min(0.5*track_change,max_angle)) #DEG
-			turn_radius = GS**2 / (G*np.tan(bank_angle / RAD2DEG)) / NM2M # NM
+			turn_radius = TAS**2 / (G*np.tan(bank_angle / RAD2DEG)) / NM2M # NM
 			lead_distance = turn_radius * np.tan(0.5 * track_change / RAD2DEG)
 
 		#calcul de b_in et b_out : points de debut et fin de la transition en arc de cercle
@@ -71,7 +71,7 @@ def compute_transition_fly_by(seg_actif, seg_next, GS):
 	return [g.Arc(b_center, b_in, b_out, turn_radius, lead_distance, bank_angle, track_change, sens_virage)]
 
 
-def compute_transition_fly_over(seg_actif, seg_next, GS):
+def compute_transition_fly_over(seg_actif, seg_next, TAS):
 	# Recuperation des points A (debut) et B (fin) du premier segment
 	a = seg_actif.start
 	b = seg_actif.end
@@ -98,17 +98,17 @@ def compute_transition_fly_over(seg_actif, seg_next, GS):
 		if ALTITUDE>195:
 			max_angle = (16 - 25) / (300 - 195) * (ALTITUDE - 195) + 25
 			bank_angle = max(5, min(0.5 * track_change, max_angle)) #en DEG
-			turn_radius = GS ** 2 / (G * np.tan(bank_angle / RAD2DEG)) / NM2M  # NM
+			turn_radius = TAS ** 2 / (G * np.tan(bank_angle / RAD2DEG)) / NM2M  # NM
 			lead_distance = turn_radius * np.tan(0.5 * track_change / RAD2DEG)  # NM
 			if lead_distance > 20:  # NM
 				lead_distance = 20  # NM
 				turn_radius = lead_distance / np.tan(0.5 * track_change / RAD2DEG)
-				bank_angle = max(5, min(np.arctan(GS ** 2) / (G * turn_radius), max_angle))
+				bank_angle = max(5, min(np.arctan(TAS ** 2) / (G * turn_radius), max_angle))
 			#print("lead_distance", lead_distance)
 		else :
 			max_angle = 25 #DEG
 			bank_angle = max(5, min(0.5*track_change,max_angle)) #DEG
-			turn_radius = GS**2 / (G*np.tan(bank_angle / RAD2DEG)) / NM2M # NM
+			turn_radius = TAS**2 / (G*np.tan(bank_angle / RAD2DEG)) / NM2M # NM
 			lead_distance = turn_radius * np.tan(0.5 * track_change / RAD2DEG)
 
 		im1_in = b
@@ -151,7 +151,7 @@ def compute_transition_fly_over(seg_actif, seg_next, GS):
 	im_2 = seg_next_im.intersection(seg_next)
 	im_1_im2 = g.Segment(im1_out,im_2)
 	im_2_next = g.Segment(im_2, seg_next.end)
-	l_Arc2 = compute_transition_fly_by(im_1_im2, im_2_next, GS)
+	l_Arc2 = compute_transition_fly_by(im_1_im2, im_2_next, TAS)
 	Arc2 = l_Arc2[0]
 	segment_jointif = g.Segment(im1_out, Arc2.start)
 	return [Arc1, segment_jointif, Arc2]
