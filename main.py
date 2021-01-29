@@ -6,7 +6,7 @@ import ndWindowParameters
 import time
 
 USE_IVY = True  # use or not use Ivy Bus ?
-AC_SIMULATED = True  # use bus IVY with no other groups ?
+AC_SIMULATED = False  # use bus IVY with no other groups ?
 SIMU_DELAY = 0.1  # increment time for the simulation if Ivy Bus isn't used
 
 def null_cb(*a):
@@ -24,14 +24,14 @@ if __name__ == "__main__":
 
     ac = navigationDisplay.AircraftView(sim)
 
-    # create the compass view
-    compass = navigationDisplay.CompassView(sim)
+    # create the rose view
+    rose = navigationDisplay.RoseView(sim)
 
     # create the parameters view displaying GS, TAS,...
     param = navigationDisplay.ParamView(sim)
 
     # create the QMainWindow
-    win = ndWindowParameters.mywindow(param.view, rad.view, compass.view, ac.view, sim)
+    win = ndWindowParameters.mywindow(param.view, rad.view, rose.view, ac.view, sim)
     win.setWindowTitle("Navigation Display")
     win.show()
 
@@ -39,14 +39,17 @@ if __name__ == "__main__":
         # Initialisation du bus Ivy
         bus = "192.168.43.255:2010"
         IvyInit("GUID_TRAJ_APP", "Bonjour de GUID_TRAJ", 0, null_cb, null_cb)
-        IvyStart()
+        IvyStart() # mettre 'bus' entre parenthèse si utilisation du wifi
         time.sleep(1.0)  # attente du temps de l'initialisation
 
         # Abonnement à l'horloge
         IvyBindMsg(sim.horloge, "^Time t=(.*)")
 
+        # Abonnement à l'identifiant de l'aéroport de départ
+        IvyBindMsg(sim.get_depart_airport, "SP_InitialCoord (.*)")
+
         # Abonnement au vecteur d'état pour la récupération du heading
-        IvyBindMsg(sim.get_AC_state, "AircraftSetPosition (.*)")
+        IvyBindMsg(sim.get_AC_current_heading_and_speeds, "AircraftSetPosition (.*)")
 
         # Abonnement au vecteur d'état pour la récupération de x et y
         IvyBindMsg(sim.get_AC_position, "StateVector (.*)")
@@ -62,6 +65,9 @@ if __name__ == "__main__":
 
         # Abonnement au mode de l'autopilot
         IvyBindMsg(sim.get_AP_mode, "GC_AP (.*)")
+
+        # Abonnement au HDG sélecté
+        IvyBindMsg(sim.get_HDG_selected, "FCULateral (.*)")
 
     # enter the main loop
     app.exec_()

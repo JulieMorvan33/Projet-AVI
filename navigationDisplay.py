@@ -66,11 +66,11 @@ class ParamView(QtWidgets.QWidget):
         font.setWeight(10)  # epaisseur du texte
 
         # Ajout de la ground speed
-        textitem = QtWidgets.QGraphicsTextItem(self.items)
-        textitem.setFont(font)
-        textitem.setPlainText("GS")
-        textitem.setPos(-670, -55)
-        textitem.setDefaultTextColor(color2)
+        GSunittextitem = QtWidgets.QGraphicsTextItem(self.items)
+        GSunittextitem.setFont(font)
+        GSunittextitem.setPlainText("GS")
+        GSunittextitem.setPos(-670, -55)
+        GSunittextitem.setDefaultTextColor(color2)
 
         self.GStextitem = QtWidgets.QGraphicsTextItem(self.items)
         self.GStextitem.setFont(font)
@@ -79,11 +79,11 @@ class ParamView(QtWidgets.QWidget):
         self.GStextitem.setDefaultTextColor(color3)
 
         # Ajout de la TAS
-        textitem = QtWidgets.QGraphicsTextItem(self.items)
-        textitem.setFont(font)
-        textitem.setPlainText("TAS")
-        textitem.setPos(-500, -55)
-        textitem.setDefaultTextColor(color2)
+        TASunittextitem = QtWidgets.QGraphicsTextItem(self.items)
+        TASunittextitem.setFont(font)
+        TASunittextitem.setPlainText("TAS")
+        TASunittextitem.setPos(-500, -55)
+        TASunittextitem.setDefaultTextColor(color2)
 
         self.TAStextitem = QtWidgets.QGraphicsTextItem(self.items)
         self.TAStextitem.setFont(font)
@@ -91,11 +91,11 @@ class ParamView(QtWidgets.QWidget):
         self.TAStextitem.setPos(-460, -55)
         self.TAStextitem.setDefaultTextColor(color3)
 
-        textitem = QtWidgets.QGraphicsTextItem(self.items)
-        textitem.setFont(font)
-        textitem.setPlainText("NM")
-        textitem.setPos(70, -30)
-        textitem.setDefaultTextColor(color4)
+        NMtextitem = QtWidgets.QGraphicsTextItem(self.items)
+        NMtextitem.setFont(font)
+        NMtextitem.setPlainText("NM")
+        NMtextitem.setPos(30, -30)
+        NMtextitem.setDefaultTextColor(color4)
 
         if not self.simulation.USE_IVY:
             self.simulation.seq_param_without_IVY()
@@ -115,8 +115,8 @@ class ParamView(QtWidgets.QWidget):
         self.HDGtextitem.setPlainText(str(self.simulation.NextWPTParam["COURSE"]))
 
         # textitem.setPlainText(str(self.simulation.create_leg_without_Ivy()[4]))
-        textitem.setPos(50, -55)
-        textitem.setDefaultTextColor(color3)
+        #textitem.setPos(50, -55)
+        #textitem.setDefaultTextColor(color3)
 
         # Ajout du DTWPT
         self.DTWPTtextitem = QtWidgets.QGraphicsTextItem(self.items)
@@ -144,6 +144,7 @@ class ParamView(QtWidgets.QWidget):
             self.simulation.update_param_1.connect(self.update_DTWPT)
             self.simulation.update_param_2.connect(self.update_SEQ_param_display)
             self.simulation.update_flight_param_signal.connect(self.update_wind)
+            self.simulation.update_aicraft_signal.connect(self.update_speed_displays)
 
     def update_DTWPT(self):
         self.DTWPTtextitem.setPlainText(str(round(self.simulation.SEQParam["DTWPT"], 0)))
@@ -163,7 +164,7 @@ class ParamView(QtWidgets.QWidget):
         self.GStextitem.setPlainText(str(int(self.simulation.AC_GS)))
 
 
-class CompassView(QtWidgets.QWidget):
+class RoseView(QtWidgets.QWidget):
     def __init__(self, sim):
         super().__init__()
         self.scene = QtWidgets.QGraphicsScene()
@@ -180,20 +181,38 @@ class CompassView(QtWidgets.QWidget):
         # ajout du compas
         self.items = QtWidgets.QGraphicsItemGroup()
         self.scene.addItem(self.items)
-        self.compass = QGraphicsCompassItem2(WIDTH, WIDTH, WIDTH*0.5, self.items, self.view)
-        self.items.addToGroup(self.compass)
+        self.rose = QGraphicsRoseItem(self.sim, WIDTH, WIDTH, WIDTH*0.5, self.items, self.view)
+        self.items.addToGroup(self.rose)
+
+        # Ajout du HDG
+        color3 = QColor(0, 255, 0)  # vert
+        font = QtGui.QFont()
+        font.setWeight(20)
+        HDGtextitem = QtWidgets.QGraphicsTextItem(self.items)
+        HDGtextitem.setFont(font)
+        #HDGtextitem.setPlainText("Hello")
+        HDGtextitem.setPos(WIDTH, WIDTH)
+        HDGtextitem.setDefaultTextColor(color3)
+        HDGtextitem.setTransform(self.view.transform())
+        self.items.addToGroup(HDGtextitem)
 
         self.sim.update_aicraft_signal.connect(self.update_hdg)
+        self.sim.update_mode.connect(self.add_rose)
+
+    def add_rose(self):
+        self.items.removeFromGroup(self.rose)
+        self.rose = QGraphicsRoseItem(self.sim, WIDTH, WIDTH, WIDTH * 0.5, self.items, self.view)
+        self.items.addToGroup(self.rose)
 
     def update_hdg(self):
-        if not self.sim.USE_IVY:
+        if not self.sim.USE_IVY or self.sim.AC_SIMULATED:
             ind = int(self.sim.time / self.sim.SIMU_DELAY)
             hdg = self.sim.listeHDG[ind]
         else:
             hdg = self.sim.AC_HDG
         centre_rot = QtCore.QPointF(WIDTH + (WIDTH * 0.5) / 2, WIDTH + (WIDTH * 0.5) / 2)
-        self.compass.setTransformOriginPoint(centre_rot)
-        self.compass.setRotation(hdg)
+        self.rose.setTransformOriginPoint(centre_rot)
+        self.rose.setRotation(hdg)
 
 
 class AircraftView(QtWidgets.QWidget):
@@ -236,6 +255,7 @@ class RadarView(QtWidgets.QWidget):
         self.simulation.update_display_signal.connect(self.update_ND_items)
         self.simulation.update_display_signal.connect(self.start_timer)
         self.simulation.update_aicraft_signal.connect(self.update_ND_items_position)
+        self.simulation.AP_mode_signal.connect(self.mode_heading)
 
         # Settings
         self.width, self.height = WIDTH, HEIGHT
@@ -279,7 +299,7 @@ class RadarView(QtWidgets.QWidget):
             seg_actif = g.Segment(a, b)  # segment d'entrée de la transition
             seg_next = g.Segment(b, c)  # segment de sortie de la transition
             if self.simulation.USE_IVY: transition_type = b.data["FLY"]
-            else: transition_type = "fly_by"
+            else: transition_type = "Flyby"
 
             ######### TEST ##########
             # if i%2==0:
@@ -288,23 +308,23 @@ class RadarView(QtWidgets.QWidget):
             #     transition_type = "fly_by"
             #########################
             if (i == 1): # si première transition
-                if transition_type == "fly_by":
-                    transition_list = compute_transition_fly_by(seg_actif, seg_next, self.simulation.speedPred.GS)
-                elif transition_type == "fly_over":
-                    transition_list = compute_transition_fly_over(seg_actif, seg_next, self.simulation.speedPred.GS)
+                if transition_type == "Flyby":
+                    transition_list = compute_transition_fly_by(seg_actif, seg_next, self.simulation.speedPred.TAS)
+                elif transition_type == "Flyover":
+                    transition_list = compute_transition_fly_over(seg_actif, seg_next, self.simulation.speedPred.TAS)
                 start_segment = a
                 end_segment = transition_list[0].start
             else:
                 temp = transition_list[-1].end
-                if transition_type == "fly_by":
-                    transition_list = compute_transition_fly_by(seg_actif, seg_next, self.simulation.speedPred.GS)
-                elif transition_type == "fly_over":
-                    transition_list = compute_transition_fly_over(seg_actif, seg_next, self.simulation.speedPred.GS)
+                if transition_type == "Flyby":
+                    transition_list = compute_transition_fly_by(seg_actif, seg_next, self.simulation.speedPred.TAS)
+                elif transition_type == "Flyover":
+                    transition_list = compute_transition_fly_over(seg_actif, seg_next, self.simulation.speedPred.TAS)
                 start_segment = temp
                 end_segment = transition_list[0].start
 
             # ajout des objets transitions et orthos dans la trajectoire pour envoi sur le bus IVY
-            self.simulation.trajFMS.add_path(g.Segment(start_segment, end_segment), g.Transition(transition_type, self.simulation.speedPred.GS,
+            self.simulation.trajFMS.add_path(g.Segment(start_segment, end_segment), g.Transition(transition_type, self.simulation.speedPred.TAS,
                                                                                                  transition_list))
             # self.simulation.trajFMS.bankAnglesList.append(bank_angle) # list de 2 banks pour un fly over ?
 
@@ -333,18 +353,23 @@ class RadarView(QtWidgets.QWidget):
                                                                         self.nd_items)
                         leg_item_transition_segment.setPen(TRAJ_PEN)
 
-            # Affiche le leg
+            # Affiche le leg (pas quand la ligne est commentée
             leg_item = QGraphicsLegsItem(a.x, a.y, b.x, b.y, self.nd_items)
-            leg_item.setPen(leg_item.pen)
+            # leg_item.setPen(leg_item.pen)
 
             # Affiche l'ortho
             leg_item_path = QGraphicsLegsItem(start_segment.x, start_segment.y, end_segment.x, end_segment.y,
                                               self.nd_items)
+
             leg_item_path.setPen(TRAJ_PEN)
+
+            if self.simulation.AP_mode == "Selected":
+                TRAJ_PEN.setStyle(Qt.DashLine)
+            # Affichage de la trajectoire en pointillé si mode heading
 
         # Affiche le dernier leg après la dernière transition
         leg_item = QGraphicsLegsItem(b.x, b.y, c.x, c.y, self.nd_items)
-        leg_item.setPen(leg_item.pen)
+        #leg_item.setPen(leg_item.pen)
 
         # Affiche la dernière ortho après la dernière transition
         leg_item_path = QGraphicsLegsItem(transition.end.x, transition.end.y, c.x, c.y, self.nd_items)
@@ -354,33 +379,38 @@ class RadarView(QtWidgets.QWidget):
 
         # Affiche tous les WayPoints
         for point in self.simulation.trajFMS.waypoint_list:
-            QGraphicsWayPointsItem(point.x, point.y, self.nd_items)
+            point = QGraphicsWayPointsItem(point.x, point.y, self.nd_items)
+            point.setPen(point.pen)
+
+    def mode_heading(self):
+        if self.simulation.AP_mode == "'Selected'":
+            TRAJ_PEN.setStyle(Qt.DashLine)
+            self.scene.removeItem(self.nd_items)
+            self.add_ND_items()
+            print('mode heading')
 
     def fit_scene_in_view(self):
-        global first_pos_x, first_pos_y
-        self.item = QtWidgets.QGraphicsItemGroup()
+        #self.item = QtWidgets.QGraphicsItemGroup()
         if not self.simulation.USE_IVY or self.simulation.AC_SIMULATED:
-            pos = self.simulation.listeACpositions[int(self.simulation.time / self.simulation.SIMU_DELAY)]
-            pos_x, pos_y = pos.x, pos.y
             ind = int(self.simulation.time / self.simulation.SIMU_DELAY)
+            pos = self.simulation.listeACpositions[ind]
+            pos_x, pos_y = pos.x, pos.y
         else:
             pos_x, pos_y = self.simulation.AC_X, self.simulation.AC_Y
 
-        print("POSITION DE L'AVION : ", pos_x, pos_y)
+        print("POSITION DE L'AVION sur le ND: ", round(pos_x, 1), round(pos_y, 1), round(pos_x*NM2M), round(pos_y)*NM2M)
 
-        self.point = QGraphicsImaginaryPoints(pos_x, pos_y, self.nd_items)
-        self.nd_items.addToGroup(self.point)
-
-        first_pos_x, first_pos_y = pos_x * PRECISION_FACTOR, pos_y * PRECISION_FACTOR
-        self.nd_items.setTransformOriginPoint(first_pos_x, first_pos_y)
+        #self.point = QGraphicsImaginaryPoints(pos_x, pos_y, self.nd_items)
+        #self.nd_items.addToGroup(self.point)
+        self.nd_items.setTransformOriginPoint(pos_x * PRECISION_FACTOR, pos_y * PRECISION_FACTOR)
 
         if not self.simulation.USE_IVY or self.simulation.AC_SIMULATED:
-            self.nd_items.setRotation(self.simulation.listeHDG[int(self.simulation.time / self.simulation.SIMU_DELAY)])
+            self.nd_items.setRotation(self.simulation.listeHDG[ind])
         else:
             self.nd_items.setRotation(self.simulation.AC_HDG)
 
-        w, h = WIDTH*PRECISION_FACTOR, HEIGHT*PRECISION_FACTOR
-        self.scene.setSceneRect(self.point.x-w/2, self.point.y-h/2, w, h)
+        w, h = WIDTH*PRECISION_FACTOR/10, HEIGHT*PRECISION_FACTOR/10
+        self.scene.setSceneRect(pos_x*PRECISION_FACTOR-w/2, pos_y*PRECISION_FACTOR-h/2, w, h)
         self.view.fitInView(self.view.sceneRect(), QtCore.Qt.KeepAspectRatio)
 
     def update_ND_items_position(self):

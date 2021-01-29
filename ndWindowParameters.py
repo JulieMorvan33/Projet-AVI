@@ -7,11 +7,11 @@ WIDTH = 800
 HEIGHT = 800
 
 class Ui_MainWindow(object):
-    def __init__(self, param_view, view, compass_view, aircraft_view, sim):
+    def __init__(self, param_view, view, rose_view, aircraft_view, sim):
         super().__init__()
         self.graphicsView = param_view # QGraphicView pour les paramètres de vol (DTWPT...)
         self.graphicsView_2 = view
-        self.graphicsView_3 = compass_view
+        self.graphicsView_3 = rose_view
         self.graphicsView_4 = aircraft_view
         self.sim = sim
 
@@ -43,7 +43,7 @@ class Ui_MainWindow(object):
         # QGraphicsView pour le compas
         self.graphicsView_3.setFixedSize(QtCore.QSize(WIDTH, HEIGHT))
         self.graphicsView_3.setObjectName("graphicsView_3")
-        self.graphicsView_3.setStyleSheet("background:transparent;")
+        self.graphicsView_3.setStyleSheet("background:black;")
         self.stackedLayout.insertWidget(1, self.graphicsView_3)
         self.graphicsView_3.setRenderHint(QtGui.QPainter.Antialiasing)  # enable anti-aliasing
 
@@ -408,7 +408,7 @@ class Ui_MainWindow(object):
         print("Nouveau AP mode :", self.sim.AP_mode)
 
 class mywindow(QtWidgets.QMainWindow):
-    def __init__(self, param_view, view, compass_view, aircraft_view, sim):
+    def __init__(self, param_view, view, rose_view, aircraft_view, sim):
         super(mywindow, self).__init__()
-        self.ui = Ui_MainWindow(param_view, view, compass_view, aircraft_view, sim)
+        self.ui = Ui_MainWindow(param_view, view, rose_view, aircraft_view, sim)
         self.ui.setupUi(self)

@@ -1,6 +1,7 @@
 """Geometry classes and utilities."""
 import numpy as np
 from constantParameters import *
+from pyproj import Transformer
 
 # Mercator Projection
 A = 6378137.0  # Demi grand axe de l'ellipsoide de reference WGS-84 (m)
@@ -8,6 +9,8 @@ B = 6356752.3142  # Demi petit axe de l'ellipsoide de reference WGS-84 (m)
 F = (A - B) / A  # Aplatissement
 E = (F * (2 - F)) ** 0.5  # Excentricite de l'ellipsoide WGS-84
 
+
+trans = Transformer.from_crs("epsg:4326", "+proj=merc +zone=32 +ellps=WGS84 +lat_ts=45", always_xy=True)
 
 def det(a, b):
     return a[0] * b[1] - a[1] * b[0]
@@ -80,23 +83,28 @@ class Point(object):
 
 class WayPoint(Point):
     def __init__(self, lat, long):
-        self.lat = lat/RAD2DEG
-        self.long = long/RAD2DEG
+        self.lat = lat
+        self.long = long
         self.x, self.y = self.convert()
+        #self.x2, self.y2 = self.convert_without_pyproj()
         super().__init__(self.x, self.y)
 
     def __repr__(self):
         return "({0.x}, {0.y}, {0.lat}, {0.long})".format(self)
 
-    def convert(self):
+    def convert_without_pyproj(self):
         """La latitude et la longitude sont à rentrer en RADIANS (mettre un moins quand coordonnées en S ou W)
         Retourne les coordonnées (x,y) en mde la projection pseudo-Mercator. Pseudo-Mercator par rapport à Mercator
         prend en compte le cote elliptique de la Terre (si jamais on veut juste Mercator, remplacer a par R dans les
         formules) Merator/Pseudo-Mercator OK si base de donnée juste en Europe (pas trop de déformations)
         /!\ formules pas ok quand latitude = 90° (au pole)"""
         R = 6371007  # Rayon de la Terre
-        x = A*self.long
-        y = A*np.log(np.tan(np.pi/4+self.lat/2))
+        x = A*self.long/RAD2DEG
+        y = A*np.log(np.tan(np.pi/4+self.lat/2/RAD2DEG))
+        return x/NM2M, y/NM2M
+
+    def convert(self):
+        y, x = trans.transform(self.lat, self.long)
         return x/NM2M, y/NM2M
 
 
@@ -184,4 +192,15 @@ class RefLatPath(object):
 
     def get_bank_angles(self):
         pass
+
+
+wpt0 = WayPoint(0, 0)
+wptOrly = WayPoint(48.726, 2.365)
+wptToulouse = WayPoint(43.629, 1.363)
+
+print("Point 0:", round(wpt0.x*NM2M/1000),"km ", round(wpt0.y*NM2M/1000),"km ", end=" \t ")
+print("Orly :", round(wptOrly.x*NM2M/1000),"km ", round(wptOrly.y*NM2M/1000),"km ", end=" \t ")
+print("Toulouse :", round(wptToulouse.x*NM2M/1000),"km ", round(wptToulouse.y*NM2M/1000),"km ", end=" \t ")
+print("Distance Toulouse-Orly :", round(wptToulouse.distance(wptOrly)*NM2M/1000),"km ")
+
 

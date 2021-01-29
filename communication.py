@@ -20,6 +20,7 @@ class Simulation(QObject):
     update_flight_param_signal = pyqtSignal()
     AP_mode_signal = pyqtSignal()
     new_active_leg_signal = pyqtSignal()
+    update_mode = pyqtSignal()
 
     def __init__(self, USE_IVY, SIMU_DELAY, AC_SIMULATED, init_time=0):
         super(Simulation, self).__init__()
@@ -28,7 +29,9 @@ class Simulation(QObject):
         self.SIMU_DELAY = SIMU_DELAY
         self.time = init_time
         self.trajFMS = RefLatPath()
-        self.mode = None  # mode de l'autopilot ("MAN" ou "SEL")
+        self.AP_mode = "Managed"  # mode de l'autopilot ("Managed" ou "Selected")
+        self.HDG_selected = 0
+        self.AC_init_HDG = 0
         self.flightParam = dict()  # contient CRZ_ALT, CI et WIND
         self.SEQParam = dict()  # contient XTK, TAE, DTWPT, ALDTWPT
         self.NextWPTParam = dict()  # contient NEXTWPT, COURSE, TTWPT
@@ -81,27 +84,24 @@ class Simulation(QObject):
         self.time = float(arg[1])
 
     #####  Aicraft state ####################################
-    def get_AC_state(self, agent, *data):
+    def get_AC_current_heading_and_speeds(self, agent, *data):
+        # Utilisation de AircraftSetPosition pour avoir le heading courant de l'avion
         state = data[0].split(" ")
-        self.AC_X_rel, self.AC_Y_rel = float(state[0].strip("X=")), float(state[1].strip("Y="))
-        print("Pos relative dans com ", self.AC_X_rel, self.AC_Y_rel)
+        #self.AC_X_rel, self.AC_Y_rel = float(state[0].strip("X="))/NM2M, float(state[1].strip("Y="))/NM2M
+        #self.AC_X, self.AC_Y = float(state[0].strip("X="))/NM2M, float(state[1].strip("Y="))/NM2M
+        #print("Pos relative dans com ", self.AC_X_rel, self.AC_Y_rel)
         self.AC_HDG = float(state[6].strip("Heading="))  # en degrés
-        self.AC_TAS, self.AC_GS = float(state[7].strip("Airspeed=")), float(state[8].strip("Groundspeed="))  # en kts
-        print("SIMU, X_rel=", self.AC_X_rel, " Y_rel=", self.AC_Y_rel, " HDG=", self.AC_HDG, " TAS=", self.AC_TAS, " GS=", self.AC_GS)
-
-        # Envoi d'un message pour ROUTE spécifiant le début de vol
-        if not self.flight_started and (self.AC_X_rel != 0 or self.AC_Y_rel != 0):
-            IvySendMsg("GT Flight_started")
-            print("Flight start")
-            self.flight_started = True
+        self.AC_TAS, self.AC_GS = float(state[7].strip("Airspeed=")), float(state[8].strip("Groundspeed=")) # en kts
+        print("SIMU HDG=", self.AC_HDG, " TAS=", self.AC_TAS, " GS=", self.AC_GS)
 
         self.update_aicraft_signal.emit()
 
-
     def get_AC_position(self, agent, *data):
+        # Use de StateVector pour avoir la position courante de l'avion
         position = data[0].split(" ")
-        self.AC_X, self.AC_Y = float(position[0].strip("x=")), float(position[1].strip("y="))
-        print("Pos dans com ", self.AC_X, self.AC_Y)
+        # attention : le simulateur envoyant les données interchange les x avec les y
+        self.AC_Y, self.AC_X = float(position[0].strip("x="))/NM2M, float(position[1].strip("y="))/NM2M # en NM (en m dans le SIMU)
+        print("Pos dans SIMU ", self.AC_X, self.AC_Y)
 
         self.update_aicraft_signal.emit()
 
@@ -148,28 +148,37 @@ class Simulation(QObject):
         self.ListeFromLegs = []
         for j, dataList in enumerate(dataListGlob):
             data = dataList.split(" ")
-            id = data[0].strip("ID=")  # string donnant l'ID du leg (ex : 'WPT1)
-            seq = int(data[1].strip("SEQ="))  # int numéro de séquencement (ex: 1)
-            lat = data[2].strip("LAT=")  # string donnant la latitude
-            long = data[3].strip("LONG=")  # string donnant la longitude
-            course = float(data[4].strip("COURSE="))  # float course du leg angle vers le prochain leg (ex: 110°)
-            fly = data[5].strip("FLY=")  # string spécifiant un fly_by ou un fly_over
-            fl_min = float(data[6].strip("FLmin="))  # float FL min
-            fl_max = float(data[7].strip("FLmax="))  # float FL max
-            if j == len(dataListGlob) - 1:
-                cas_max = float(data[8][:-1].strip("SPEEDmax="))  # float CAS max
+            seq = int(data[0].strip("SEQ="))  # int numéro de séquencement (ex: 1)
+            type = str(data[1].strip("TYPE="))  # type de leg (IF, TF)
+            id = data[2].strip("ID=")  # string donnant l'ID du leg (ex : 'WPT1)
+
+            if j==0: # si c'est l'aéroport de départ
+                lat = data[3].strip("LAT=")  # string donnant la latitude
+                long = data[4].strip("LONG=")  # string donnant la longitude
+                self.ListeFromLegs.append([id, seq, lat, long, 0, 'flyby', 0, 0, 0])
             else:
-                cas_max = float(data[8].strip("SPEEDmax="))  # float CAS max
-            self.ListeFromLegs.append([id, seq, lat, long, course, fly, fl_min, fl_max, cas_max])
+                fly = str(data[3].strip("WPT_TYPE="))  # string spécifiant un fly_by ou un fly_over
+                lat = data[4].strip("LAT=")  # string donnant la latitude
+                long = data[5].strip("LONG=")  # string donnant la longitude
+                course = float(data[6].strip("COURSE="))  # float course du leg angle vers le prochain leg (ex: 110°)
+                if j == 1:# if this is the second waypoint
+                    self.AC_init_HDG = course
+                distance = float(data[7].strip("DISTANCE=")) # float donnant la longueur du leg en Nm
+                fl_min = float(data[8].strip("FLmin=FL"))  # float FL min
+                if j == len(dataListGlob) - 1:
+                    fl_max = float(data[9][:-1].strip("FLmax=FL"))  # float FL max
+                else:
+                    fl_max = float(data[9].strip("FLmax=FL"))  # float FL max
+                self.ListeFromLegs.append([id, seq, lat, long, course, fly, fl_min, fl_max])
         print(self.ListeFromLegs)
         self.create_WayPoints()
-
 
     def create_WayPoints(self):
         self.trajFMS = RefLatPath() # on écrase les données de waypoints
         # on pourrait faire mieux en ne rajoutant que les waypoints en plus
         print("SIMU : CREATE WAYPOINTS")
         for ind, leg in enumerate(self.ListeFromLegs):
+
             lat, long = leg[2][1:], leg[3][1:]
 
             lat = float(lat[0:2]) + float(lat[2:4]) / 60 + float(lat[4:6])/3600
@@ -181,21 +190,27 @@ class Simulation(QObject):
                 long = -long
 
             wpt = WayPoint(lat, long)
-            x, y = wpt.convert()
+
             if ind == 0:
-                self.AC_X, self.AC_Y = x, y
+                self.AC_X, self.AC_Y = wpt.x, wpt.y
+                self.waypoint_data = dict()  # contient (course, flyby/flyover, les contraintes de FL et de vitesse)
+                self.waypoint_data["COURSE"] = 0
+                self.waypoint_data["FLY"] = 'Flyby'
+                self.waypoint_data["FLmin"] = 0
+                self.waypoint_data["FLmax"] = 0
+            else:
+                self.waypoint_data = dict()  # contient (course, flyby/flyover, les contraintes de FL et de vitesse)
+                self.waypoint_data["COURSE"] = leg[4]
+                self.waypoint_data["FLY"] = leg[5]
+                self.waypoint_data["FLmin"] = leg[6]
+                self.waypoint_data["FLmax"] = leg[7]
 
-            self.waypoint_data = dict()  # contient (course, flyby/flyover, les contraintes de FL et de vitesse)
-            self.waypoint_data["COURSE"] = leg[4]
-            self.waypoint_data["FLY"] = leg[5]
-            self.waypoint_data["FLmin"] = leg[6]
-            self.waypoint_data["FLmax"] = leg[7]
-            self.waypoint_data["CASmax"] = leg[8]
+            self.trajFMS.add_waypoint(Point(wpt.x, wpt.y, self.waypoint_data))
 
-            self.trajFMS.add_waypoint(Point(x, y, self.waypoint_data))
         if self.AC_SIMULATED: self.create_AC_positions()
-        self.send_AC_init_position_to_Aircraft_Model()
         self.update_display_signal.emit()
+        self.send_AC_init_position_to_Aircraft_Model()
+
 
     def create_waypoints_without_Ivy(self):
         self.trajFMS.add_waypoint(Point(180, 220))
@@ -211,9 +226,26 @@ class Simulation(QObject):
 
     def send_AC_init_position_to_Aircraft_Model(self):
         wpt0 = self.trajFMS.waypoint_list[0]
-        print("Envoi de la position initiale de l'avion à l'Aircraft Model : ", wpt0.x, wpt0.y)
-        IvySendMsg("InitStateVector x=" + str(wpt0.x) + " y=" + str(wpt0.y) + " z=" + str(self.flightParam["CRZ_ALT"])
-                   + " Vp=" + str(self.speedPred.TAS) + " fpa=" + str(0) + " psi=" + str(0) + " phi=" + str(0))
+        time.sleep(1)
+        print(3)
+        time.sleep(1)
+        print(2)
+        time.sleep(1)
+        print(1)
+        time.sleep(1)
+
+        #print("Envoi de la position initiale de l'avion à l'Aircraft Model : ", wpt0.x, wpt0.y)
+        #mes = "InitStateVector x=" + str(wpt0.x*NM2M) + " y=" + str(wpt0.y*NM2M) + " z=" + str(self.flightParam["CRZ_ALT"]*FT2M) + " Vp=" + str(int(self.speedPred.TAS*KT2MS)) + " fpa=0" + " psi=" + str(0) + " phi=" + str(self.AC_init_HDG/RAD2DEG)
+        #print("Message envoyé à l'Aircraft Model :", mes)
+        #IvySendMsg(mes)
+
+        print("Envoi de la position initiale de l'avion à SIM_PARAM : ", wpt0.x, wpt0.y)
+        mes = "GT Traj_Ready" + " z=" + str(self.flightParam["CRZ_ALT"] * FT2M) + " Vp=" + str(int(self.speedPred.TAS * KT2MS)) + " fpa=0" + " psi=" + str(self.AC_init_HDG / RAD2DEG) + " phi=" + str(0.0)
+        print("Message envoyé à SIM_PARAM :", mes)
+        IvySendMsg(mes)
+
+        print("Trajectory computed")
+        self.flight_started = True
 
     def next_wpt_param_without_IVY(self):
         nextwpt = "ABABI"
@@ -271,14 +303,14 @@ class Simulation(QObject):
             if trans != None: # si ce n'est pas la dernière transition
                 arc1 = trans.list_items[0]
                 ListTransitionsMessage += 'Transition("'
-                if trans.type == 'fly_by':
-                    ListTransitionsMessage += 'fly_by"'
+                if trans.type == 'Flyby':
+                    ListTransitionsMessage += 'Flyby"'
                     ListBankAnglesMessage += str(arc1.bank_angle) + ", "
                 else:
-                    ListTransitionsMessage += 'fly_over"'
+                    ListTransitionsMessage += 'Flyover"'
                 ListTransitionsMessage += ',[Arc(Point(' + str(arc1.centre.x) + ", " + str(arc1.centre.y) + "), "
                 ListTransitionsMessage += str(arc1.turn_radius) + ", " + str(arc1.lead_distance) + "), "
-                if trans.type == 'fly_by':
+                if trans.type == 'Flyby':
                     ListTransitionsMessage = ListTransitionsMessage[:-2] + "]), "
                 else:
                     seg = trans.list_items[1]
@@ -326,15 +358,16 @@ class Simulation(QObject):
 
 
     # Réception des valeurs de XTK, TAE, DTWPT
-    #"GS_Data Time=time XTK=xtk TAE=tae DTWPT=dtwpt BANK_ANGLE_REF=ref"
+    #"GS_Data Time=time XTK=xtk TAE=tae DTWPT=dtwpt BANK_ANGLE_REF=ref ALDTWPT=aldtwp"
     def receive_SEQ_parameters(self, agent, *data):
         mes = data[0].split(" ")
         time = float(mes[0].strip("Time="))
-        xtk = float(mes[1].strip("XTK="))
-        tae = float(mes[2].strip("TAE="))
-        dtwpt = float(mes[3].strip("DTWPT="))
+        xtk = round(float(mes[1].strip("XTK=")), 3)
+        tae = round(float(mes[2].strip("TAE="))*RAD2DEG, 3)
+        dtwpt = round(float(mes[3].strip("DTWPT=")), 3)
+        bank_angle = float(mes[4].strip("BANK_ANGLE_REF="))
         aldtwpt = float(mes[5].strip("ALDTWPT="))
-        print("SEQ envoie les paramètres : XTK = ", xtk, " TAE = ", tae, " DTWPT = ", dtwpt, " ALDTWPT = ", aldtwpt)
+        print("SEQ envoie les paramètres : XTK = ", xtk, " TAE = ", tae, " DTWPT = ", dtwpt, " ALDTWPT = ", aldtwpt, "BANK_ANGLE_REF = ", bank_angle)
         self.defineSEQParam(xtk, tae, dtwpt, aldtwpt)
         self.update_param_1.emit()
 
@@ -373,7 +406,26 @@ class Simulation(QObject):
         mes = data[0].split(" ")
         time = float(mes[0].strip("Time="))
         self.AP_mode = mes[1].strip("AP_State=")
+        print("nouveau mode", self.AP_mode)
         self.AP_mode_signal.emit()
+        print("OK")
+
+    def get_HDG_selected(self, agent, *data):
+        mes = data[0].split(" ")
+        #self.AP_mode = mes[1].strip("Mode=")
+        self.HDG_selected = mes[1].strip("Val=")
+        print('HDG_sel =', self.HDG_selected)
+        #print("Mode Heading enclenché :", self.AP_mode, self.HDG_selected)
+        self.update_mode.emit()
+
+    def get_depart_airport(self, agent, *data):
+        mes = data[0].split(" ")
+        #attention le simulateur interchange les x avec les y
+        lon0, lat0 = mes[0].strip("Lat="), mes[1].strip("Long=")
+        print("Aéroport de départ : ", lat0, lon0)
+        if False:
+            IvySendMsg("GT AC_InitPosition_unknown")
+
 
 
 
