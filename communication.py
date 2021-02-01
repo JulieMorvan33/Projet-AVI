@@ -44,6 +44,7 @@ class Simulation(QObject):
         self.active_leg = None
         self.new_active_leg = False
         self.ZOOM = 0.1
+        self.flight_plan_modification = True
         if not self.USE_IVY:  # pour une simulation sans bus Ivy
             self.create_waypoints_without_Ivy()  # pour les positions des WayPoints
             self.create_AC_positions()  # pour les positions avion
@@ -282,7 +283,7 @@ class Simulation(QObject):
         #print("Message envoyé à l'Aircraft Model :", mes)
         #IvySendMsg(mes)
 
-        print("Envoi de la position initiale de l'avion à SIM_PARAM : ", wpt0.x, wpt0.y)
+        #print("Envoi de la position initiale de l'avion à SIM_PARAM : ", wpt0.x, wpt0.y)
         mes = "GT Traj_Ready" + " z=" + str(self.flightParam["CRZ_ALT"] * FT2M) + " Vp=" + str(int(self.speedPred.TAS * KT2MS)) + " fpa=0" + " psi=" + str(self.AC_init_HDG / RAD2DEG) + " phi=" + str(0.0)
         print("Message envoyé à SIM_PARAM :", mes)
         IvySendMsg(mes)
@@ -316,18 +317,23 @@ class Simulation(QObject):
         wpt0 = self.trajFMS.waypoint_list[0]
         mes.append("GT WPT_DEPART = WayPoint(" + str(wpt0.x) + ',' + str(wpt0.y) + ')')
 
+        if not self.new_active_leg:
+            ind_debut = 0
+        else:
+            ind_debut = self.active_leg
+            self.new_active_leg = False
+
         ### Points
         ListPointsMessage = "GT Liste_Points=["
-        for point in self.trajFMS.waypoint_list:
+        for point in self.trajFMS.waypoint_list[ind_debut:]:
             ListPointsMessage += "Point(" + str(point.x) + ", " + str(point.y) + "),"
         mes.append(ListPointsMessage[:-1] + "]")  # on enlève la dernière virgule et on rajoute le crochet de la fin
 
         ###   Segments
         ListSegmentsMessage = "GT Liste_Segments=["
-        for ind in range(self.trajFMS.nbr_waypoints - 1):
+        for ind in range(ind_debut, self.trajFMS.nbr_waypoints - 1):
             ListSegmentsMessage += "Segment(Liste_Points[" + str(ind) + "], Liste_Points[" + str(ind+1) + "]),"
         mes.append(ListSegmentsMessage[:-1] + "]")
-
 
         # Transitions
         ListTransitionsMessage = "GT Liste_Transitions=["

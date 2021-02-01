@@ -232,7 +232,7 @@ class RoseView(QtWidgets.QWidget):
         self.HDGtextitem.setPlainText(str(int(hdg)) + "°")
 
     def update_xtk(self):
-        self.XTKtextitem.setPlainText(str(int(self.sim.SEQParam["XTK"])) + "NM")
+        self.XTKtextitem.setPlainText(str(round(self.sim.SEQParam["XTK"], 1)) + "NM")
 
 
 class AircraftView(QtWidgets.QWidget):
@@ -470,7 +470,9 @@ class RadarView(QtWidgets.QWidget):
         self.display_waypoints()
         print("ND ELEMENTS ADDED")
         self.fit_scene_in_view()
-        self.simulation.send_trajectory()  # émission du signal pour envoyer la trajectoire réactualisée au groupe SEQ
+        if self.simulation.flight_plan_modification:
+            self.simulation.send_trajectory()  # émission du signal pour envoyer la trajectoire réactualisée au groupe SEQ
+            self.simulation.flight_plan_modification = False
 
     @QtCore.pyqtSlot()
     def advance(self):
