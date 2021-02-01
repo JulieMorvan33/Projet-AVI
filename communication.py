@@ -88,8 +88,6 @@ class Simulation(QObject):
                 cpt_time = cpt_time-5
                 #self.compute_two_next_transitions()
 
-
-
     def compute_two_next_transitions(self):
         print("Passage dans la fonction")
         print("active_leg=",self.active_leg)
@@ -138,7 +136,7 @@ class Simulation(QObject):
         # Use de StateVector pour avoir la position courante de l'avion
         position = data[0].split(" ")
         # attention : le simulateur envoyant les données interchange les x avec les y
-        self.AC_Y, self.AC_X = float(position[0].strip("x="))/NM2M, float(position[1].strip("y="))/NM2M # en NM (en m dans le SIMU)
+        self.AC_X, self.AC_Y = float(position[0].strip("x="))/NM2M, float(position[1].strip("y="))/NM2M # en NM (en m dans le SIMU)
         print("Pos dans SIMU ", self.AC_X, self.AC_Y)
 
         self.update_aicraft_signal.emit()
@@ -243,6 +241,7 @@ class Simulation(QObject):
                 self.waypoint_data["FLY"] = leg[5]
                 self.waypoint_data["FLmin"] = leg[6]
                 self.waypoint_data["FLmax"] = leg[7]
+            self.waypoint_data["Name"] = leg[0]
 
             self.trajFMS.add_waypoint(Point(wpt.x, wpt.y, self.waypoint_data))
 

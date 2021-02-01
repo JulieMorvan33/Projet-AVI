@@ -187,16 +187,28 @@ class RoseView(QtWidgets.QWidget):
         # Ajout du HDG
         color3 = QColor(0, 255, 0)  # vert
         font = QtGui.QFont()
-        font.setWeight(20)
-        HDGtextitem = QtWidgets.QGraphicsTextItem(self.items)
-        HDGtextitem.setFont(font)
-        #HDGtextitem.setPlainText("Hello")
-        HDGtextitem.setPos(WIDTH, WIDTH)
-        HDGtextitem.setDefaultTextColor(color3)
-        HDGtextitem.setTransform(self.view.transform())
-        self.items.addToGroup(HDGtextitem)
+        font.setWeight(20)#affichage HDG sur rose
+        self.HDGtextitem = QtWidgets.QGraphicsTextItem(self.items)
+        self.HDGtextitem.setFont(font)
+        self.HDGtextitem.setPlainText(str(int(self.sim.AC_HDG))+"°")
+        self.HDGtextitem.setPos(WIDTH, WIDTH)
+        self.HDGtextitem.setDefaultTextColor(color3)
+        self.HDGtextitem.setTransform(self.view.transform())
+        self.items.addToGroup(self.HDGtextitem)
+
+
+        #affichage XTK sur rose
+        self.XTKtextitem = QtWidgets.QGraphicsTextItem(self.items)
+        self.XTKtextitem.setFont(font)
+        self.XTKtextitem.setPlainText(str(int(self.sim.SEQParam["XTK"]))+"NM")
+        self.XTKtextitem.setPos(WIDTH+11*WIDTH/24, WIDTH)
+        self.XTKtextitem.setDefaultTextColor(color3)
+        self.XTKtextitem.setTransform(self.view.transform())
+        self.items.addToGroup(self.XTKtextitem)
 
         self.sim.update_aicraft_signal.connect(self.update_hdg)
+        self.sim.update_aicraft_signal.connect(self.update_xtk)
+
         self.sim.update_mode.connect(self.add_rose)
 
     def add_rose(self):
@@ -213,6 +225,11 @@ class RoseView(QtWidgets.QWidget):
         centre_rot = QtCore.QPointF(WIDTH + (WIDTH * 0.5) / 2, WIDTH + (WIDTH * 0.5) / 2)
         self.rose.setTransformOriginPoint(centre_rot)
         self.rose.setRotation(hdg)
+        print(hdg)
+        self.HDGtextitem.setPlainText(str(int(hdg)) + "°")
+
+    def update_xtk(self):
+        self.XTKtextitem.setPlainText(str(self.sim.SEQParam["XTK"]) + "NM")
 
 
 class AircraftView(QtWidgets.QWidget):
@@ -272,7 +289,10 @@ class RadarView(QtWidgets.QWidget):
         self.view.scale(1, -1)
 
         self.nd_items = QtWidgets.QGraphicsItemGroup()
+        self.waypoint_group = QtWidgets.QGraphicsItemGroup()
+        self.list_waypoint_item = []
         self.scene.addItem(self.nd_items)
+        self.scene.addItem(self.waypoint_group)
 
         # add the ND elements if already existing to the graphic scene and then fit it in the view
         if self.simulation.trajFMS.waypoint_list != []:
@@ -295,6 +315,20 @@ class RadarView(QtWidgets.QWidget):
             self.timer = QtCore.QTimer(self)
             self.timer.timeout.connect(self.advance)
             self.timer.start(self.simulation.SIMU_DELAY)
+
+    def update_waypoints_items_rotation(self, hdg):
+        for item in self.list_waypoint_item:
+            item.textitem.setRotation(hdg)
+
+    def display_waypoints(self):
+        print("Display des WPTS")
+        self.waypoint_group = QtWidgets.QGraphicsItemGroup()
+        self.scene.addItem(self.waypoint_group)
+        # Affiche tous les WayPoints
+        for point in self.simulation.trajFMS.waypoint_list:
+            pointItem = QGraphicsWayPointsItem(point.x, point.y, self.waypoint_group, point.data['Name'], self.view, self.simulation.AC_HDG)
+            self.list_waypoint_item.append(pointItem)
+            pointItem.setPen(pointItem.pen)
 
     def add_ND_items(self):
         """ Add the static items to the QGraphicsScene, drawn by the view"""
@@ -385,11 +419,6 @@ class RadarView(QtWidgets.QWidget):
         self.simulation.trajFMS.add_path(g.Segment(transition_list[-1].end, c), None)  # ajout de la dernière ortho, None pour
         # la dernière transition
 
-        # Affiche tous les WayPoints
-        for point in self.simulation.trajFMS.waypoint_list:
-            point = QGraphicsWayPointsItem(point.x, point.y, self.nd_items)
-            point.setPen(point.pen)
-
     def mode_heading(self):
         if self.simulation.AP_mode == "'Selected'":
             TRAJ_PEN.setStyle(Qt.DashLine)
@@ -398,7 +427,6 @@ class RadarView(QtWidgets.QWidget):
             print('mode heading')
 
     def fit_scene_in_view(self):
-        #self.item = QtWidgets.QGraphicsItemGroup()
         if not self.simulation.USE_IVY or self.simulation.AC_SIMULATED:
             ind = int(self.simulation.time / self.simulation.SIMU_DELAY)
             pos = self.simulation.listeACpositions[ind]
@@ -408,14 +436,17 @@ class RadarView(QtWidgets.QWidget):
 
         print("POSITION DE L'AVION sur le ND: ", round(pos_x, 1), round(pos_y, 1), round(pos_x*NM2M), round(pos_y)*NM2M)
 
-        #self.point = QGraphicsImaginaryPoints(pos_x, pos_y, self.nd_items)
-        #self.nd_items.addToGroup(self.point)
         self.nd_items.setTransformOriginPoint(pos_x * PRECISION_FACTOR, pos_y * PRECISION_FACTOR)
+        self.waypoint_group.setTransformOriginPoint(pos_x * PRECISION_FACTOR, pos_y * PRECISION_FACTOR)
 
         if not self.simulation.USE_IVY or self.simulation.AC_SIMULATED:
             self.nd_items.setRotation(self.simulation.listeHDG[ind])
+            self.waypoint_group.setRotation(self.simulation.listeHDG[ind])
+            self.update_waypoints_items_rotation(self.simulation.listeHDG[ind])
         else:
             self.nd_items.setRotation(self.simulation.AC_HDG)
+            self.waypoint_group.setRotation(self.simulation.AC_HDG)
+            self.update_waypoints_items_rotation(self.simulation.AC_HDG)
 
         w, h = WIDTH*PRECISION_FACTOR/10, HEIGHT*PRECISION_FACTOR/10
         self.scene.setSceneRect(pos_x*PRECISION_FACTOR-w/2, pos_y*PRECISION_FACTOR-h/2, w, h)
@@ -430,10 +461,13 @@ class RadarView(QtWidgets.QWidget):
     def update_ND_items(self):
         # print("UPDATING ITEMS...")
         self.scene.removeItem(self.nd_items)
+        self.scene.removeItem(self.waypoint_group)
+        self.list_waypoint_item = []
         self.add_ND_items()
+        self.display_waypoints()
         print("ND ELEMENTS ADDED")
         self.fit_scene_in_view()
-        self.simulation.send_trajectory() # émission du signal pour envoyer la trajectoire réactualisée au groupe SEQ
+        self.simulation.send_trajectory()  # émission du signal pour envoyer la trajectoire réactualisée au groupe SEQ
 
     @QtCore.pyqtSlot()
     def advance(self):
