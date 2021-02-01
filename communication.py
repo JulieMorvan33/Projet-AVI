@@ -21,6 +21,7 @@ class Simulation(QObject):
     AP_mode_signal = pyqtSignal()
     new_active_leg_signal = pyqtSignal()
     update_mode = pyqtSignal()
+    new_leg_signal = pyqtSignal()
 
     def __init__(self, USE_IVY, SIMU_DELAY, AC_SIMULATED, init_time=0):
         super(Simulation, self).__init__()
@@ -428,7 +429,7 @@ class Simulation(QObject):
             print("1")
             time.sleep(1)
             self.new_active_leg = True
-            self.update_display_signal.emit()
+            self.new_leg_signal.emit()
 
         # Affiche le NEXT Waypoint sur le ND
         for i, leg in enumerate(self.ListeFromLegs):

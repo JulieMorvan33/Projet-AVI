@@ -272,6 +272,7 @@ class RadarView(QtWidgets.QWidget):
 
         # signals connection
         self.simulation.update_display_signal.connect(self.update_ND_items)
+        self.simulation.new_leg_signal.connect(self.update_ND_items_position)
         self.simulation.update_display_signal.connect(self.start_timer)
         self.simulation.update_aicraft_signal.connect(self.update_ND_items_position)
         self.simulation.AP_mode_signal.connect(self.mode_heading)
