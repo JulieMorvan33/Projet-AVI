@@ -44,7 +44,6 @@ class Simulation(QObject):
         self.active_leg = None
         self.new_active_leg = False
         self.ZOOM = 0.1
-        self.flight_plan_modification = True
         if not self.USE_IVY:  # pour une simulation sans bus Ivy
             self.create_waypoints_without_Ivy()  # pour les positions des WayPoints
             self.create_AC_positions()  # pour les positions avion

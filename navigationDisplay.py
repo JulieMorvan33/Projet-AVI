@@ -470,9 +470,7 @@ class RadarView(QtWidgets.QWidget):
         self.display_waypoints()
         print("ND ELEMENTS ADDED")
         self.fit_scene_in_view()
-        if self.simulation.flight_plan_modification:
-            self.simulation.send_trajectory()  # émission du signal pour envoyer la trajectoire réactualisée au groupe SEQ
-            self.simulation.flight_plan_modification = False
+        self.simulation.send_trajectory()  # émission du signal pour envoyer la trajectoire réactualisée au groupe SEQ
 
     @QtCore.pyqtSlot()
     def advance(self):
