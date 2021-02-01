@@ -13,6 +13,11 @@ from predictions import *
 from communication import *
 from PyQt5 import QtCore
 
+from PyQt5.QtCore import Qt
+from PyQt5.QtGui import *
+from PyQt5.QtWidgets import *
+
+import sys
 
 TRAJ_Z_VALUE = 0  # display trajectory items UNDER moving items
 
@@ -112,16 +117,14 @@ class ParamView(QtWidgets.QWidget):
         # Ajout du next heading Waypoint
         self.HDGtextitem = QtWidgets.QGraphicsTextItem(self.items)
         self.HDGtextitem.setFont(font)
-        self.HDGtextitem.setPlainText(str(self.simulation.NextWPTParam["COURSE"]))
-
-        # textitem.setPlainText(str(self.simulation.create_leg_without_Ivy()[4]))
-        #textitem.setPos(50, -55)
-        #textitem.setDefaultTextColor(color3)
+        self.HDGtextitem.setPlainText(str(int(self.simulation.NextWPTParam["COURSE"])))
+        self.HDGtextitem.setPos(0, -55)
+        self.HDGtextitem.setDefaultTextColor(color3)
 
         # Ajout du DTWPT
         self.DTWPTtextitem = QtWidgets.QGraphicsTextItem(self.items)
         self.DTWPTtextitem.setFont(font)
-        self.DTWPTtextitem.setPlainText(str(self.simulation.SEQParam["DTWPT"]))
+        self.DTWPTtextitem.setPlainText(str(int(self.simulation.SEQParam["DTWPT"])))
         self.DTWPTtextitem.setPos(0, -30)
         self.DTWPTtextitem.setDefaultTextColor(color3)
 
@@ -147,7 +150,7 @@ class ParamView(QtWidgets.QWidget):
             self.simulation.update_aicraft_signal.connect(self.update_speed_displays)
 
     def update_DTWPT(self):
-        self.DTWPTtextitem.setPlainText(str(round(self.simulation.SEQParam["DTWPT"], 0)))
+        self.DTWPTtextitem.setPlainText(str(int(self.simulation.SEQParam["DTWPT"])))
 
     def update_wind(self):
         self.WINDtextitem.setPlainText(str(self.simulation.flightParam["WIND"]))
@@ -157,7 +160,7 @@ class ParamView(QtWidgets.QWidget):
         #print("nextwpt in nddisplay ", str(self.simulation.NextWPTParam["NEXTWPT"], self.simulation.SEQParam["DTWPT"]))
         self.NEXTWPTtextitem.setPlainText(str(self.simulation.NextWPTParam["NEXTWPT"]))
         self.HDGtextitem.setPlainText(str(self.simulation.NextWPTParam["COURSE"]))
-        self.TTWPTtextitem.setPlainText(str(self.simulation.NextWPTParam["TTWPT"]))
+        self.TTWPTtextitem.setPlainText(str(int(self.simulation.NextWPTParam["TTWPT"])))
 
     def update_speed_displays(self):
         self.TAStextitem.setPlainText(str(int(self.simulation.AC_TAS)))
@@ -229,7 +232,7 @@ class RoseView(QtWidgets.QWidget):
         self.HDGtextitem.setPlainText(str(int(hdg)) + "°")
 
     def update_xtk(self):
-        self.XTKtextitem.setPlainText(str(self.sim.SEQParam["XTK"]) + "NM")
+        self.XTKtextitem.setPlainText(str(int(self.sim.SEQParam["XTK"])) + "NM")
 
 
 class AircraftView(QtWidgets.QWidget):
@@ -396,9 +399,9 @@ class RadarView(QtWidgets.QWidget):
                                                                         self.nd_items)
                         leg_item_transition_segment.setPen(TRAJ_PEN)
 
-            # Affiche le leg (pas quand la ligne est commentée
+            # Affiche le leg (pas quand la ligne est commentée)
             leg_item = QGraphicsLegsItem(a.x, a.y, b.x, b.y, self.nd_items)
-            # leg_item.setPen(leg_item.pen)
+            leg_item.setPen(leg_item.pen)
 
             # Affiche l'ortho
             leg_item_path = QGraphicsLegsItem(start_segment.x, start_segment.y, end_segment.x, end_segment.y,
