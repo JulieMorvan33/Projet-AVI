@@ -275,7 +275,6 @@ class RadarView(QtWidgets.QWidget):
 
         # signals connection
         self.simulation.update_display_signal.connect(self.update_ND_items)
-        self.simulation.new_leg_signal.connect(self.update_ND_items_position)
         self.simulation.update_display_signal.connect(self.start_timer)
         self.simulation.update_aicraft_signal.connect(self.update_ND_items_position)
         self.simulation.AP_mode_signal.connect(self.mode_heading)
@@ -330,7 +329,7 @@ class RadarView(QtWidgets.QWidget):
         self.scene.addItem(self.waypoint_group)
         # Affiche tous les WayPoints
         for point in self.simulation.trajFMS.waypoint_list:
-            pointItem = QGraphicsWayPointsItem(point.x, point.y, self.waypoint_group, point.data['Name'], self.view, self.simulation.AC_HDG)
+            pointItem = QGraphicsWayPointsItem(point.x, point.y, self.waypoint_group, point.data['Name'], self.view, self.simulation.AC_HDG, self.simulation.ZOOM)
             self.list_waypoint_item.append(pointItem)
             pointItem.setPen(pointItem.pen)
 
@@ -400,8 +399,8 @@ class RadarView(QtWidgets.QWidget):
                         leg_item_transition_segment.setPen(TRAJ_PEN)
 
             # Affiche le leg (pas quand la ligne est commentée)
-            leg_item = QGraphicsLegsItem(a.x, a.y, b.x, b.y, self.nd_items)
-            leg_item.setPen(leg_item.pen)
+            #leg_item = QGraphicsLegsItem(a.x, a.y, b.x, b.y, self.nd_items)
+            #leg_item.setPen(leg_item.pen)
 
             # Affiche l'ortho
             leg_item_path = QGraphicsLegsItem(start_segment.x, start_segment.y, end_segment.x, end_segment.y,
@@ -452,7 +451,7 @@ class RadarView(QtWidgets.QWidget):
             self.waypoint_group.setRotation(self.simulation.AC_HDG)
             self.update_waypoints_items_rotation(self.simulation.AC_HDG)
 
-        w, h = WIDTH*PRECISION_FACTOR/10, HEIGHT*PRECISION_FACTOR/10
+        w, h = WIDTH*PRECISION_FACTOR*self.simulation.ZOOM, HEIGHT*PRECISION_FACTOR*self.simulation.ZOOM
         self.scene.setSceneRect(pos_x*PRECISION_FACTOR-w/2, pos_y*PRECISION_FACTOR-h/2, w, h)
         self.view.fitInView(self.view.sceneRect(), QtCore.Qt.KeepAspectRatio)
 

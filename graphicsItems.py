@@ -97,7 +97,7 @@ class QGraphicsArcItem(QtWidgets.QGraphicsEllipseItem):
 class QGraphicsWayPointsItem(QtWidgets.QGraphicsRectItem):  # QtWidgets.QGraphicsRectItem):
     """Affichage des legs"""
 
-    def __init__(self, x, y, parent, name, view, current_hdg):
+    def __init__(self, x, y, parent, name, view, current_hdg, zoom):
         self.x, self.y = resize(x), resize(y)
         super().__init__(self.x, self.y, resize(WP_WIDTH), resize(WP_WIDTH), parent)
         self.pen = P_PEN

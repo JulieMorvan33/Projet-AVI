@@ -350,6 +350,7 @@ class Ui_MainWindow(object):
 
         self.sim.update_param_1.connect(self.update_labels)
         self.sim.AP_mode_signal.connect(self.update_AP_mode)
+        self.horizontalSlider.valueChanged.connect(self.update_zoom)
 
     def retranslateUi(self, MainWindow):
         """Méthode définissant les labels des différents paramètres de la partie de droite"""
@@ -403,6 +404,10 @@ class Ui_MainWindow(object):
         """Méthode mettant à jour le mode de navigation dans la fenêtre Mode"""
         self.label_19.setText(self.sim.AP_mode)
         print("Nouveau AP mode :", self.sim.AP_mode)
+
+    def update_zoom(self):
+        print(self.horizontalSlider.value())
+        self.sim.ZOOM = 1/self.horizontalSlider.value()
 
 class mywindow(QtWidgets.QMainWindow):
     # Création de la window de gauche

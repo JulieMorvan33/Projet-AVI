@@ -43,6 +43,7 @@ class Simulation(QObject):
         self.flight_started = False
         self.active_leg = None
         self.new_active_leg = False
+        self.ZOOM = 0.1
         if not self.USE_IVY:  # pour une simulation sans bus Ivy
             self.create_waypoints_without_Ivy()  # pour les positions des WayPoints
             self.create_AC_positions()  # pour les positions avion
@@ -83,42 +84,45 @@ class Simulation(QObject):
 
     def horloge(self, *arg):
         self.time = float(arg[1])
-        cpt_time = self.time
-        if not(self.AC_SIMULATED) and self.flight_started:
-            if cpt_time > 5:
-                cpt_time = cpt_time-5
-                #self.compute_two_next_transitions()
+        PRECISION_TIMER = 10 ** -2
+        diff_time = int(self.time) - self.time
+        if not (self.AC_SIMULATED) and self.flight_started:
+            if int(self.time) % 5 == 0:
+                if abs(diff_time) < PRECISION_TIMER:
+                    self.compute_two_next_transitions()
 
     def compute_two_next_transitions(self):
-        print("Passage dans la fonction")
-        print("active_leg=",self.active_leg)
-        for i in range(self.active_leg, self.active_leg + 2):
-            a, b, c = self.trajFMS.get_transition(i)  # récupère les trois WPT de la transition
-            seg_actif = g.Segment(a, b)  # segment d'entrée de la transition
-            seg_next = g.Segment(b, c)  # segment de sortie de la transition
-            if self.USE_IVY: transition_type = b.data["FLY"]
-            else: transition_type = "Flyby"
-
-            if (i == 1): # si première transition
-                if transition_type == "Flyby":
-                    transition_list = compute_transition_fly_by(seg_actif, seg_next, self.simulation.speedPred.TAS)
-                elif transition_type == "Flyover":
-                    transition_list = compute_transition_fly_over(seg_actif, seg_next, self.simulation.speedPred.TAS)
-                start_segment = a
-                end_segment = transition_list[0].start
-            else:
-                temp = transition_list[-1].end
-                if transition_type == "Flyby":
-                    transition_list = compute_transition_fly_by(seg_actif, seg_next, self.simulation.speedPred.TAS)
-                elif transition_type == "Flyover":
-                    transition_list = compute_transition_fly_over(seg_actif, seg_next, self.simulation.speedPred.TAS)
-                start_segment = temp
-                end_segment = transition_list[0].start
-            self.simulation.trajFMS[self.active_leg] = Path(g.Segment(start_segment, end_segment),
-                                                 g.Transition(transition_type, self.simulation.speedPred.TAS,
-                                                              transition_list))
-            print("remplacement de la traj de la transition:",self.active_leg)
-
+        print("Calcul de la short-term trajectory")
+        print("active_leg=", self.active_leg)
+        if self.active_leg != 0:
+            for i in range(self.active_leg, self.active_leg + 2):
+                if i < (self.trajFMS.nbr_waypoints - 1):
+                    a, b, c = self.trajFMS.get_transition(i)  # récupère les trois WPT de la transition
+                    seg_actif = g.Segment(a, b)  # segment d'entrée de la transition
+                    seg_next = g.Segment(b, c)  # segment de sortie de la transition
+                    if self.USE_IVY:
+                        transition_type = b.data["FLY"]
+                    else:
+                        transition_type = "Flyby"
+                    if (i == 1):  # si première transition
+                        if transition_type == "Flyby":
+                            transition_list = compute_transition_fly_by(seg_actif, seg_next, self.speedPred.TAS)
+                        elif transition_type == "Flyover":
+                            transition_list = compute_transition_fly_over(seg_actif, seg_next, self.speedPred.TAS)
+                        start_segment = a
+                        end_segment = transition_list[0].start
+                    else:
+                        temp = self.trajFMS.listePaths[i - 1].transition.list_items[-1].end
+                        if transition_type == "Flyby":
+                            transition_list = compute_transition_fly_by(seg_actif, seg_next, self.speedPred.TAS)
+                        elif transition_type == "Flyover":
+                            transition_list = compute_transition_fly_over(seg_actif, seg_next, self.speedPred.TAS)
+                        start_segment = temp
+                        end_segment = transition_list[0].start
+                    self.trajFMS.listePaths[i] = Path(g.Segment(start_segment, end_segment),
+                                                      g.Transition(transition_type, self.speedPred.TAS,
+                                                                   transition_list))
+                    print("remplacement de la traj de la transition:", i)
 
     #####  Aicraft state ####################################
     def get_AC_current_heading_and_speeds(self, agent, *data):
