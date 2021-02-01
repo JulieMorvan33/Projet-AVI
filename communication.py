@@ -141,7 +141,7 @@ class Simulation(QObject):
         # Use de StateVector pour avoir la position courante de l'avion
         position = data[0].split(" ")
         # attention : le simulateur envoyant les données interchange les x avec les y
-        self.AC_X, self.AC_Y = float(position[0].strip("x="))/NM2M, float(position[1].strip("y="))/NM2M # en NM (en m dans le SIMU)
+        self.AC_Y, self.AC_X = float(position[0].strip("x="))/NM2M, float(position[1].strip("y="))/NM2M # en NM (en m dans le SIMU)
         print("Pos dans SIMU ", self.AC_X, self.AC_Y)
 
         self.update_aicraft_signal.emit()
