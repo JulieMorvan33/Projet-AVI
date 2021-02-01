@@ -89,6 +89,7 @@ class Simulation(QObject):
                 #self.compute_two_next_transitions()
 
 
+
     def compute_two_next_transitions(self):
         print("Passage dans la fonction")
         print("active_leg=",self.active_leg)
