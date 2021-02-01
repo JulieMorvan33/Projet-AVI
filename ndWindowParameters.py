@@ -7,15 +7,19 @@ WIDTH = 800
 HEIGHT = 800
 
 class Ui_MainWindow(object):
+    """Cette classe a été générée sur QtDesigner. Elle permet de régler l'affichage des différentes fenêtres du ND,
+    que ce soit sur la fenêtre de droite ou sur la fenêtre de gauche."""
     def __init__(self, param_view, view, rose_view, aircraft_view, sim):
         super().__init__()
-        self.graphicsView = param_view # QGraphicView pour les paramètres de vol (DTWPT...)
-        self.graphicsView_2 = view
-        self.graphicsView_3 = rose_view
-        self.graphicsView_4 = aircraft_view
+        self.graphicsView = param_view # QGraphicView pour les paramètres de vol
+        self.graphicsView_2 = view #QGraphicView pour la carte
+        self.graphicsView_3 = rose_view #QGraphicView pour la rose
+        self.graphicsView_4 = aircraft_view #QGraphicView pour l'avion
         self.sim = sim
 
     def setupUi(self, MainWindow):
+        # Partie gauche de la fenêtre
+
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(TOT_WIDTH, TOT_HEIGHT)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
@@ -29,7 +33,9 @@ class Ui_MainWindow(object):
         self.verticalLayout_6.setObjectName("verticalLayout_6")
         self.verticalLayout_6.setGeometry(QtCore.QRect(0, 0, WIDTH, TOT_HEIGHT))
 
-        # QGraphicView pour les paramètres de vol (DTWPT...)
+        # Partie gauche de la fenêtre
+
+        # QGraphicView pour les paramètres de vol
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         self.graphicsView.setSizePolicy(sizePolicy)
         self.graphicsView.setObjectName("graphicsView")
@@ -40,24 +46,24 @@ class Ui_MainWindow(object):
         self.stackedLayout.setObjectName("stackedLayout")
         self.stackedLayout.setStackingMode(QtWidgets.QStackedLayout.StackAll)
 
-        # QGraphicsView pour le compas
+        # QGraphicsView pour la rose
         self.graphicsView_3.setFixedSize(QtCore.QSize(WIDTH, HEIGHT))
         self.graphicsView_3.setObjectName("graphicsView_3")
         self.graphicsView_3.setStyleSheet("background:black;")
-        self.stackedLayout.insertWidget(1, self.graphicsView_3)
+        self.stackedLayout.insertWidget(1, self.graphicsView_3) #La valeur 1 signifie que la rose se situe en première position des view, en partant du bas
         self.graphicsView_3.setRenderHint(QtGui.QPainter.Antialiasing)  # enable anti-aliasing
 
         # QGraphicsView pour la visualisation de l'avion
         self.graphicsView_4.setFixedSize(QtCore.QSize(WIDTH, HEIGHT))
         self.graphicsView_4.setObjectName("graphicsView_4")
         self.graphicsView_4.setStyleSheet("background:transparent;")
-        self.stackedLayout.insertWidget(2, self.graphicsView_4)
+        self.stackedLayout.insertWidget(2, self.graphicsView_4) #La valeur 2 signifie que la view de l'avion se situe au dessus de celle de la rose et donc en 2eme position en partant du bas
 
         # QGraphicsView pour la visualisation de la trajectoire
         self.graphicsView_2.setFixedSize(QtCore.QSize(WIDTH, HEIGHT))
         self.graphicsView_2.setObjectName("graphicsView_2")
         self.graphicsView_2.setStyleSheet("background:transparent;")
-        self.stackedLayout.insertWidget(3, self.graphicsView_2)
+        self.stackedLayout.insertWidget(3, self.graphicsView_2) #La valeur 3 signifie que la view de la trajectoire se situe au dessus des views de l'avion et de la rose et donc en 3eme position en partant du bas
 
 
         self.verticalLayout_6.addLayout(self.stackedLayout)
@@ -158,8 +164,6 @@ class Ui_MainWindow(object):
         self.label_6 = QtWidgets.QLabel(self.verticalLayoutWidget_3)
         self.label_6.setObjectName("label_6")
         self.horizontalLayout_6.addWidget(self.label_6)
-        #spacerItem2 = QtWidgets.QSpacerItem(85, 20, QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Minimum)
-        #self.horizontalLayout_6.addItem(spacerItem2)
         self.lineEdit_4 = QtWidgets.QLineEdit(self.verticalLayoutWidget_3)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
@@ -171,15 +175,11 @@ class Ui_MainWindow(object):
         spacerItem3 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         self.horizontalLayout_6.addItem(spacerItem3)
         self.verticalLayout_7.addLayout(self.horizontalLayout_6)
-        #spacerItem4 = QtWidgets.QSpacerItem(20, 15, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Fixed)
-        #self.verticalLayout_7.addItem(spacerItem4)
         self.line_4 = QtWidgets.QFrame(self.verticalLayoutWidget_3)
         self.line_4.setFrameShape(QtWidgets.QFrame.HLine)
         self.line_4.setFrameShadow(QtWidgets.QFrame.Sunken)
         self.line_4.setObjectName("line_4")
         self.verticalLayout_7.addWidget(self.line_4)
-        #spacerItem5 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Fixed)
-        #self.verticalLayout_7.addItem(spacerItem5)
         self.pushButton = QtWidgets.QPushButton(self.verticalLayoutWidget_3)
         self.pushButton.setObjectName("pushButton")
         self.pushButton.clicked.connect(self.define_flight_param)
@@ -242,10 +242,6 @@ class Ui_MainWindow(object):
         self.verticalLayout_8.addWidget(self.line_7)
         self.horizontalLayout_11 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_11.setObjectName("horizontalLayout_11")
-
-
-        #spacerItem8 = QtWidgets.QSpacerItem(35, 20, QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Minimum)
-        #self.horizontalLayout_11.addItem(spacerItem8)
         self.label_13 = QtWidgets.QLabel(self.verticalLayoutWidget_4)
         self.label_13.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignTrailing|QtCore.Qt.AlignVCenter)
         self.label_13.setObjectName("label_13")
@@ -257,8 +253,6 @@ class Ui_MainWindow(object):
         self.label_15 = QtWidgets.QLabel(self.verticalLayoutWidget_4)
         self.label_15.setObjectName("label_15")
         self.horizontalLayout_11.addWidget(self.label_15)
-        #spacerItem9 = QtWidgets.QSpacerItem(235, 20, QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Minimum)
-        #self.horizontalLayout_11.addItem(spacerItem9)
         self.verticalLayout_8.addLayout(self.horizontalLayout_11)
         self.line_8 = QtWidgets.QFrame(self.verticalLayoutWidget_4)
         self.line_8.setFrameShape(QtWidgets.QFrame.HLine)
@@ -267,7 +261,6 @@ class Ui_MainWindow(object):
         self.verticalLayout_8.addWidget(self.line_8)
         self.horizontalLayout_12 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_12.setObjectName("horizontalLayout_12")
-
         spacerItem10 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Minimum)
         self.horizontalLayout_12.addItem(spacerItem10)
         self.label_16 = QtWidgets.QLabel(self.verticalLayoutWidget_4)
@@ -359,6 +352,7 @@ class Ui_MainWindow(object):
         self.sim.AP_mode_signal.connect(self.update_AP_mode)
 
     def retranslateUi(self, MainWindow):
+        """Méthode définissant les labels des différents paramètres de la partie de droite"""
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
         self.tabWidget.setAccessibleName(_translate("MainWindow", "Param"))
@@ -388,6 +382,7 @@ class Ui_MainWindow(object):
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.Mode_Param), _translate("MainWindow", "Mode"))
 
     def update_labels(self):
+        """Méthode mettant à jour les paramètres de la fenêtre PDF Param"""
         dict = self.sim.SEQParam
         xtk, tae, aldtwpt = dict["XTK"], dict["TAE"], dict["ALDTWPT"]
         self.label_8.setText(str(xtk))
@@ -395,6 +390,7 @@ class Ui_MainWindow(object):
         self.label_14.setText(str(aldtwpt))
 
     def define_flight_param(self):
+        """Méthode permettant l'entrée des paramètres de vol de la fenêtre Performance Param"""
         crz_alt = int(self.lineEdit.text())
         wind_dir = int(self.lineEdit_2.text())
         wind_speed = int(self.lineEdit_3.text())
@@ -404,10 +400,12 @@ class Ui_MainWindow(object):
         self.sim.defineFlightParam(crz_alt, ci, wind)
 
     def update_AP_mode(self):
+        """Méthode mettant à jour le mode de navigation dans la fenêtre Mode"""
         self.label_19.setText(self.sim.AP_mode)
         print("Nouveau AP mode :", self.sim.AP_mode)
 
 class mywindow(QtWidgets.QMainWindow):
+    # Création de la window de gauche
     def __init__(self, param_view, view, rose_view, aircraft_view, sim):
         super(mywindow, self).__init__()
         self.ui = Ui_MainWindow(param_view, view, rose_view, aircraft_view, sim)
