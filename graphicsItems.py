@@ -75,12 +75,20 @@ class QGraphicsArcItem(QtWidgets.QGraphicsEllipseItem):
     def set_span_angle(self, alpha):
         self.span_angle = alpha * SP_ANGLE_COEFF
 
+
     def set_start_angle(self, start, centre):
-        beta = np.arctan((start.y - centre.y) / (start.x - centre.x)) * RAD2DEG
-        if start.x < centre.x:
-            return -(180 + beta) * SP_ANGLE_COEFF
+        if start.x - centre.x == 0:
+            if self.det > 0:
+                beta = -90
+            else:
+                beta = 90
+            return beta * SP_ANGLE_COEFF
         else:
-            return -beta * SP_ANGLE_COEFF
+            beta = np.arctan((start.y - centre.y) / (start.x - centre.x)) * RAD2DEG
+            if start.x < centre.x:
+                return -(180 + beta) * SP_ANGLE_COEFF
+            else:
+                return -beta * SP_ANGLE_COEFF
 
     def set_XY(self, centre, turnRadius):
         self.x = resize(centre.x - turnRadius)

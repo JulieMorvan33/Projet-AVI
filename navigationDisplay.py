@@ -231,6 +231,8 @@ class AircraftView(QtWidgets.QWidget):
         self.aircraft.setScale(0.01)
         self.scene.addItem(self.aircraft)
 
+
+    #Sert a rien
     def update_position(self):
         if not self.sim.USE_IVY:  # if Ivy Bus isn't used
             pos = self.sim.listeACpositions[int(self.sim.time / self.sim.SIMU_DELAY)]
@@ -276,6 +278,12 @@ class RadarView(QtWidgets.QWidget):
         if self.simulation.trajFMS.waypoint_list != []:
             self.add_ND_items()
             self.fit_scene_in_view()
+
+        if not (self.simulation.USE_IVY):
+            print("Lancement du timer")
+            self.timer = QtCore.QTimer(self)
+            self.timer.timeout.connect(self.advance)
+            self.timer.start(self.simulation.SIMU_DELAY)
 
         # add components to the root_layout
         root_layout.addWidget(self.view)

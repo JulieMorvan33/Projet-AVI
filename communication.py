@@ -4,7 +4,7 @@ import time
 from predictions import *
 from constantParameters import *
 import numpy as np
-from transitions import get_track
+from transitions import *
 from ivy.std_api import *
 
 DP = 20  # nb de positions à faire à l'avion sur chaque leg
@@ -82,6 +82,43 @@ class Simulation(QObject):
 
     def horloge(self, *arg):
         self.time = float(arg[1])
+        cpt_time = self.time
+        if not(self.AC_SIMULATED) and self.flight_started:
+            if cpt_time > 5:
+                cpt_time = cpt_time-5
+                #self.compute_two_next_transitions()
+
+
+    def compute_two_next_transitions(self):
+        print("Passage dans la fonction")
+        print("active_leg=",self.active_leg)
+        for i in range(self.active_leg, self.active_leg + 2):
+            a, b, c = self.trajFMS.get_transition(i)  # récupère les trois WPT de la transition
+            seg_actif = g.Segment(a, b)  # segment d'entrée de la transition
+            seg_next = g.Segment(b, c)  # segment de sortie de la transition
+            if self.USE_IVY: transition_type = b.data["FLY"]
+            else: transition_type = "Flyby"
+
+            if (i == 1): # si première transition
+                if transition_type == "Flyby":
+                    transition_list = compute_transition_fly_by(seg_actif, seg_next, self.simulation.speedPred.TAS)
+                elif transition_type == "Flyover":
+                    transition_list = compute_transition_fly_over(seg_actif, seg_next, self.simulation.speedPred.TAS)
+                start_segment = a
+                end_segment = transition_list[0].start
+            else:
+                temp = transition_list[-1].end
+                if transition_type == "Flyby":
+                    transition_list = compute_transition_fly_by(seg_actif, seg_next, self.simulation.speedPred.TAS)
+                elif transition_type == "Flyover":
+                    transition_list = compute_transition_fly_over(seg_actif, seg_next, self.simulation.speedPred.TAS)
+                start_segment = temp
+                end_segment = transition_list[0].start
+            self.simulation.trajFMS[self.active_leg] = Path(g.Segment(start_segment, end_segment),
+                                                 g.Transition(transition_type, self.simulation.speedPred.TAS,
+                                                              transition_list))
+            print("remplacement de la traj de la transition:",self.active_leg)
+
 
     #####  Aicraft state ####################################
     def get_AC_current_heading_and_speeds(self, agent, *data):
@@ -108,6 +145,7 @@ class Simulation(QObject):
     def create_AC_positions(self, n=NB_AC_INTER_POS):  # pour une simulation sans bus Ivy
         self.listeACpositions = []
         self.listeHDG = []
+        self.AC_X, self.AC_Y = self.trajFMS.waypoint_list[0].x,self.trajFMS.waypoint_list[0].y
         #wp0 = self.trajFMS.waypoint_list[0]
         #self.AC_X, self.AC_Y = wp0.x, wp0.y
         # print("pos de l'avion initiale : ", self.AC_X, self.AC_Y)
@@ -222,7 +260,7 @@ class Simulation(QObject):
         self.trajFMS.add_waypoint(Point(0, 0))
         self.trajFMS.add_waypoint(Point(-60, 0))
         self.trajFMS.add_waypoint(Point(-160, -130))
-        self.update_signal.emit()
+        #self.update_signal.emit()
 
     def send_AC_init_position_to_Aircraft_Model(self):
         wpt0 = self.trajFMS.waypoint_list[0]
@@ -294,7 +332,7 @@ class Simulation(QObject):
         if not self.new_active_leg:
             liste_paths = self.trajFMS.listePaths
         else:
-            liste_paths = self.trajFMS.listePaths[self.active_leg:self.active_leg+2]
+            liste_paths = self.trajFMS.listePaths[self.active_leg:]
             self.new_active_leg = False
 
         for path in liste_paths:

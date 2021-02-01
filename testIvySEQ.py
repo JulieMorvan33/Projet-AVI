@@ -36,7 +36,7 @@ if __name__ == '__main__':
         print(seqParamMess)
         IvySendMsg(seqParamMess)
 
-        if i%5==0:
+        if i%10==0:
             # Toutes les 500ms
             # Message d'active leg
             actLegMess = "GS_AL Time="
