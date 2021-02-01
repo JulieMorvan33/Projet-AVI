@@ -30,7 +30,7 @@ class Simulation(QObject):
         self.SIMU_DELAY = SIMU_DELAY
         self.time = init_time
         self.trajFMS = RefLatPath()
-        self.AP_mode = "Managed"  # mode de l'autopilot ("Managed" ou "Selected")
+        self.AP_mode = "NAV"  # mode de l'autopilot ("Managed" ou "Selected")
         self.HDG_selected = 0
         self.AC_init_HDG = 0
         self.flightParam = dict()  # contient CRZ_ALT, CI et WIND
@@ -269,14 +269,7 @@ class Simulation(QObject):
 
     def send_AC_init_position_to_Aircraft_Model(self):
         wpt0 = self.trajFMS.waypoint_list[0]
-        time.sleep(1)
-        print(3)
-        time.sleep(1)
-        print(2)
-        time.sleep(1)
-        print(1)
-        time.sleep(1)
-
+        time.sleep(0.3)
         #print("Envoi de la position initiale de l'avion à l'Aircraft Model : ", wpt0.x, wpt0.y)
         #mes = "InitStateVector x=" + str(wpt0.x*NM2M) + " y=" + str(wpt0.y*NM2M) + " z=" + str(self.flightParam["CRZ_ALT"]*FT2M) + " Vp=" + str(int(self.speedPred.TAS*KT2MS)) + " fpa=0" + " psi=" + str(0) + " phi=" + str(self.AC_init_HDG/RAD2DEG)
         #print("Message envoyé à l'Aircraft Model :", mes)
@@ -415,7 +408,7 @@ class Simulation(QObject):
         dtwpt = round(float(mes[3].strip("DTWPT=")), 3)
         bank_angle = float(mes[4].strip("BANK_ANGLE_REF="))
         aldtwpt = float(mes[5].strip("ALDTWPT="))
-        print("SEQ envoie les paramètres : XTK = ", xtk, " TAE = ", tae, " DTWPT = ", dtwpt, " ALDTWPT = ", aldtwpt, "BANK_ANGLE_REF = ", bank_angle)
+        #print("SEQ envoie les paramètres : XTK = ", xtk, " TAE = ", tae, " DTWPT = ", dtwpt, " ALDTWPT = ", aldtwpt, "BANK_ANGLE_REF = ", bank_angle)
         self.defineSEQParam(xtk, tae, dtwpt, aldtwpt)
         self.update_param_1.emit()
 
@@ -431,12 +424,6 @@ class Simulation(QObject):
         if activeLeg != self.active_leg:
             self.active_leg = activeLeg
             print("Nouveau leg actif :", self.active_leg, " Attente de la liste des legs")
-            print("3")
-            time.sleep(1)
-            print("2")
-            time.sleep(1)
-            print("1")
-            time.sleep(1)
             self.new_active_leg = True
             self.new_leg_signal.emit()
 
@@ -453,10 +440,9 @@ class Simulation(QObject):
     def get_AP_mode(self, agent, *data):
         mes = data[0].split(" ")
         time = float(mes[0].strip("Time="))
-        self.AP_mode = mes[1].strip("AP_State=")
+        self.AP_mode = mes[2].strip("AP_Mode=")
         print("nouveau mode", self.AP_mode)
         self.AP_mode_signal.emit()
-        print("OK")
 
     def get_HDG_selected(self, agent, *data):
         mes = data[0].split(" ")

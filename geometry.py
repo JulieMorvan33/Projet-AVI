@@ -198,9 +198,9 @@ wpt0 = WayPoint(0, 0)
 wptOrly = WayPoint(48.726, 2.365)
 wptToulouse = WayPoint(43.629, 1.363)
 
-print("Point 0:", round(wpt0.x*NM2M/1000),"km ", round(wpt0.y*NM2M/1000),"km ", end=" \t ")
-print("Orly :", round(wptOrly.x*NM2M/1000),"km ", round(wptOrly.y*NM2M/1000),"km ", end=" \t ")
-print("Toulouse :", round(wptToulouse.x*NM2M/1000),"km ", round(wptToulouse.y*NM2M/1000),"km ", end=" \t ")
-print("Distance Toulouse-Orly :", round(wptToulouse.distance(wptOrly)*NM2M/1000),"km ")
+#print("Point 0:", round(wpt0.x*NM2M/1000),"km ", round(wpt0.y*NM2M/1000),"km ", end=" \t ")
+#print("Orly :", round(wptOrly.x*NM2M/1000),"km ", round(wptOrly.y*NM2M/1000),"km ", end=" \t ")
+#print("Toulouse :", round(wptToulouse.x*NM2M/1000),"km ", round(wptToulouse.y*NM2M/1000),"km ", end=" \t ")
+#print("Distance Toulouse-Orly :", round(wptToulouse.distance(wptOrly)*NM2M/1000),"km ")
 
 

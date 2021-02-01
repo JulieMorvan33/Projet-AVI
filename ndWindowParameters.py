@@ -378,7 +378,7 @@ class Ui_MainWindow(object):
         self.label_17.setText(_translate("MainWindow", "..."))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.PFD_Param), _translate("MainWindow", "PDF param"))
         self.label_18.setText(_translate("MainWindow", "MODE : "))
-        self.label_19.setText(_translate("MainWindow", "MANAGE"))
+        self.label_19.setText(_translate("MainWindow", "NAV"))
         self.label_20.setText(_translate("MainWindow", "ZOOM : "))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.Mode_Param), _translate("MainWindow", "Mode"))
 
