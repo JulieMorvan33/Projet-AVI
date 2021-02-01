@@ -75,33 +75,52 @@ class QGraphicsArcItem(QtWidgets.QGraphicsEllipseItem):
     def set_span_angle(self, alpha):
         self.span_angle = alpha * SP_ANGLE_COEFF
 
+
     def set_start_angle(self, start, centre):
-        beta = np.arctan((start.y - centre.y) / (start.x - centre.x)) * RAD2DEG
-        if start.x < centre.x:
-            return -(180 + beta) * SP_ANGLE_COEFF
+        if start.x - centre.x == 0:
+            if self.det > 0:
+                beta = -90
+            else:
+                beta = 90
+            return beta * SP_ANGLE_COEFF
         else:
-            return -beta * SP_ANGLE_COEFF
+            beta = np.arctan((start.y - centre.y) / (start.x - centre.x)) * RAD2DEG
+            if start.x < centre.x:
+                return -(180 + beta) * SP_ANGLE_COEFF
+            else:
+                return -beta * SP_ANGLE_COEFF
 
     def set_XY(self, centre, turnRadius):
         self.x = resize(centre.x - turnRadius)
         self.y = resize(centre.y - turnRadius)
 
-
-class QGraphicsWayPointsItem2(QtWidgets.QGraphicsEllipseItem): #QtWidgets.QGraphicsRectItem):
-    """Affichage des legs"""
-    def __init__(self, x, y, parent):
-        super().__init__(resize(x), resize(y), resize(WP_WIDTH), resize(WP_WIDTH), parent)
-        self.pen = P_PEN
-        self.moveBy(-resize(WP_DP), -resize(WP_DP))
-
 class QGraphicsWayPointsItem(QtWidgets.QGraphicsRectItem):  # QtWidgets.QGraphicsRectItem):
     """Affichage des legs"""
 
-    def __init__(self, x, y, parent):
-        super().__init__(resize(x), resize(y), resize(WP_WIDTH), resize(WP_WIDTH), parent)
+    def __init__(self, x, y, parent, name, view, current_hdg):
+        self.x, self.y = resize(x), resize(y)
+        super().__init__(self.x, self.y, resize(WP_WIDTH), resize(WP_WIDTH), parent)
         self.pen = P_PEN
+        self.name = name
+        self.view = view
+        self.current_hdg = current_hdg
+        self.parent = parent
         self.moveBy(-resize(WP_DP), -resize(WP_DP))
+        self.textitem = QtWidgets.QGraphicsTextItem(self.parent)
+        self.description()
 
+    def description(self):
+        font = QFont()
+        font_metric = QFontMetrics(font)
+        text_width = font_metric.width(self.name)
+        font.setWeight(resize(500 * TEXT_SIZE))
+        self.textitem.setPos(self.x + resize(WP_WIDTH), self.y + resize(WP_WIDTH))
+        self.textitem.setPlainText(self.name)
+        self.textitem.setFont(font)
+        self.textitem.setScale(10)
+        self.textitem.setRotation(self.current_hdg)
+        self.textitem.setDefaultTextColor(green)
+        self.textitem.setTransform(self.view.transform())
 
     """Affichage des Way Points
     def __init__(self, x, y, parent):
