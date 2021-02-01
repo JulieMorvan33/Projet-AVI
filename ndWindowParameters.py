@@ -385,9 +385,9 @@ class Ui_MainWindow(object):
         """Méthode mettant à jour les paramètres de la fenêtre PDF Param"""
         dict = self.sim.SEQParam
         xtk, tae, aldtwpt = dict["XTK"], dict["TAE"], dict["ALDTWPT"]
-        self.label_8.setText(str(xtk))
-        self.label_11.setText(str(tae))
-        self.label_14.setText(str(aldtwpt))
+        self.label_8.setText(str(round(xtk)))
+        self.label_11.setText(str(round(tae)))
+        self.label_14.setText(str(round(aldtwpt)))
 
     def define_flight_param(self):
         """Méthode permettant l'entrée des paramètres de vol de la fenêtre Performance Param"""
