@@ -408,7 +408,7 @@ class RadarView(QtWidgets.QWidget):
 
             leg_item_path.setPen(TRAJ_PEN)
 
-            if self.simulation.AP_mode == "Selected":
+            if self.simulation.AP_mode == "'HDG'":
                 TRAJ_PEN.setStyle(Qt.DashLine)
             # Affichage de la trajectoire en pointillé si mode heading
 
@@ -423,7 +423,7 @@ class RadarView(QtWidgets.QWidget):
         # la dernière transition
 
     def mode_heading(self):
-        if self.simulation.AP_mode == "'Selected'":
+        if self.simulation.AP_mode == "'HDG'":
             TRAJ_PEN.setStyle(Qt.DashLine)
             self.scene.removeItem(self.nd_items)
             self.add_ND_items()
