@@ -235,7 +235,7 @@ class QGraphicsRoseItem(QtWidgets.QGraphicsItemGroup):  # cette classe groupe to
             hdg.moveBy(-np.cos(i) * text_width / 1.2, np.sin(i) * text_width / 1.2)
             hdg.setDefaultTextColor(white)
             self.addToGroup(hdg)
-        if self.sim.AP_mode == "'Selected'":
+        if self.sim.AP_mode == "'HDG'":
             font.setWeight(3*TEXT_SIZE)
             self.selHDGtextitem = QtWidgets.QGraphicsTextItem(self.parent)
             self.selHDGtextitem.setPos(WIDTH + 180, WIDTH + 460)
@@ -272,7 +272,7 @@ class QGraphicsRoseItem(QtWidgets.QGraphicsItemGroup):  # cette classe groupe to
         e = painter.drawEllipse(self.x, self.y, self.w, self.w)
         self.addToGroup(e)
 
-        if self.sim.AP_mode == "'Selected'":
+        if self.sim.AP_mode == "'HDG'":
             a_x2 = self.centre[0] + np.sin(float(self.sim.HDG_selected)/RAD2DEG)*self.w / 2
             a_y2 = self.centre[1] + np.cos(float(self.sim.HDG_selected)/RAD2DEG) * self.w / 2
             b_x2 = self.centre[0] #+ np.sin((float(self.sim.HDG_selected)+180) % 360/RAD2DEG) * self.w / 2

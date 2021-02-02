@@ -18,13 +18,13 @@ if __name__ == '__main__':
     IvySendMsg("SP_AptId Identifier=LFMN")
 
     # Envoie du temps
-    IvySendMsg("GC_AP Time=0 AP_State='Selected'")
-    IvySendMsg("FCULateral Mode='Selected' Val=160")
+    IvySendMsg("GC_AP Time=0 AP_State='HDG'")
+    IvySendMsg("FCULateral Mode='HDG' Val=50")
     time.sleep(1)
     for i in range(50):
         IvySendMsg("Time t="+str(float(i)))
         print("Time t="+str(float(i)))
-        x, y = (4.33 - i * 0.1)*100*NM2M, (29.30 + i * 1.5/20)*100*NM2M  # m
+        x, y = (1861+i*2)*NM2M, (304.5-i)*NM2M  # m
 
         # if USING_STATE_VECTOR:
         message1 = "StateVector x=" + str(x) + " y=" + str(y) + " z=" + str(30000*FT2M)

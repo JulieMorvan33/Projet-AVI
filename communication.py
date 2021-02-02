@@ -440,16 +440,17 @@ class Simulation(QObject):
     def get_AP_mode(self, agent, *data):
         mes = data[0].split(" ")
         time = float(mes[0].strip("Time="))
-        self.AP_mode = mes[2].strip("AP_Mode=")
-        print("nouveau mode", self.AP_mode)
+        self.AP_mode = mes[1].strip("AP_State=")
+        #print("nouveau mode", self.AP_mode)
         self.AP_mode_signal.emit()
 
     def get_HDG_selected(self, agent, *data):
         mes = data[0].split(" ")
-        #self.AP_mode = mes[1].strip("Mode=")
+        self.AP_mode = mes[0].strip("Mode=")
+        #print("MODE DE L4AP : ", self.AP_mode)
         self.HDG_selected = mes[1].strip("Val=")
-        print('HDG_sel =', self.HDG_selected)
-        #print("Mode Heading enclenché :", self.AP_mode, self.HDG_selected)
+        #print('HDG_sel =', self.HDG_selected)
+        print("Mode Heading enclenché :", self.AP_mode, self.HDG_selected)
         self.update_mode.emit()
 
     def get_depart_airport(self, agent, *data):
