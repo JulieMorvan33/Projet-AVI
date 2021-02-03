@@ -417,6 +417,15 @@ class Simulation(QObject):
         self.defineSEQParam(xtk, tae, dtwpt, aldtwpt)
         self.update_param_1.emit()
 
+        if self.AC_TAS == 0:
+            speed = self.speedPred.TAS
+        else:
+            speed = self.AC_TAS
+        ttwpt = dtwpt * NM2M / (speed * KT2MS) / 60  # Pour l'instant TAS = 0 donc
+        self.NextWPTParam["TTWPT"] = ttwpt
+        self.update_param_2.emit()
+        print("NOUVEAU TTWPT")
+
 
     # Réception du leg actif
     #"GS_AL Time=time NumSeqActiveLeg=numseq"
@@ -437,9 +446,15 @@ class Simulation(QObject):
             if activeLeg==leg[1]:
                 nextwpt = leg[0]
                 course = leg[4]
-                ttpt = self.SEQParam["DTWPT"] * NM2M / (self.AC_TAS * KT2MS) / 60  # Pour l'instant TAS = 0 donc
 
-                self.defineNextWPTParam(nextwpt, course, ttpt)
+                if self.AC_TAS == 0:
+                    speed = self.speedPred.TAS
+                else:
+                    speed = self.AC_TAS
+
+                ttwpt = self.SEQParam["DTWPT"] * NM2M / (speed * KT2MS) / 60  # Pour l'instant TAS = 0 donc
+
+                self.defineNextWPTParam(nextwpt, course, ttwpt)
                 self.update_param_2.emit()
 
     def get_AP_mode(self, agent, *data):

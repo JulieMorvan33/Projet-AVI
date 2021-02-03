@@ -40,7 +40,7 @@ if __name__ == '__main__':
             # Toutes les 500ms
             # Message d'active leg
             actLegMess = "GS_AL Time="
-            actLegMess += str(round(dt, 1)) + " NumSeqActiveLeg=" + str(i//5)
+            actLegMess += str(round(dt, 1)) + " NumSeqActiveLeg=" + str(i//10+1)
             print(actLegMess)
             IvySendMsg(actLegMess)
 
