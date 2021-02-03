@@ -235,15 +235,6 @@ class QGraphicsRoseItem(QtWidgets.QGraphicsItemGroup):  # cette classe groupe to
             hdg.moveBy(-np.cos(i) * text_width / 1.2, np.sin(i) * text_width / 1.2)
             hdg.setDefaultTextColor(white)
             self.addToGroup(hdg)
-        if self.sim.mode == "SelectedHeading":
-            font.setWeight(3*TEXT_SIZE)
-            self.selHDGtextitem = QtWidgets.QGraphicsTextItem(self.parent)
-            self.selHDGtextitem.setPos(WIDTH + 180, WIDTH + 460)
-            self.selHDGtextitem.setPlainText(str(self.sim.HDG_selected))
-            self.selHDGtextitem.setFont(font)
-            self.selHDGtextitem.setDefaultTextColor(green)
-            self.selHDGtextitem.setTransform(self.view.transform())
-            #self.addToGroup(self.selHDGtextitem)
 
 
     def paint(self, painter=QPainter(), style=None, widget=None):

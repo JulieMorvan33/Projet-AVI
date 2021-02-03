@@ -199,6 +199,16 @@ class RoseView(QtWidgets.QWidget):
         self.HDGtextitem.setTransform(self.view.transform())
         self.items.addToGroup(self.HDGtextitem)
 
+        # Ajout du selected HDG
+        font = QFont()
+        font.setWeight(30)
+        self.selHDGtextitem = QtWidgets.QGraphicsTextItem(self.items)
+        self.selHDGtextitem.setPos(WIDTH + 180, WIDTH + 460)
+        self.selHDGtextitem.setPlainText('')
+        self.selHDGtextitem.setFont(font)
+        self.selHDGtextitem.setDefaultTextColor(green)
+        self.selHDGtextitem.setTransform(self.view.transform())
+        self.items.addToGroup(self.selHDGtextitem)
 
         #affichage XTK sur rose
         self.XTKtextitem = QtWidgets.QGraphicsTextItem(self.items)
@@ -216,6 +226,10 @@ class RoseView(QtWidgets.QWidget):
 
     def add_rose(self):
         self.items.removeFromGroup(self.rose)
+        if self.sim.mode == "SelectedHeading":
+            self.items.removeFromGroup(self.selHDGtextitem)
+            self.selHDGtextitem.setPlainText(str(self.sim.HDG_selected))
+            self.items.addToGroup(self.selHDGtextitem)
         self.rose = QGraphicsRoseItem(self.sim, WIDTH, WIDTH, WIDTH * 0.5, self.items, self.view)
         self.items.addToGroup(self.rose)
 
@@ -228,7 +242,6 @@ class RoseView(QtWidgets.QWidget):
         centre_rot = QtCore.QPointF(WIDTH + (WIDTH * 0.5) / 2, WIDTH + (WIDTH * 0.5) / 2)
         self.rose.setTransformOriginPoint(centre_rot)
         self.rose.setRotation(hdg)
-        print(hdg)
         self.HDGtextitem.setPlainText(str(int(hdg)) + "°")
 
     def update_xtk(self):
@@ -427,9 +440,13 @@ class RadarView(QtWidgets.QWidget):
         #if self.simulation.AP_mode == "'HDG'":
         if self.simulation.mode == "SelectedHeading":
             TRAJ_PEN.setStyle(Qt.DashLine)
-            self.scene.removeItem(self.nd_items)
-            self.add_ND_items()
             print('mode heading')
+        else:
+            TRAJ_PEN.setStyle(Qt.SolidLine)
+            print('mode nav')
+        self.scene.removeItem(self.nd_items)
+        self.add_ND_items()
+
 
     def fit_scene_in_view(self):
         if not self.simulation.USE_IVY or self.simulation.AC_SIMULATED:

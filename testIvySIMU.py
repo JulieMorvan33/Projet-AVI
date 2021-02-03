@@ -19,7 +19,7 @@ if __name__ == '__main__':
 
     # Envoie du temps
     IvySendMsg("GC_AP Time=0 AP_State='HDG'")  # message pas pris en compte
-    IvySendMsg("FCULateral Mode=SelectedHeading Val=50")
+    IvySendMsg("FCULateral Mode=SelectedHeading Val=150")
     time.sleep(1)
     for i in range(50):
         IvySendMsg("Time t="+str(float(i)))
@@ -38,6 +38,8 @@ if __name__ == '__main__':
         IvySendMsg(message1)
         IvySendMsg(message2)
         time.sleep(0.5)
+
+    IvySendMsg("FCULateral Mode=SelectedHeading Val=350")
 
     for i in range(50):
         IvySendMsg("Time t=" + str(float(i)))
