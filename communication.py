@@ -201,6 +201,9 @@ class Simulation(QObject):
                 long = data[4].strip("LONG=")  # string donnant la longitude
                 self.ListeFromLegs.append([id, seq, lat, long, 0, 'flyby', 0, 0, 0])
             else:
+                if j==1: # on affiche le premier next waypoint au haut du ND
+                    self.defineNextWPTParam(id, 0, 0)
+                    self.update_param_2.emit()
                 fly = str(data[3].strip("WPT_TYPE="))  # string spécifiant un fly_by ou un fly_over
                 lat = data[4].strip("LAT=")  # string donnant la latitude
                 long = data[5].strip("LONG=")  # string donnant la longitude
@@ -434,9 +437,9 @@ class Simulation(QObject):
             if activeLeg==leg[1]:
                 nextwpt = leg[0]
                 course = leg[4]
-                #ttpt = self.SEQParam["DTWPT"] * NM2M / (self.AC_TAS * KT2MS)  # Pour l'instant TAS = 0 donc
+                ttpt = self.SEQParam["DTWPT"] * NM2M / (self.AC_TAS * KT2MS) / 60  # Pour l'instant TAS = 0 donc
 
-                self.defineNextWPTParam(nextwpt, course, 4747)
+                self.defineNextWPTParam(nextwpt, course, ttpt)
                 self.update_param_2.emit()
 
     def get_AP_mode(self, agent, *data):
