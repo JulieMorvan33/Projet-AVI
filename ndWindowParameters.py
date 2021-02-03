@@ -322,12 +322,13 @@ class Ui_MainWindow(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.horizontalSlider.sizePolicy().hasHeightForWidth())
         self.horizontalSlider.setSizePolicy(sizePolicy)
-        self.horizontalSlider.setMinimum(10)
+        self.horizontalSlider.setMinimum(1)
         self.horizontalSlider.setMaximum(120)
         self.horizontalSlider.setSingleStep(20)
         self.horizontalSlider.setOrientation(QtCore.Qt.Horizontal)
         self.horizontalSlider.setTickPosition(QtWidgets.QSlider.TicksBelow)
         self.horizontalSlider.setObjectName("horizontalSlider")
+        self.horizontalSlider.setSliderPosition(40)
         self.horizontalLayout_14.addWidget(self.horizontalSlider)
         spacerItem14 = QtWidgets.QSpacerItem(60, 20, QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Minimum)
         self.horizontalLayout_14.addItem(spacerItem14)
@@ -409,8 +410,8 @@ class Ui_MainWindow(object):
         #print("Nouveau AP mode :", self.sim.AP_mode)
 
     def update_zoom(self):
-        print(self.horizontalSlider.value())
-        self.sim.ZOOM = 1/self.horizontalSlider.value()
+        #print(self.horizontalSlider.value())
+        self.sim.ZOOM = 4/self.horizontalSlider.value()
 
 class mywindow(QtWidgets.QMainWindow):
     # Création de la window de gauche
