@@ -230,6 +230,10 @@ class RoseView(QtWidgets.QWidget):
             self.items.removeFromGroup(self.selHDGtextitem)
             self.selHDGtextitem.setPlainText(str(self.sim.HDG_selected))
             self.items.addToGroup(self.selHDGtextitem)
+        else:
+            self.items.removeFromGroup(self.selHDGtextitem)
+            self.selHDGtextitem.setPlainText('')
+            self.items.addToGroup(self.selHDGtextitem)
         self.rose = QGraphicsRoseItem(self.sim, WIDTH, WIDTH, WIDTH * 0.5, self.items, self.view)
         self.items.addToGroup(self.rose)
 

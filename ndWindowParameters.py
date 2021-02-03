@@ -402,7 +402,10 @@ class Ui_MainWindow(object):
 
     def update_AP_mode(self):
         """Méthode mettant à jour le mode de navigation dans la fenêtre Mode"""
-        self.label_19.setText(self.sim.AP_mode)
+        if self.sim.mode == "SelectedHeading":
+            self.label_19.setText('HDG')
+        else:
+            self.label_19.setText('NAV')
         #print("Nouveau AP mode :", self.sim.AP_mode)
 
     def update_zoom(self):
