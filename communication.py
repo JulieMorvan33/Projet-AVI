@@ -31,6 +31,7 @@ class Simulation(QObject):
         self.time = init_time
         self.trajFMS = RefLatPath()
         self.AP_mode = "NAV"  # mode de l'autopilot ("Managed" ou "Selected")
+        self.mode = "unknown"
         self.HDG_selected = 0
         self.AC_init_HDG = 0
         self.flightParam = dict()  # contient CRZ_ALT, CI et WIND
@@ -431,7 +432,7 @@ class Simulation(QObject):
         for i, leg in enumerate(self.ListeFromLegs):
             if activeLeg==leg[1]:
                 nextwpt = leg[0]
-                course = leg[4]
+                course = leg[6]
                 #ttpt = self.SEQParam["DTWPT"] * NM2M / (self.AC_TAS * KT2MS)  # Pour l'instant TAS = 0 donc
 
                 self.defineNextWPTParam(nextwpt, course, 4747)
@@ -441,16 +442,16 @@ class Simulation(QObject):
         mes = data[0].split(" ")
         time = float(mes[0].strip("Time="))
         self.AP_mode = mes[1].strip("AP_State=")
-        #print("nouveau mode", self.AP_mode)
+        print("nouveau mode", self.AP_mode)
         self.AP_mode_signal.emit()
 
     def get_HDG_selected(self, agent, *data):
         mes = data[0].split(" ")
-        self.AP_mode = mes[0].strip("Mode=")
+        self.mode = mes[0].strip("Mode=")
         #print("MODE DE L4AP : ", self.AP_mode)
         self.HDG_selected = mes[1].strip("Val=")
         #print('HDG_sel =', self.HDG_selected)
-        print("Mode Heading enclenché :", self.AP_mode, self.HDG_selected)
+        print("Mode Heading enclenché :", self.mode, self.HDG_selected)
         self.update_mode.emit()
 
     def get_depart_airport(self, agent, *data):
