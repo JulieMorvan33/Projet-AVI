@@ -64,7 +64,7 @@ if __name__ == "__main__":
         IvyBindMsg(sim.receive_SEQ_parameters, "GS_Data (.*)")
 
         # Abonnement au mode de l'autopilot
-        IvyBindMsg(sim.get_AP_mode, "GC_AP (.*)")
+        #IvyBindMsg(sim.get_AP_mode, "GC_AP (.*)")
 
         # Abonnement au HDG sélecté
         IvyBindMsg(sim.get_HDG_selected, "FCULateral (.*)")

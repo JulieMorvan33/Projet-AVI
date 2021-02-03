@@ -18,8 +18,8 @@ if __name__ == '__main__':
     IvySendMsg("SP_AptId Identifier=LFMN")
 
     # Envoie du temps
-    IvySendMsg("GC_AP Time=0 AP_State='HDG'")
-    IvySendMsg("FCULateral Mode='Heading' Val=50")
+    IvySendMsg("GC_AP Time=0 AP_State='HDG'")  # message pas pris en compte
+    IvySendMsg("FCULateral Mode=SelectedHeading Val=50")
     time.sleep(1)
     for i in range(50):
         IvySendMsg("Time t="+str(float(i)))

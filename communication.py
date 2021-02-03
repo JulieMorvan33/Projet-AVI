@@ -31,9 +31,8 @@ class Simulation(QObject):
         self.time = init_time
         self.trajFMS = RefLatPath()
         self.AP_mode = "NAV"  # mode de l'autopilot, peut prendre les valeurs suivantes : "NAV", "HDG" ou "NULL"
-        # (c'est ce qui est utilisé pour l'affichage du mode heading pour TRAJ)
-        self.mode = "unknown"  # mode latéral, peut prendre les valeurs suivantes : SelectedHeading, SelectedTrack,
-        # Managed (cela n'est pas utilisé par TRAJ vu qu'on reçoit un message du groupe COMM indiquant l'état de l'AP)
+        self.mode = "Managed"  # mode latéral, peut prendre les valeurs suivantes : SelectedHeading, SelectedTrack,
+        # Managed
         self.HDG_selected = 0
         self.AC_init_HDG = 0
         self.flightParam = dict()  # contient CRZ_ALT, CI et WIND
@@ -455,6 +454,7 @@ class Simulation(QObject):
         #print('HDG_sel =', self.HDG_selected)
         print("Mode Heading enclenché :", self.mode, self.HDG_selected)
         self.update_mode.emit()
+        self.AP_mode_signal.emit()
 
     def get_depart_airport(self, agent, *data):
         mes = data[0].split(" ")
