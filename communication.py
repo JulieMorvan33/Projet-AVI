@@ -91,7 +91,7 @@ class Simulation(QObject):
         if not (self.AC_SIMULATED) and self.flight_started:
             if int(self.time) % 5 == 0:
                 if abs(diff_time) < PRECISION_TIMER:
-                    self.compute_two_next_transitions()
+                    pass#self.compute_two_next_transitions()
 
     def compute_two_next_transitions(self):
         print("Calcul de la short-term trajectory")
