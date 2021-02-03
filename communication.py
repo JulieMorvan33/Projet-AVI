@@ -433,7 +433,7 @@ class Simulation(QObject):
         for i, leg in enumerate(self.ListeFromLegs):
             if activeLeg==leg[1]:
                 nextwpt = leg[0]
-                course = leg[6]
+                course = leg[4]
                 #ttpt = self.SEQParam["DTWPT"] * NM2M / (self.AC_TAS * KT2MS)  # Pour l'instant TAS = 0 donc
 
                 self.defineNextWPTParam(nextwpt, course, 4747)
