@@ -1,7 +1,7 @@
 """Geometry classes and utilities."""
 import numpy as np
 from constantParameters import *
-#from pyproj import Transformer
+from pyproj import Transformer
 
 # Mercator Projection
 A = 6378137.0  # Demi grand axe de l'ellipsoide de reference WGS-84 (m)
@@ -10,7 +10,7 @@ F = (A - B) / A  # Aplatissement
 E = (F * (2 - F)) ** 0.5  # Excentricite de l'ellipsoide WGS-84
 
 
-#trans = Transformer.from_crs("epsg:4326", "+proj=merc +zone=32 +ellps=WGS84 +lat_ts=45", always_xy=True)
+trans = Transformer.from_crs("epsg:4326", "+proj=merc +zone=32 +ellps=WGS84 +lat_ts=45", always_xy=True)
 
 def det(a, b):
     return a[0] * b[1] - a[1] * b[0]
@@ -82,7 +82,7 @@ class WayPoint(Point):
     def __init__(self, lat, long):
         self.lat = lat
         self.long = long
-        self.x, self.y = self.convert_without_pyproj()
+        self.x, self.y = self.convert()
         super().__init__(self.x, self.y)
 
     def __repr__(self):
@@ -98,10 +98,10 @@ class WayPoint(Point):
         y = A*np.log(np.tan(np.pi/4+self.lat/2/RAD2DEG))
         return x/NM2M, y/NM2M
 
-    #def convert(self):
+    def convert(self):
     #    '''Convertis des points au format (lat, long) en des points au format (x, y)'''
-    #    y, x = trans.transform(self.lat, self.long)
-    #    return x/NM2M, y/NM2M
+        y, x = trans.transform(self.lat, self.long)
+        return x/NM2M, y/NM2M
 
 
 class Segment(object):
