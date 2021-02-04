@@ -371,7 +371,8 @@ class RadarView(QtWidgets.QWidget):
                 start_segment = a
                 end_segment = transition_list[0].start
             else:
-                temp = transition_list[-1].end
+                temp = transition_list[-1].end     #Récupération du point de fin de la dernière transition afin de
+                # réaliser la liason sous forme de segment avec la prochaine transition
                 if transition_type == "Flyby":
                     transition_list = compute_transition_fly_by(seg_actif, seg_next, self.simulation.speedPred.TAS)
                 elif transition_type == "Flyover":
