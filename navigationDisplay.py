@@ -363,12 +363,6 @@ class RadarView(QtWidgets.QWidget):
             if self.simulation.USE_IVY: transition_type = b.data["FLY"]
             else: transition_type = "Flyby"
 
-            ######### TEST ##########
-            # if i%2==0:
-            #     transition_type = "fly_over"
-            # else:
-            #     transition_type = "fly_by"
-            #########################
             if (i == 1): # si première transition
                 if transition_type == "Flyby":
                     transition_list = compute_transition_fly_by(seg_actif, seg_next, self.simulation.speedPred.TAS)
@@ -388,26 +382,14 @@ class RadarView(QtWidgets.QWidget):
             # ajout des objets transitions et orthos dans la trajectoire pour envoi sur le bus IVY
             self.simulation.trajFMS.add_path(g.Segment(start_segment, end_segment), g.Transition(transition_type, self.simulation.speedPred.TAS,
                                                                                                  transition_list))
-            # self.simulation.trajFMS.bankAnglesList.append(bank_angle) # list de 2 banks pour un fly over ?
-
-            # track change en degré, turn_radius en Nm, start le point d'entrée de la transition
-            # end le point de sortie de la transition, centre le centre de l'arc de cercle
 
             if transition_list[0].track_change > EPSILON:
                 for transition in transition_list:
                     if isinstance(transition, g.Arc):
-                        # Affichage des points de start, end, centre (Bi, B0, Bc) pour chaque transition
-                        #QGraphicsTransitionPoints(transition.start.x, transition.start.y, self.nd_items)
-                        #QGraphicsTransitionPoints(transition.end.x, transition.end.y, self.nd_items)
-                        #QGraphicsTransitionPoints(transition.centre.x, transition.centre.y, self.nd_items)
-
-
-                        # Affiche l'arc associé à la transition
-                        # print("Paramètres arc :", start, centre, " alpha = ", track_change, " turn radius = ", turn_
-                        # adius)
-                        item = QGraphicsArcItem(transition.start, transition.centre, transition.track_change,
+                        # Affichage arc dans la transition
+                        leg_item_transition_arc = QGraphicsArcItem(transition.start, transition.centre, transition.track_change,
                                                 transition.turn_radius, transition.sens_virage, self.nd_items)
-                        item.paint()
+                        leg_item_transition_arc.paint()
                     elif isinstance(transition, g.Segment):
                         # Affichage segment dans la transition
                         leg_item_transition_segment = QGraphicsLegsItem(transition.start.x, transition.start.y,
@@ -415,9 +397,6 @@ class RadarView(QtWidgets.QWidget):
                                                                         self.nd_items)
                         leg_item_transition_segment.setPen(TRAJ_PEN)
 
-            # Affiche le leg (pas quand la ligne est commentée)
-            #leg_item = QGraphicsLegsItem(a.x, a.y, b.x, b.y, self.nd_items)
-            #leg_item.setPen(leg_item.pen)
 
             # Affiche l'ortho
             leg_item_path = QGraphicsLegsItem(start_segment.x, start_segment.y, end_segment.x, end_segment.y,
