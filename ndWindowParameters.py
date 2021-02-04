@@ -413,7 +413,7 @@ class Ui_MainWindow(object):
 
 
 class mywindow(QtWidgets.QMainWindow):
-    # Création de la window de gauche
+    """Création de la window de gauche"""
     def __init__(self, param_view, view, rose_view, aircraft_view, sim):
         super(mywindow, self).__init__()
         self.ui = Ui_MainWindow(param_view, view, rose_view, aircraft_view, sim)
