@@ -1,7 +1,7 @@
 """Geometry classes and utilities."""
 import numpy as np
 from constantParameters import *
-from pyproj import Transformer
+#from pyproj import Transformer
 
 # Mercator Projection
 A = 6378137.0  # Demi grand axe de l'ellipsoide de reference WGS-84 (m)
@@ -10,7 +10,7 @@ F = (A - B) / A  # Aplatissement
 E = (F * (2 - F)) ** 0.5  # Excentricite de l'ellipsoide WGS-84
 
 
-trans = Transformer.from_crs("epsg:4326", "+proj=merc +zone=32 +ellps=WGS84 +lat_ts=45", always_xy=True)
+#trans = Transformer.from_crs("epsg:4326", "+proj=merc +zone=32 +ellps=WGS84 +lat_ts=45", always_xy=True)
 
 def det(a, b):
     return a[0] * b[1] - a[1] * b[0]
@@ -59,9 +59,6 @@ class Point(object):
         """multiplie les coordonnees du point par un scalaire"""
         return Point(self.x * scalaire, self.y * scalaire)
 
-    def det(self, other):
-        return self.x*other.y - self.y*other.x
-
     def milieu(self, other):
         """trouve le milieu de deux points et renvoie ce nouveau point"""
         new_x = (self.x + other.x) / 2
@@ -85,8 +82,7 @@ class WayPoint(Point):
     def __init__(self, lat, long):
         self.lat = lat
         self.long = long
-        self.x, self.y = self.convert()
-        #self.x2, self.y2 = self.convert_without_pyproj()
+        self.x, self.y = self.convert_without_pyproj()
         super().__init__(self.x, self.y)
 
     def __repr__(self):
@@ -98,14 +94,14 @@ class WayPoint(Point):
         prend en compte le cote elliptique de la Terre (si jamais on veut juste Mercator, remplacer a par R dans les
         formules) Merator/Pseudo-Mercator OK si base de donnée juste en Europe (pas trop de déformations)
         /!\ formules pas ok quand latitude = 90° (au pole)"""
-        R = 6371007  # Rayon de la Terre
         x = A*self.long/RAD2DEG
         y = A*np.log(np.tan(np.pi/4+self.lat/2/RAD2DEG))
         return x/NM2M, y/NM2M
 
-    def convert(self):
-        y, x = trans.transform(self.lat, self.long)
-        return x/NM2M, y/NM2M
+    #def convert(self):
+    #    '''Convertis des points au format (lat, long) en des points au format (x, y)'''
+    #    y, x = trans.transform(self.lat, self.long)
+    #    return x/NM2M, y/NM2M
 
 
 class Segment(object):
@@ -148,7 +144,7 @@ class Arc(object):
         self.lead_distance = lead_distance
         self.bank_angle = bank_angle
         self.track_change = track_change
-        self.sens_virage = sens_virage  # >0 à gauche
+        self.sens_virage = sens_virage  # >0 pour un virage à gauche
 
 
 class Transition(object):
@@ -194,13 +190,13 @@ class RefLatPath(object):
         pass
 
 
-wpt0 = WayPoint(0, 0)
-wptOrly = WayPoint(48.726, 2.365)
-wptToulouse = WayPoint(43.629, 1.363)
-
-#print("Point 0:", round(wpt0.x*NM2M/1000),"km ", round(wpt0.y*NM2M/1000),"km ", end=" \t ")
-#print("Orly :", round(wptOrly.x*NM2M/1000),"km ", round(wptOrly.y*NM2M/1000),"km ", end=" \t ")
-#print("Toulouse :", round(wptToulouse.x*NM2M/1000),"km ", round(wptToulouse.y*NM2M/1000),"km ", end=" \t ")
-#print("Distance Toulouse-Orly :", round(wptToulouse.distance(wptOrly)*NM2M/1000),"km ")
+# Test des waypoints
+# wpt0 = WayPoint(0, 0)
+# wptOrly = WayPoint(48.726, 2.365)
+# wptToulouse = WayPoint(43.629, 1.363)
+# print("Point 0:", round(wpt0.x*NM2M/1000),"km ", round(wpt0.y*NM2M/1000),"km ", end=" \t ")
+# print("Orly :", round(wptOrly.x*NM2M/1000),"km ", round(wptOrly.y*NM2M/1000),"km ", end=" \t ")
+# print("Toulouse :", round(wptToulouse.x*NM2M/1000),"km ", round(wptToulouse.y*NM2M/1000),"km ", end=" \t ")
+# print("Distance Toulouse-Orly :", round(wptToulouse.distance(wptOrly)*NM2M/1000),"km ")
 
 
