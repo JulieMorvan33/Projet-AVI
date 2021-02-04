@@ -147,7 +147,7 @@ class ParamView(QtWidgets.QWidget):
         print("param ", self.simulation.SEQParam)
         self.NEXTWPTtextitem.setPlainText(str(self.simulation.NextWPTParam["NEXTWPT"]))
         self.HDGtextitem.setPlainText(str(int(self.simulation.NextWPTParam["COURSE"])))
-        self.TTWPTtextitem.setPlainText(str(int(self.simulation.NextWPTParam["TTWPT"])))
+        self.TTWPTtextitem.setPlainText(str(self.simulation.NextWPTParam["TTWPT"]))
 
     def update_speed_displays(self):
         self.TAStextitem.setPlainText(str(int(self.simulation.AC_TAS)))
