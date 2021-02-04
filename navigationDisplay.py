@@ -3,23 +3,14 @@
 This module allows the visualization of the aircraft and its
 trajectory on a scalable view"""
 
-import math
-from PyQt5.QtCore import QPoint
 from graphicsItems import *
-from transitions import *
-from constantParameters import WIDTH, HEIGHT, NB_AC_INTER_POS
-import time
-from predictions import *
 from communication import *
 from PyQt5 import QtCore
-
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import *
-from PyQt5.QtWidgets import *
+import math
 
-import sys
-
-TRAJ_Z_VALUE = 0  # display trajectory items UNDER moving items
+TRAJ_Z_VALUE = 0  # afficher la trajectoire sous les autres items
 
 POINT_WIDTH = 130
 POINT_BRUSH = QBrush(QColor("grey"))
@@ -31,10 +22,8 @@ class PanZoomView(QtWidgets.QGraphicsView):
     def __init__(self, scene):
         super().__init__(scene)
         self.scene = scene
-        # enable anti-aliasing
-        self.setRenderHint(QtGui.QPainter.Antialiasing)
-        # enable drag and drop of the view
-        self.setDragMode(self.ScrollHandDrag)
+        self.setRenderHint(QtGui.QPainter.Antialiasing)  # enable anti-aliasing
+        self.setDragMode(self.ScrollHandDrag)  # enable drag and drop of the view
 
     def wheelEvent(self, event):
         """Overrides method in QGraphicsView in order to zoom it when mouse scroll occurs"""
@@ -49,18 +38,16 @@ class PanZoomView(QtWidgets.QGraphicsView):
 
 
 class ParamView(QtWidgets.QWidget):
+    """Vue pour afficher les paramètres"""
     def __init__(self, sim):
         super().__init__()
         self.scene = QtWidgets.QGraphicsScene()
         self.view = QtWidgets.QGraphicsView(self.scene)
         self.view.fitInView(self.view.sceneRect(), QtCore.Qt.KeepAspectRatio)
         self.simulation = sim
+        self.scene.setBackgroundBrush(QColor('black'))  # modifier le fond de la scène
 
-
-        # modify the scene background
-        self.scene.setBackgroundBrush(QColor('black'))
-
-        # ajout des textes item
+        # Ajout des textes item
         self.items = QtWidgets.QGraphicsItemGroup()
         self.scene.addItem(self.items)
         font = QtGui.QFont()
@@ -96,6 +83,7 @@ class ParamView(QtWidgets.QWidget):
         self.TAStextitem.setPos(-460, -55)
         self.TAStextitem.setDefaultTextColor(color3)
 
+        # Ajout du texte "NM"
         NMtextitem = QtWidgets.QGraphicsTextItem(self.items)
         NMtextitem.setFont(font)
         NMtextitem.setPlainText("NM")
@@ -157,7 +145,6 @@ class ParamView(QtWidgets.QWidget):
 
     def update_SEQ_param_display(self):
         print("param ", self.simulation.SEQParam)
-        #print("nextwpt in nddisplay ", str(self.simulation.NextWPTParam["NEXTWPT"], self.simulation.SEQParam["DTWPT"]))
         self.NEXTWPTtextitem.setPlainText(str(self.simulation.NextWPTParam["NEXTWPT"]))
         self.HDGtextitem.setPlainText(str(int(self.simulation.NextWPTParam["COURSE"])))
         self.TTWPTtextitem.setPlainText(str(int(self.simulation.NextWPTParam["TTWPT"])))
@@ -168,6 +155,7 @@ class ParamView(QtWidgets.QWidget):
 
 
 class RoseView(QtWidgets.QWidget):
+    """Vue qui permet d'afficher la rose"""
     def __init__(self, sim):
         super().__init__()
         self.scene = QtWidgets.QGraphicsScene()
@@ -175,22 +163,20 @@ class RoseView(QtWidgets.QWidget):
         self.view.fitInView(self.view.sceneRect(), QtCore.Qt.KeepAspectRatio)
         self.sim = sim
 
-        # invert y axis for the view
-        self.view.scale(1, -1)
+        self.view.scale(1, -1)  # inverser l'axe des y pour la vue
 
-        # modify the scene background
-        self.scene.setBackgroundBrush(QColor('black'))
+        self.scene.setBackgroundBrush(QColor('black'))  # modifier le fond de la scène
 
-        # ajout du compas
+        # Ajout du compas
         self.items = QtWidgets.QGraphicsItemGroup()
         self.scene.addItem(self.items)
         self.rose = QGraphicsRoseItem(self.sim, WIDTH, WIDTH, WIDTH*0.5, self.items, self.view)
         self.items.addToGroup(self.rose)
 
-        # Ajout du HDG
+        # Ajout du heading courant en bas à droite de la rose
         color3 = QColor(0, 255, 0)  # vert
         font = QtGui.QFont()
-        font.setWeight(20)#affichage HDG sur rose
+        font.setWeight(20)
         self.HDGtextitem = QtWidgets.QGraphicsTextItem(self.items)
         self.HDGtextitem.setFont(font)
         self.HDGtextitem.setPlainText(str(int(self.sim.AC_HDG))+"°")
@@ -199,7 +185,7 @@ class RoseView(QtWidgets.QWidget):
         self.HDGtextitem.setTransform(self.view.transform())
         self.items.addToGroup(self.HDGtextitem)
 
-        # Ajout du selected HDG
+        # Ajout du heading sélecté
         font = QFont()
         font.setWeight(30)
         self.selHDGtextitem = QtWidgets.QGraphicsTextItem(self.items)
@@ -210,7 +196,7 @@ class RoseView(QtWidgets.QWidget):
         self.selHDGtextitem.setTransform(self.view.transform())
         self.items.addToGroup(self.selHDGtextitem)
 
-        #affichage XTK sur rose
+        # Affichage du XTK en bas à droite de la rose
         self.XTKtextitem = QtWidgets.QGraphicsTextItem(self.items)
         self.XTKtextitem.setFont(font)
         self.XTKtextitem.setPlainText(str(int(self.sim.SEQParam["XTK"]))+"NM")
@@ -219,18 +205,20 @@ class RoseView(QtWidgets.QWidget):
         self.XTKtextitem.setTransform(self.view.transform())
         self.items.addToGroup(self.XTKtextitem)
 
+        # Mise à jour du HDG et de la XTK
         self.sim.update_aicraft_signal.connect(self.update_hdg)
         self.sim.update_aicraft_signal.connect(self.update_xtk)
 
         self.sim.update_mode.connect(self.add_rose)
 
     def add_rose(self):
+        """Ajouter la rose / l'affichage change en fonction du mode de l'auto-pilote"""
         self.items.removeFromGroup(self.rose)
-        if self.sim.mode == "SelectedHeading":
+        if self.sim.mode == "SelectedHeading":  # s'il y a un heading sélecté
             self.items.removeFromGroup(self.selHDGtextitem)
             self.selHDGtextitem.setPlainText(str(self.sim.HDG_selected))
             self.items.addToGroup(self.selHDGtextitem)
-        else:
+        else:  # si mode managé
             self.items.removeFromGroup(self.selHDGtextitem)
             self.selHDGtextitem.setPlainText('')
             self.items.addToGroup(self.selHDGtextitem)
@@ -238,7 +226,8 @@ class RoseView(QtWidgets.QWidget):
         self.items.addToGroup(self.rose)
 
     def update_hdg(self):
-        if not self.sim.USE_IVY or self.sim.AC_SIMULATED:
+        """Mise à jour la rotation de la rose"""
+        if not self.sim.USE_IVY or self.sim.AC_SIMULATED:  # si tests en interne
             ind = int(self.sim.time / self.sim.SIMU_DELAY)
             hdg = self.sim.listeHDG[ind]
         else:
@@ -249,10 +238,12 @@ class RoseView(QtWidgets.QWidget):
         self.HDGtextitem.setPlainText(str(int(hdg)) + "°")
 
     def update_xtk(self):
+        """Mise à jour du xtk"""
         self.XTKtextitem.setPlainText(str(round(self.sim.SEQParam["XTK"], 1)) + "NM")
 
 
 class AircraftView(QtWidgets.QWidget):
+    """Vue permettant l'affichage de l'avion"""
     def __init__(self, sim):
         super().__init__()
         self.scene = QtWidgets.QGraphicsScene()
@@ -260,23 +251,12 @@ class AircraftView(QtWidgets.QWidget):
         self.sim = sim
         self.view.fitInView(self.view.sceneRect(), QtCore.Qt.KeepAspectRatio)
 
-        # invert y axis for the view
-        self.view.scale(1, -1)
+        self.view.scale(1, -1)  # inverser l'axe des y
 
         self.aircraft = AircraftItem()
         self.aircraft.update_position(0, 0)
         self.aircraft.setScale(0.01)
         self.scene.addItem(self.aircraft)
-
-
-    #Sert a rien
-    def update_position(self):
-        if not self.sim.USE_IVY:  # if Ivy Bus isn't used
-            pos = self.sim.listeACpositions[int(self.sim.time / self.sim.SIMU_DELAY)]
-            self.aircraft.update_position(pos.x, pos.y)
-            time.sleep(self.sim.SIMU_DELAY)
-        else:
-            self.aircraft.update_position(self.sim.AC_Y, self.sim.AC_X)
 
 
 class RadarView(QtWidgets.QWidget):
@@ -288,25 +268,24 @@ class RadarView(QtWidgets.QWidget):
 
     def __init__(self, simu):
         super().__init__()
-        self.simulation = simu  # simulation for test purpose of Ivy parameters changing
+        self.simulation = simu
 
-        # signals connection
+        # Connections aux signaux
         self.simulation.update_display_signal.connect(self.update_ND_items)
         self.simulation.update_display_signal.connect(self.start_timer)
         self.simulation.update_aicraft_signal.connect(self.update_ND_items_position)
         self.simulation.AP_mode_signal.connect(self.mode_heading)
 
-        # Settings
+        # Paramètres
         self.width, self.height = WIDTH, HEIGHT
         self.resize(WIDTH, HEIGHT)
 
-        # create components
+        # Création des composants
         root_layout = QtWidgets.QVBoxLayout(self)
         self.scene = QtWidgets.QGraphicsScene()
         self.view = PanZoomView(self.scene)
 
-        # invert y axis for the view
-        self.view.scale(1, -1)
+        self.view.scale(1, -1)  # inverser l'axe des y
 
         self.nd_items = QtWidgets.QGraphicsItemGroup()
         self.waypoint_group = QtWidgets.QGraphicsItemGroup()
@@ -314,56 +293,57 @@ class RadarView(QtWidgets.QWidget):
         self.scene.addItem(self.nd_items)
         self.scene.addItem(self.waypoint_group)
 
-        # add the ND elements if already existing to the graphic scene and then fit it in the view
-        if self.simulation.trajFMS.waypoint_list != []:
+        if self.simulation.trajFMS.waypoint_list != []:  # ajouter les éléments du ND déjà existants à la scène et
+            # les ajouter à la vue
             self.add_ND_items()
             self.fit_scene_in_view()
 
-        if not (self.simulation.USE_IVY):
+        if not self.simulation.USE_IVY:  # Si utilisation du bus Ivy : nécessité d'un timer
             print("Lancement du timer")
             self.timer = QtCore.QTimer(self)
             self.timer.timeout.connect(self.advance)
             self.timer.start(self.simulation.SIMU_DELAY)
 
-        # add components to the root_layout
-        root_layout.addWidget(self.view)
+        root_layout.addWidget(self.view)  # ajouter composants à la root_layer
 
     def start_timer(self):
-        if not(self.simulation.USE_IVY) or self.simulation.AC_SIMULATED:  # pour une simulation sans bus Ivy
-            # create and setup the timer
+        """Lancement du timer sans bus Ivy"""
+        if not self.simulation.USE_IVY or self.simulation.AC_SIMULATED:
             print("Lancement du timer")
             self.timer = QtCore.QTimer(self)
             self.timer.timeout.connect(self.advance)
             self.timer.start(self.simulation.SIMU_DELAY)
 
     def update_waypoints_items_rotation(self, hdg):
+        """Mettre à jour les rotations des items"""
         for item in self.list_waypoint_item:
             item.textitem.setRotation(hdg)
 
     def display_waypoints(self):
-        print("Display des WPTS")
+        """Afficher les waypoints"""
         self.waypoint_group = QtWidgets.QGraphicsItemGroup()
         self.scene.addItem(self.waypoint_group)
-        # Affiche tous les WayPoints
         for point in self.simulation.trajFMS.waypoint_list:
-            pointItem = QGraphicsWayPointsItem(point.x, point.y, self.waypoint_group, point.data['Name'], self.view, self.simulation.AC_HDG, self.simulation.ZOOM)
+            pointItem = QGraphicsWayPointsItem(point.x, point.y, self.waypoint_group, point.data['Name'], self.view,
+                                               self.simulation.AC_HDG, self.simulation.ZOOM)
             self.list_waypoint_item.append(pointItem)
             pointItem.setPen(pointItem.pen)
 
     def add_ND_items(self):
-        """ Add the static items to the QGraphicsScene, drawn by the view"""
+        """ Ajouter les items statique à la QGraphicsScene"""
         self.nd_items = QtWidgets.QGraphicsItemGroup()
         self.nd_items.setZValue(TRAJ_Z_VALUE)
         self.scene.addItem(self.nd_items)
 
         for i in range(1, self.simulation.trajFMS.nbr_waypoints - 1):
-            a, b, c = self.simulation.trajFMS.get_transition(i)  # récupère les trois WPT de la transition
+            a, b, c = self.simulation.trajFMS.get_transition(i)  # récupère les trois WPTs de la transition
             seg_actif = g.Segment(a, b)  # segment d'entrée de la transition
             seg_next = g.Segment(b, c)  # segment de sortie de la transition
             if self.simulation.USE_IVY: transition_type = b.data["FLY"]
-            else: transition_type = "Flyby"
+            else:
+                transition_type = "Flyby"
 
-            if (i == 1): # si première transition
+            if i == 1:  # si première transition
                 if transition_type == "Flyby":
                     transition_list = compute_transition_fly_by(seg_actif, seg_next, self.simulation.speedPred.TAS)
                 elif transition_type == "Flyover":
@@ -371,7 +351,7 @@ class RadarView(QtWidgets.QWidget):
                 start_segment = a
                 end_segment = transition_list[0].start
             else:
-                temp = transition_list[-1].end     #Récupération du point de fin de la dernière transition afin de
+                temp = transition_list[-1].end  # Récupération du point de fin de la dernière transition afin de
                 # réaliser la liason sous forme de segment avec la prochaine transition
                 if transition_type == "Flyby":
                     transition_list = compute_transition_fly_by(seg_actif, seg_next, self.simulation.speedPred.TAS)
@@ -380,16 +360,18 @@ class RadarView(QtWidgets.QWidget):
                 start_segment = temp
                 end_segment = transition_list[0].start
 
-            # ajout des objets transitions et orthos dans la trajectoire pour envoi sur le bus IVY
-            self.simulation.trajFMS.add_path(g.Segment(start_segment, end_segment), g.Transition(transition_type, self.simulation.speedPred.TAS,
-                                                                                                 transition_list))
+            # Ajout des objets transitions et orthos dans la trajectoire pour envoi sur le bus IVY
+            self.simulation.trajFMS.add_path(g.Segment(start_segment, end_segment),
+                                             g.Transition(transition_type, self.simulation.speedPred.TAS,
+                                                          transition_list))
 
-            if transition_list[0].track_change > EPSILON:
+            if transition_list[0].track_change > EPSILON:  # s'il ne s'agit pas d'une transition en ligne droite
                 for transition in transition_list:
                     if isinstance(transition, g.Arc):
-                        # Affichage arc dans la transition
-                        leg_item_transition_arc = QGraphicsArcItem(transition.start, transition.centre, transition.track_change,
-                                                transition.turn_radius, transition.sens_virage, self.nd_items)
+                        # Affichage de l'arc dans la transition
+                        leg_item_transition_arc = QGraphicsArcItem(transition.start, transition.centre,
+                                                                   transition.track_change, transition.turn_radius,
+                                                                   transition.sens_virage, self.nd_items)
                         leg_item_transition_arc.paint()
                     elif isinstance(transition, g.Segment):
                         # Affichage segment dans la transition
@@ -398,30 +380,26 @@ class RadarView(QtWidgets.QWidget):
                                                                         self.nd_items)
                         leg_item_transition_segment.setPen(TRAJ_PEN)
 
-
             # Affiche l'ortho
             leg_item_path = QGraphicsLegsItem(start_segment.x, start_segment.y, end_segment.x, end_segment.y,
                                               self.nd_items)
 
             leg_item_path.setPen(TRAJ_PEN)
 
-            #if self.simulation.AP_mode == "'HDG'":
-            if self.simulation.mode == "SelectedHeading":
-                TRAJ_PEN.setStyle(Qt.DashLine)
-            # Affichage de la trajectoire en pointillé si mode heading
+            if self.simulation.mode == "SelectedHeading":  # Si l'auto-pilote est en mode sélecté
+                TRAJ_PEN.setStyle(Qt.DashLine)  # affichage de la trajectoire en pointillés
 
         # Affiche le dernier leg après la dernière transition
         leg_item = QGraphicsLegsItem(b.x, b.y, c.x, c.y, self.nd_items)
-        #leg_item.setPen(leg_item.pen)
 
         # Affiche la dernière ortho après la dernière transition
         leg_item_path = QGraphicsLegsItem(transition_list[-1].end.x,  transition_list[-1].end.y, c.x, c.y, self.nd_items)
         leg_item_path.setPen(TRAJ_PEN)
-        self.simulation.trajFMS.add_path(g.Segment(transition_list[-1].end, c), None)  # ajout de la dernière ortho, None pour
-        # la dernière transition
+        self.simulation.trajFMS.add_path(g.Segment(transition_list[-1].end, c), None)  # ajout de la dernière ortho,
+        # None pour la dernière transition
 
     def mode_heading(self):
-        #if self.simulation.AP_mode == "'HDG'":
+        """Fonction qui change l'apparence de la trajectoire affichée en fonction du mode de l'AP"""
         if self.simulation.mode == "SelectedHeading":
             TRAJ_PEN.setStyle(Qt.DashLine)
             print('mode heading')
@@ -431,8 +409,8 @@ class RadarView(QtWidgets.QWidget):
         self.scene.removeItem(self.nd_items)
         self.add_ND_items()
 
-
     def fit_scene_in_view(self):
+        """Fait suivre la caméra centrée sur l'avion et permet le zoom"""
         if not self.simulation.USE_IVY or self.simulation.AC_SIMULATED:
             ind = int(self.simulation.time / self.simulation.SIMU_DELAY)
             pos = self.simulation.listeACpositions[ind]
@@ -459,13 +437,14 @@ class RadarView(QtWidgets.QWidget):
         self.view.fitInView(self.view.sceneRect(), QtCore.Qt.KeepAspectRatio)
 
     def update_ND_items_position(self):
+        """Mise à jour de la position des items"""
         self.fit_scene_in_view()
-        if not(self.simulation.USE_IVY) or self.simulation.AC_SIMULATED:
+        if not self.simulation.USE_IVY or self.simulation.AC_SIMULATED:
             print("ON sleep")
             time.sleep(self.simulation.SIMU_DELAY)
 
     def update_ND_items(self):
-        # print("UPDATING ITEMS...")
+        """Mettre à jour les items (ajout/suppression d'éléments)"""
         self.scene.removeItem(self.nd_items)
         self.scene.removeItem(self.waypoint_group)
         self.list_waypoint_item = []
