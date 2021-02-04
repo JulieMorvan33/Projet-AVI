@@ -2,11 +2,14 @@ from ivy.std_api import *
 import time
 import random as r
 
+
 def receiveTRAJ(agent, *data):
     print("Message de TRAJ : ", data[0])
 
+
 def null_cb(*a):
     pass
+
 
 if __name__ == '__main__':
     bus = "192.168.43.255:2010"
@@ -22,7 +25,7 @@ if __name__ == '__main__':
         # Toutes les 100 ms
         time.sleep(0.1)
 
-        # Send SEQ Data message
+        # Envoi du SEQ Data message
         xtk = r.randint(5, 50) / 10
         tae = r.randint(1, 10)/10
         dtwpt = r.randint(2, 40)
@@ -36,9 +39,7 @@ if __name__ == '__main__':
         print(seqParamMess)
         IvySendMsg(seqParamMess)
 
-        if i%10==0:
-            # Toutes les 500ms
-            # Message d'active leg
+        if i % 10 == 0:  # toutes les 100 ms, message d'active leg
             actLegMess = "GS_AL Time="
             actLegMess += str(round(dt, 1)) + " NumSeqActiveLeg=" + str(i//10+1)
             print(actLegMess)
