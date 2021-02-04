@@ -11,15 +11,16 @@ class Ui_MainWindow(object):
     que ce soit sur la fenêtre de droite ou sur la fenêtre de gauche."""
     def __init__(self, param_view, view, rose_view, aircraft_view, sim):
         super().__init__()
-        self.graphicsView = param_view # QGraphicView pour les paramètres de vol
-        self.graphicsView_2 = view #QGraphicView pour la carte
-        self.graphicsView_3 = rose_view #QGraphicView pour la rose
-        self.graphicsView_4 = aircraft_view #QGraphicView pour l'avion
+        self.graphicsView = param_view  # QGraphicView pour les paramètres de vol
+        self.graphicsView_2 = view  # QGraphicView pour la carte
+        self.graphicsView_3 = rose_view  # QGraphicView pour la rose
+        self.graphicsView_4 = aircraft_view  # QGraphicView pour l'avion
         self.sim = sim
 
     def setupUi(self, MainWindow):
-        # Partie gauche de la fenêtre
+        """Fonction qui met en place le navigation display"""
 
+        # Partie gauche de la fenêtre
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(TOT_WIDTH, TOT_HEIGHT)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
@@ -32,9 +33,6 @@ class Ui_MainWindow(object):
         self.verticalLayout_6 = QtWidgets.QVBoxLayout()
         self.verticalLayout_6.setObjectName("verticalLayout_6")
         self.verticalLayout_6.setGeometry(QtCore.QRect(0, 0, WIDTH, TOT_HEIGHT))
-
-        # Partie gauche de la fenêtre
-
         # QGraphicView pour les paramètres de vol
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         self.graphicsView.setSizePolicy(sizePolicy)
@@ -50,28 +48,28 @@ class Ui_MainWindow(object):
         self.graphicsView_3.setFixedSize(QtCore.QSize(WIDTH, HEIGHT))
         self.graphicsView_3.setObjectName("graphicsView_3")
         self.graphicsView_3.setStyleSheet("background:black;")
-        self.stackedLayout.insertWidget(1, self.graphicsView_3) #La valeur 1 signifie que la rose se situe en première position des view, en partant du bas
+        self.stackedLayout.insertWidget(1, self.graphicsView_3)  # La valeur 1 signifie que la rose se situe en
+        # première position des view, en partant du bas
         self.graphicsView_3.setRenderHint(QtGui.QPainter.Antialiasing)  # enable anti-aliasing
 
         # QGraphicsView pour la visualisation de l'avion
         self.graphicsView_4.setFixedSize(QtCore.QSize(WIDTH, HEIGHT))
         self.graphicsView_4.setObjectName("graphicsView_4")
         self.graphicsView_4.setStyleSheet("background:transparent;")
-        self.stackedLayout.insertWidget(2, self.graphicsView_4) #La valeur 2 signifie que la view de l'avion se situe au dessus de celle de la rose et donc en 2eme position en partant du bas
+        self.stackedLayout.insertWidget(2, self.graphicsView_4)  # La valeur 2 signifie que la view de l'avion se situe
+        # au dessus de celle de la rose et donc en 2eme position en partant du bas
 
         # QGraphicsView pour la visualisation de la trajectoire
         self.graphicsView_2.setFixedSize(QtCore.QSize(WIDTH, HEIGHT))
         self.graphicsView_2.setObjectName("graphicsView_2")
         self.graphicsView_2.setStyleSheet("background:transparent;")
-        self.stackedLayout.insertWidget(3, self.graphicsView_2) #La valeur 3 signifie que la view de la trajectoire se situe au dessus des views de l'avion et de la rose et donc en 3eme position en partant du bas
-
+        self.stackedLayout.insertWidget(3, self.graphicsView_2)  # La valeur 3 signifie que la view de la trajectoire
+        # se situe au dessus des views de l'avion et de la rose et donc en 3eme position en partant du bas
 
         self.verticalLayout_6.addLayout(self.stackedLayout)
         self.horizontalLayout.addLayout(self.verticalLayout_6)
 
-
         # Partie droite de la fenêtre
-
         self.verticalLayout_4 = QtWidgets.QVBoxLayout()
         self.verticalLayout_4.setObjectName("verticalLayout_4")
 
@@ -365,7 +363,8 @@ class Ui_MainWindow(object):
         self.label_5.setText(_translate("MainWindow", "kts"))
         self.label_6.setText(_translate("MainWindow", "COST INDEX :"))
         self.pushButton.setText(_translate("MainWindow", "VALIDATE"))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.Flight_Param), _translate("MainWindow", "Performance param"))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.Flight_Param), _translate("MainWindow",
+                                                                                        "Performance param"))
         self.label_7.setText(_translate("MainWindow", "XTK :"))
         self.label_8.setText(_translate("MainWindow", "..."))
         self.label_9.setText(_translate("MainWindow", "NM"))
@@ -407,11 +406,11 @@ class Ui_MainWindow(object):
             self.label_19.setText('HDG')
         else:
             self.label_19.setText('NAV')
-        #print("Nouveau AP mode :", self.sim.AP_mode)
 
     def update_zoom(self):
-        #print(self.horizontalSlider.value())
+        """Mise à jour du zoom"""
         self.sim.ZOOM = 4/self.horizontalSlider.value()
+
 
 class mywindow(QtWidgets.QMainWindow):
     # Création de la window de gauche

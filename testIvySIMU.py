@@ -39,7 +39,7 @@ if __name__ == '__main__':
         IvySendMsg(message2)
         time.sleep(0.5)
 
-    IvySendMsg("FCULateral Mode=helllo Val=350")
+    IvySendMsg("FCULateral Mode=hello Val=350")
     time.sleep(2)
     IvySendMsg("FCULateral Mode=SelectedHeading Val=350")
 
