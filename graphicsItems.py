@@ -75,7 +75,6 @@ class QGraphicsArcItem(QtWidgets.QGraphicsEllipseItem):
     def set_span_angle(self, alpha):
         self.span_angle = alpha * SP_ANGLE_COEFF
 
-
     def set_start_angle(self, start, centre):
         if start.x - centre.x == 0:
             if self.det > 0:
@@ -94,7 +93,8 @@ class QGraphicsArcItem(QtWidgets.QGraphicsEllipseItem):
         self.x = resize(centre.x - turnRadius)
         self.y = resize(centre.y - turnRadius)
 
-class QGraphicsWayPointsItem(QtWidgets.QGraphicsRectItem):  # QtWidgets.QGraphicsRectItem):
+
+class QGraphicsWayPointsItem(QtWidgets.QGraphicsRectItem):
     """Affichage des legs"""
 
     def __init__(self, x, y, parent, name, view, current_hdg, zoom):
@@ -110,6 +110,7 @@ class QGraphicsWayPointsItem(QtWidgets.QGraphicsRectItem):  # QtWidgets.QGraphic
         self.description()
 
     def description(self):
+        """Affichage de l'ID des waypoints"""
         font = QFont()
         font_metric = QFontMetrics(font)
         text_width = font_metric.width(self.name)
@@ -122,30 +123,6 @@ class QGraphicsWayPointsItem(QtWidgets.QGraphicsRectItem):  # QtWidgets.QGraphic
         self.textitem.setDefaultTextColor(green)
         self.textitem.setTransform(self.view.transform())
 
-    """Affichage des Way Points
-    def __init__(self, x, y, parent):
-        self.x, self.y = resize(x), resize(y)
-        super().__init__(x, y, WP_WIDTH, WP_WIDTH, parent)
-        self.paint(QPainter())
-
-    def paint(self, painter, style=None, widget=None):
-        painter.setPen(P_PEN)
-        painter.setBrush(WP_BRUSH)
-
-        # copie la transformation due au zoom
-        t = painter.transform()
-        m11, m22 = t.m11(), t.m22()
-
-        # fixé les coefficients de translation horizontale m11 et verticale m22 à 1
-        painter.setTransform(QTransform(1, t.m12(), t.m13(), t.m21(), 1, t.m23(), t.m31(), t.m32(), t.m33()))
-
-        # the item itself will not be scaled, but when the scene is transformed
-        # this item still anchor correctly
-        painter.translate(-WP_DP, -WP_DP)  # translate de -WP_DP pour s'affranchir de l'épaisseur de l'item
-        painter.drawRect(self.x*m11, self.y*m22, WP_WIDTH, WP_WIDTH)
-
-        painter.restore()
-    """
 
 class QGraphicsTransitionPoints(QtWidgets.QGraphicsRectItem):
     def __init__(self, x, y, parent):
@@ -160,22 +137,19 @@ class QGraphicsTransitionPoints(QtWidgets.QGraphicsRectItem):
         t = painter.transform()
         m11, m22 = t.m11(), t.m22()
 
-        # fixé les coefficients de translation horizontale m11 et verticale m22 à 1
+        # fixer les coefficients de translation horizontale m11 et verticale m22 à 1
         painter.setTransform(QTransform(1, t.m12(), t.m13(), t.m21(), 1, t.m23(), t.m31(), t.m32(), t.m33()))
 
-        # the item itself will not be scaled, but when the scene is transformed
-        # this item still anchor correctly
-        painter.translate(-TP_DP, -TP_DP) # translate de -TP_DP pour s'affranchir de l'épaisseur de l'item
+        painter.translate(-TP_DP, -TP_DP)  # translater de -TP_DP pour s'affranchir de l'épaisseur de l'item
         painter.drawRect(self.x * m11, self.y * m22, TP_WIDTH, TP_WIDTH)
         painter.restore()
 
 
 class QGraphicsImaginaryPoints(QtWidgets.QGraphicsRectItem):
+    """Points utiles à la détermination de la transition, pas affichés sur le ND"""
     def __init__(self, x, y, parent):
         super().__init__(x, y, TP_WIDTH, TP_WIDTH, parent)
         self.x, self.y = resize(x), resize(y)
-
-        # self.paint(QPainter())
 
 
 class QGraphicsLegsItem(QtWidgets.QGraphicsLineItem):
@@ -189,7 +163,9 @@ class AircraftItem(QtWidgets.QGraphicsItemGroup):
     """The view of an aircraft in the GraphicsScene"""
 
     def __init__(self):
-        """AircraftItem constructor, creates the ellipse and adds to the scene"""
+        """AircraftItem constructor, creates the ellipse and the pixmap impage and adds to the scene
+        Ici, l'aircraft est défini par une image pixmap (pour avoir une forme d'avion) mais aussi par une ellipse située
+        sous cette image car les ellipses sont plus faciles à manipuler"""
         super().__init__(None)
         self.item2 = QtWidgets.QGraphicsEllipseItem()
         image = QtGui.QImage('plane4.png')
@@ -201,14 +177,12 @@ class AircraftItem(QtWidgets.QGraphicsItemGroup):
         self.addToGroup(self.item)
 
     def update_position(self, x, y):
-        # self.item2.setPos(x, y)
         x, y = resize(x), resize(y)
-        self.item.setPos(x-51/2, y-51/2)
-
-        # self.item2.setRect(x - AC_WIDTH / 2, y - AC_WIDTH / 2, resize(AC_WIDTH), resize(AC_WIDTH))
+        self.item.setPos(x-51/2, y-51/2)  # l'image est de taille 51x51 pixels
 
 
-class QGraphicsRoseItem(QtWidgets.QGraphicsItemGroup):  # cette classe groupe tous les items composant le compas
+class QGraphicsRoseItem(QtWidgets.QGraphicsItemGroup):
+    """Cette classe groupe tous les items composant le compas"""
     def __init__(self, sim,  x, y, width, parent, view):
         self.x, self.y, self.w = x, y, width
         self.centre = (self.x + self.w / 2, self.y + self.w / 2)
@@ -216,11 +190,11 @@ class QGraphicsRoseItem(QtWidgets.QGraphicsItemGroup):  # cette classe groupe to
         self.view = view
         self.parent = parent
         self.sim = sim
-        #self.sim.update_aicraft_signal.connect(self.update_select_hdg)
+
         font = QFont()
         font_metric = QFontMetrics(font)
         font.setWeight(TEXT_SIZE)
-        for i in range(12):
+        for i in range(12):  # création de la rose
             i = i / RAD2DEG * 30
             a_x = self.centre[0] + np.sin(i) * self.w / 2 + np.sin(i) * (LARGE_GRAD_LONG + 2.3 * TEXT_SIZE)
             a_y = self.centre[1] + np.cos(i) * self.w / 2 + np.cos(i) * (LARGE_GRAD_LONG + 2.3 * TEXT_SIZE)
@@ -235,7 +209,6 @@ class QGraphicsRoseItem(QtWidgets.QGraphicsItemGroup):  # cette classe groupe to
             hdg.moveBy(-np.cos(i) * text_width / 1.2, np.sin(i) * text_width / 1.2)
             hdg.setDefaultTextColor(white)
             self.addToGroup(hdg)
-
 
     def paint(self, painter=QPainter(), style=None, widget=None):
         painter.setPen(ROSE_PEN)
@@ -263,7 +236,8 @@ class QGraphicsRoseItem(QtWidgets.QGraphicsItemGroup):  # cette classe groupe to
         e = painter.drawEllipse(self.x, self.y, self.w, self.w)
         self.addToGroup(e)
 
-        if self.sim.mode == "SelectedHeading":
+        if self.sim.mode == "SelectedHeading":  # affichage du heading selecté par un trait partant de l'avion si mode
+            # sélecté
             a_x2 = self.centre[0] + np.sin(float(self.sim.HDG_selected)/RAD2DEG)*self.w / 2
             a_y2 = self.centre[1] + np.cos(float(self.sim.HDG_selected)/RAD2DEG) * self.w / 2
             b_x2 = self.centre[0]
