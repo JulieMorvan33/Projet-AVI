@@ -5,12 +5,14 @@ import communication
 import ndWindowParameters
 import time
 
-USE_IVY = True # use or not use Ivy Bus ?
-AC_SIMULATED = False  # use bus IVY with no other groups ?
+USE_IVY = True  # use or not use Ivy Bus ?
+AC_SIMULATED = False  # If == TRUE, pas besoin de lancer testIvySIMU (si tests en interne)
 SIMU_DELAY = 0.1  # increment time for the simulation if Ivy Bus isn't used
+
 
 def null_cb(*a):
     pass
+
 
 if __name__ == "__main__":
     # create the simulation for test purpose
@@ -63,8 +65,8 @@ if __name__ == "__main__":
         # Abonnement au paramètres envoyés par SEQ (XTK, TAE, DTWPT)
         IvyBindMsg(sim.receive_SEQ_parameters, "GS_Data (.*)")
 
-        # Abonnement au mode de l'autopilot
-        #IvyBindMsg(sim.get_AP_mode, "GC_AP (.*)")
+        # Abonnement au mode de l'autopilot par GUID-COMM (non utilisé actuellement)
+        # IvyBindMsg(sim.get_AP_mode, "GC_AP (.*)")
 
         # Abonnement au HDG sélecté
         IvyBindMsg(sim.get_HDG_selected, "FCULateral (.*)")

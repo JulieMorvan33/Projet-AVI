@@ -478,12 +478,3 @@ class Simulation(QObject):
         print("Aéroport de départ : ", lat0, lon0)
         if False:
             IvySendMsg("GT AC_InitPosition_unknown")
-
-
-
-
-
-
-
-
-
